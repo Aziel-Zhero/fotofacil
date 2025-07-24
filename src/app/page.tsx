@@ -211,6 +211,27 @@ export default function Home() {
         {/* Funcionalidade de Marcação por IA */}
         <section className="container py-20 md:py-32 overflow-hidden">
           <div className="grid md:grid-cols-2 gap-12 items-center">
+            <div className="flex flex-col gap-4">
+              <span className="font-headline text-primary font-semibold">🤖 POTENCIALIZADO POR INTELIGÊNCIA ARTIFICIAL</span>
+              <h2 className="font-headline text-3xl md:text-4xl font-bold">Marcação Automática de Imagens</h2>
+              <p className="text-lg text-muted-foreground">
+                Economize horas de trabalho com nossa IA que organiza tudo para você. Você foca na fotografia — nós cuidamos da organização:
+              </p>
+              <ul className="grid gap-3">
+                  <li className="flex items-center gap-3">
+                      <CheckCircle className="h-5 w-5 text-accent"/>
+                      <span>Geração automática de tags inteligentes no upload.</span>
+                  </li>
+                  <li className="flex items-center gap-3">
+                      <CheckCircle className="h-5 w-5 text-accent"/>
+                      <span>Álbum pesquisável e filtrável com facilidade.</span>
+                  </li>
+                  <li className="flex items-center gap-3">
+                      <CheckCircle className="h-5 w-5 text-accent"/>
+                      <span>Concentre-se na fotografia, não na entrada de dados.</span>
+                  </li>
+              </ul>
+            </div>
             <div className="relative h-full min-h-[450px]">
                 <CardSwap
                     cardDistance={60}
@@ -240,27 +261,6 @@ export default function Home() {
                         </div>
                     </SwapCard>
                 </CardSwap>
-            </div>
-            <div className="flex flex-col gap-4">
-              <span className="font-headline text-primary font-semibold">🤖 POTENCIALIZADO POR INTELIGÊNCIA ARTIFICIAL</span>
-              <h2 className="font-headline text-3xl md:text-4xl font-bold">Marcação Automática de Imagens</h2>
-              <p className="text-lg text-muted-foreground">
-                Economize horas de trabalho com nossa IA que organiza tudo para você. Você foca na fotografia — nós cuidamos da organização:
-              </p>
-              <ul className="grid gap-3">
-                  <li className="flex items-center gap-3">
-                      <CheckCircle className="h-5 w-5 text-accent"/>
-                      <span>Geração automática de tags inteligentes no upload.</span>
-                  </li>
-                  <li className="flex items-center gap-3">
-                      <CheckCircle className="h-5 w-5 text-accent"/>
-                      <span>Álbum pesquisável e filtrável com facilidade.</span>
-                  </li>
-                  <li className="flex items-center gap-3">
-                      <CheckCircle className="h-5 w-5 text-accent"/>
-                      <span>Concentre-se na fotografia, não na entrada de dados.</span>
-                  </li>
-              </ul>
             </div>
           </div>
         </section>
