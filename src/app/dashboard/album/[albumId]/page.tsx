@@ -60,12 +60,12 @@ export default function AlbumDetailPage({ params }: { params: { albumId: string 
             <p className="text-muted-foreground">Faça upload de novas fotos e veja a galeria atual.</p>
         </div>
         
-        <div className="grid lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-1">
+        <div className="space-y-12">
+            <div>
                 <h2 className="text-xl font-bold font-headline mb-4">Enviar Fotos</h2>
                 <PhotoUploader onUploadComplete={addPhoto} />
             </div>
-            <div className="lg:col-span-2">
+            <div>
                 <div className="flex justify-between items-center mb-4">
                     <h2 className="text-xl font-bold font-headline">Galeria</h2>
                     <ToggleGroup type="single" value={viewMode} onValueChange={(value: ViewMode) => value && setViewMode(value)} aria-label="Modo de Visualização">
