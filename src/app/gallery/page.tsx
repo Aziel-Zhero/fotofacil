@@ -1,6 +1,8 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ImageIcon } from "lucide-react";
+import { Download, ImageIcon } from "lucide-react";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 const mockClientAlbums = [
     { id: '1', name: 'Casamento na Toscana', photographer: 'Anna Belle' },
@@ -10,10 +12,21 @@ const mockClientAlbums = [
 export default function ClientGalleryPage() {
     return (
         <div className="container">
-            <h1 className="text-3xl font-bold font-headline mb-2 mt-8">Seus Álbuns Compartilhados</h1>
-            <p className="text-muted-foreground mb-8">Aqui estão os álbuns compartilhados com você. Clique em um para iniciar sua seleção.</p>
+            <div className="flex justify-between items-center mb-4 mt-8">
+                 <div>
+                    <h1 className="text-3xl font-bold font-headline mb-2">Seus Álbuns Compartilhados</h1>
+                    <p className="text-muted-foreground">Aqui estão os álbuns compartilhados com você. Clique em um para iniciar sua seleção.</p>
+                </div>
+                <Button variant="outline" asChild>
+                    <Link href="/gallery/downloads">
+                        <Download className="mr-2 h-4 w-4" />
+                        Ver Downloads
+                    </Link>
+                </Button>
+            </div>
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
                 {mockClientAlbums.map(album => (
                     <Card key={album.id} className="hover:shadow-lg transition-shadow">
                         <CardHeader>
