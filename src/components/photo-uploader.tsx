@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useRef, type ChangeEvent } from "react";
@@ -10,8 +11,13 @@ import { UploadCloud, FileImage, X, Loader2 } from "lucide-react";
 import Image from "next/image";
 import { generateTagsForImage } from "@/app/actions";
 import { useToast } from "@/hooks/use-toast";
+import { Photo } from "@/app/dashboard/album/[albumId]/page";
 
-export function PhotoUploader() {
+interface PhotoUploaderProps {
+    onUploadComplete: (photo: Photo) => void;
+}
+
+export function PhotoUploader({ onUploadComplete }: PhotoUploaderProps) {
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [progress, setProgress] = useState(0);
@@ -28,29 +34,35 @@ export function PhotoUploader() {
       setTags([]);
       const reader = new FileReader();
       reader.onloadend = () => {
-        setPreview(reader.result as string);
-        handleUpload(reader.result as string);
+        const photoDataUri = reader.result as string;
+        setPreview(photoDataUri);
+        handleUpload(selectedFile, photoDataUri);
       };
       reader.readAsDataURL(selectedFile);
     }
   };
   
-  const handleUpload = async (photoDataUri: string) => {
+  const handleUpload = async (file: File, photoDataUri: string) => {
     setIsUploading(true);
     setProgress(0);
 
-    // Simula o progresso do upload
     const interval = setInterval(() => {
-      setProgress((prev) => {
-        if (prev >= 90) return 90;
-        return prev + 10;
-      });
+      setProgress((prev) => (prev >= 90 ? 90 : prev + 10));
     }, 200);
 
     setTimeout(async () => {
       clearInterval(interval);
       setProgress(100);
       setIsUploading(false);
+      
+      const newPhoto: Photo = {
+          id: Date.now(),
+          url: photoDataUri,
+          dataAiHint: 'nova foto',
+          name: file.name
+      };
+      onUploadComplete(newPhoto);
+
       setIsTagging(true);
 
       try {
@@ -68,15 +80,18 @@ export function PhotoUploader() {
         });
       } finally {
         setIsTagging(false);
+        handleRemoveFile(true);
       }
     }, 2000); // Simula 2 segundos de upload
   };
 
-  const handleRemoveFile = () => {
-    setFile(null);
-    setPreview(null);
-    setProgress(0);
-    setTags([]);
+  const handleRemoveFile = (isAfterUpload = false) => {
+    if (!isAfterUpload) {
+        setFile(null);
+        setPreview(null);
+        setProgress(0);
+        setTags([]);
+    }
     if(fileInputRef.current) {
         fileInputRef.current.value = "";
     }
@@ -107,6 +122,7 @@ export function PhotoUploader() {
             className="hidden"
             accept="image/png, image/jpeg, image/webp"
             onChange={handleFileChange}
+            disabled={isUploading || isTagging}
           />
         </div>
 
@@ -117,17 +133,17 @@ export function PhotoUploader() {
                     <FileImage className="h-5 w-5 flex-shrink-0 text-muted-foreground" />
                     <span className="truncate font-medium">{file.name}</span>
                 </div>
-                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={handleRemoveFile}>
+                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleRemoveFile()}>
                     <X className="h-4 w-4" />
                 </Button>
             </div>
 
-            {(isUploading || isTagging) && <Progress value={progress} className="w-full mt-2" />}
+            {(isUploading || progress > 0) && <Progress value={progress} className="w-full mt-2" />}
 
-            {isTagging && (
+            {(isUploading || isTagging) && (
                 <div className="flex items-center justify-center gap-2 mt-2 text-sm text-muted-foreground">
                     <Loader2 className="h-4 w-4 animate-spin"/>
-                    <span>Gerando tags com IA...</span>
+                    <span>{isUploading ? "Enviando..." : "Gerando tags com IA..."}</span>
                 </div>
             )}
             
