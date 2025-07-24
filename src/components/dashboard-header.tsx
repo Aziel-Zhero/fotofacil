@@ -2,7 +2,7 @@
 "use client"
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, User, Settings, LogOut, Aperture } from 'lucide-react';
+import { Home, User, Settings, LogOut, Aperture, Crown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -17,11 +17,12 @@ import {
 const navItems = [
   { href: '/dashboard', label: 'Painel', icon: Home },
   { href: '/dashboard/profile', label: 'Perfil', icon: User },
-  // { href: '/dashboard/settings', label: 'Configurações', icon: Settings },
+  { href: '/dashboard/settings', label: 'Configurações', icon: Settings },
 ];
 
 export function DashboardHeader() {
   const pathname = usePathname();
+  const isSubscriber = true; // Mock data for subscription status
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background">
@@ -60,13 +61,22 @@ export function DashboardHeader() {
                 <DropdownMenuContent className="w-56" align="end" forceMount>
                     <DropdownMenuLabel className="font-normal">
                         <div className="flex flex-col space-y-1">
-                            <p className="text-sm font-medium leading-none font-headline">John Smith</p>
+                            <div className="flex items-center gap-2">
+                                <p className="text-sm font-medium leading-none font-headline">John Smith</p>
+                                {isSubscriber && <Crown className="h-4 w-4 text-yellow-500" />}
+                            </div>
                             <p className="text-xs leading-none text-muted-foreground">
                                 ID: AZ00000001
                             </p>
                         </div>
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
+                     <DropdownMenuItem asChild>
+                         <Link href="/dashboard">
+                            <Home className="mr-2 h-4 w-4" />
+                            <span>Painel</span>
+                         </Link>
+                    </DropdownMenuItem>
                     <DropdownMenuItem asChild>
                          <Link href="/dashboard/profile">
                             <User className="mr-2 h-4 w-4" />
