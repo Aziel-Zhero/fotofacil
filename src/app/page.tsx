@@ -2,7 +2,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { CheckCircle, Camera, Users, ShieldCheck } from 'lucide-react';
+import { CheckCircle, Camera, Users, ShieldCheck, FileKey2 } from 'lucide-react';
 
 const LandingHeader = () => (
   <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -43,10 +43,10 @@ export default function Home() {
           <div className="flex flex-col gap-6">
             <h1 className="font-headline text-4xl md:text-6xl font-bold tracking-tighter">
               Compartilhe Sua Visão, <br />
-              <span className="text-primary">Sem Esforço.</span>
+              <span className="text-primary">Sem Complicação.</span>
             </h1>
             <p className="max-w-[600px] text-lg text-muted-foreground">
-              FotoFácil é a plataforma definitiva para fotógrafos organizarem, compartilharem e gerenciarem as seleções de fotos de clientes. Otimize seu fluxo de trabalho e impressione seus clientes.
+              FotoFácil é a plataforma inteligente para fotógrafos organizarem, compartilharem e gerenciarem seleções de fotos de forma profissional e segura. Otimize seu fluxo de trabalho e encante seus clientes com experiências visuais impecáveis.
             </p>
             <div className="flex gap-4">
               <Button size="lg" asChild>
@@ -72,9 +72,9 @@ export default function Home() {
         <section id="features" className="bg-muted/50 py-20 md:py-32">
           <div className="container">
             <div className="mx-auto mb-16 max-w-2xl text-center">
-              <h2 className="font-headline text-3xl md:text-4xl font-bold">Um Fluxo de Trabalho Melhor a um Clique de Distância</h2>
+              <h2 className="font-headline text-3xl md:text-4xl font-bold">⚡ Um Fluxo de Trabalho Profissional a um Clique de Distância</h2>
               <p className="mt-4 text-lg text-muted-foreground">
-                Tudo o que você precisa para entregar belas galerias de fotos e simplificar a aprovação do cliente.
+                Tudo o que você precisa para entregar galerias incríveis e tornar o processo de aprovação de fotos simples, rápido e eficiente.
               </p>
             </div>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -86,7 +86,9 @@ export default function Home() {
                   <CardTitle className="font-headline text-xl">Gerenciamento de Álbuns</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <CardDescription>Crie álbuns impressionantes e personalizáveis com datas de validade, proteção por senha e limites de seleção.</CardDescription>
+                  <CardDescription>
+                    Crie álbuns elegantes e personalizados com datas de validade, proteção por senha e limites de seleção definidos por você. Organize tudo com facilidade e controle total.
+                  </CardDescription>
                 </CardContent>
               </Card>
               <Card className="transform transition-transform hover:-translate-y-2">
@@ -94,21 +96,21 @@ export default function Home() {
                   <div className="bg-primary/10 p-3 rounded-full">
                     <Users className="h-6 w-6 text-primary" />
                   </div>
-                  <CardTitle className="font-headline text-xl">Acesso Contínuo ao Cliente</CardTitle>
+                  <CardTitle className="font-headline text-xl">Acesso Seguro para o Cliente</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <CardDescription>Compartilhe álbuns com um ID exclusivo e código secreto para uma experiência de visualização segura e privada.</CardDescription>
+                  <CardDescription>Compartilhe seus álbuns por meio de um ID exclusivo e um código secreto gerado automaticamente para uma visualização protegida e privada, só para quem você autorizar.</CardDescription>
                 </CardContent>
               </Card>
               <Card className="transform transition-transform hover:-translate-y-2">
                 <CardHeader className="flex flex-row items-center gap-4">
                   <div className="bg-primary/10 p-3 rounded-full">
-                     <ShieldCheck className="h-6 w-6 text-primary" />
+                     <FileKey2 className="h-6 w-6 text-primary" />
                   </div>
-                  <CardTitle className="font-headline text-xl">Pagamentos Seguros</CardTitle>
+                  <CardTitle className="font-headline text-xl">Pagamentos PIX Integrados</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <CardDescription>Lide com seleções de fotos extras com facilidade através de pagamentos PIX integrados, usando chaves exclusivas para cada transação.</CardDescription>
+                  <CardDescription>Facilite a venda de fotos extras com pagamentos rápidos via PIX, usando chaves únicas por transação e um processo simples e direto para o cliente.</CardDescription>
                 </CardContent>
               </Card>
             </div>
@@ -128,19 +130,19 @@ export default function Home() {
               />
             </div>
             <div className="flex flex-col gap-4">
-              <span className="font-headline text-primary font-semibold">POTENCIALIZADO POR IA</span>
+              <span className="font-headline text-primary font-semibold">🤖 POTENCIALIZADO POR INTELIGÊNCIA ARTIFICIAL</span>
               <h2 className="font-headline text-3xl md:text-4xl font-bold">Marcação Automática de Imagens</h2>
               <p className="text-lg text-muted-foreground">
-                Economize horas de trabalho manual. Nossa GenAI analisa e marca automaticamente suas fotos no upload, tornando sua coleção pesquisável e organizada desde o início.
+                Economize horas de trabalho com nossa IA que organiza tudo para você. Você foca na fotografia — nós cuidamos da organização.
               </p>
               <ul className="grid gap-3">
                   <li className="flex items-center gap-3">
                       <CheckCircle className="h-5 w-5 text-accent"/>
-                      <span>Tags inteligentes e relevantes para cada foto.</span>
+                      <span>Geração automática de tags inteligentes no upload.</span>
                   </li>
                   <li className="flex items-center gap-3">
                       <CheckCircle className="h-5 w-5 text-accent"/>
-                      <span>Melhore a capacidade de pesquisa em seus álbuns.</span>
+                      <span>Álbum pesquisável e filtrável com facilidade.</span>
                   </li>
                   <li className="flex items-center gap-3">
                       <CheckCircle className="h-5 w-5 text-accent"/>
