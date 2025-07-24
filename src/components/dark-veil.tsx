@@ -76,21 +76,15 @@ void main(){
 }
 `;
 
-export default function DarkVeil({
-  hueShift = 210,
-  noiseIntensity = 0.05,
-  scanlineIntensity = 0.0,
-  speed = 0.2,
-  scanlineFrequency = 0,
-  warpAmount = 0.5,
-  resolutionScale = 1,
-}) {
-  const ref = useRef<HTMLCanvasElement>(null);
+export default function DarkVeil({ hueShift = 0, noiseIntensity = 0, scanlineIntensity = 0, speed = 0.5, scanlineFrequency = 0, warpAmount = 0, resolutionScale = 1, }) {
+  const ref = useRef(null);
+
   useEffect(() => {
-    if (typeof window === "undefined" || !ref.current) return;
     const canvas = ref.current;
+    if (!canvas) return;
+    
     const parent = canvas.parentElement;
-    if(!parent) return;
+    if (!parent) return;
 
     const renderer = new Renderer({
       dpr: Math.min(window.devicePixelRatio, 2),
@@ -127,46 +121,30 @@ export default function DarkVeil({
     resize();
 
     const start = performance.now();
-    let frame: number;
+    let frameId: number;
 
-    const loop = () => {
-      program.uniforms.uTime.value =
-        ((performance.now() - start) / 1000) * speed;
+    const loop = (time: number) => {
+      program.uniforms.uTime.value = (time - start) / 1000 * speed;
       program.uniforms.uHueShift.value = hueShift;
       program.uniforms.uNoise.value = noiseIntensity;
       program.uniforms.uScan.value = scanlineIntensity;
       program.uniforms.uScanFreq.value = scanlineFrequency;
       program.uniforms.uWarp.value = warpAmount;
       renderer.render({ scene: mesh });
-      frame = requestAnimationFrame(loop);
+      frameId = requestAnimationFrame(loop);
     };
 
-    loop();
+    frameId = requestAnimationFrame(loop);
 
     return () => {
-      cancelAnimationFrame(frame);
+      cancelAnimationFrame(frameId);
       window.removeEventListener("resize", resize);
     };
-  }, [
-    hueShift,
-    noiseIntensity,
-    scanlineIntensity,
-    speed,
-    scanlineFrequency,
-    warpAmount,
-    resolutionScale,
-  ]);
+  }, [ hueShift, noiseIntensity, scanlineIntensity, speed, scanlineFrequency, warpAmount, resolutionScale, ]);
+
   return (
-    <canvas
-      ref={ref}
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        width: '100vw',
-        height: '100vh',
-        zIndex: -1,
-      }}
-    />
+    <canvas ref={ref} className="darkveil-canvas" />
   );
 }
+
+    
