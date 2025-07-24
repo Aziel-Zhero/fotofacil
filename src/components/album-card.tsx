@@ -1,0 +1,56 @@
+import Link from 'next/link';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from './ui/button';
+import { Camera, Users } from 'lucide-react';
+
+interface AlbumCardProps {
+  album: {
+    id: string;
+    name: string;
+    photoCount: number;
+    status: string;
+    client: string;
+  };
+}
+
+export function AlbumCard({ album }: AlbumCardProps) {
+  const getStatusVariant = (status: string) => {
+    switch (status) {
+      case 'Awaiting Selection':
+        return 'default';
+      case 'Selection Complete':
+        return 'secondary';
+      case 'Expired':
+        return 'destructive';
+      default:
+        return 'outline';
+    }
+  };
+
+  return (
+    <Card className="flex flex-col hover:shadow-lg transition-shadow duration-300">
+      <CardHeader>
+        <CardTitle className="font-headline truncate">{album.name}</CardTitle>
+        <CardDescription>
+            <Badge variant={getStatusVariant(album.status)}>{album.status}</Badge>
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="flex-grow space-y-2">
+        <div className="flex items-center text-sm text-muted-foreground">
+          <Users className="mr-2 h-4 w-4" />
+          <span>{album.client}</span>
+        </div>
+        <div className="flex items-center text-sm text-muted-foreground">
+          <Camera className="mr-2 h-4 w-4" />
+          <span>{album.photoCount} photos</span>
+        </div>
+      </CardContent>
+      <CardFooter>
+        <Button asChild className="w-full">
+          <Link href={`/dashboard/album/${album.id}`}>Manage Album</Link>
+        </Button>
+      </CardFooter>
+    </Card>
+  );
+}

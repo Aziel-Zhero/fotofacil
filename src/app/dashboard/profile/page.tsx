@@ -1,0 +1,20 @@
+import { ProfileForm } from "@/components/profile-form";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+
+export default function ProfilePage() {
+  return (
+    <div className="container mx-auto py-8 max-w-2xl">
+      <Card>
+        <CardHeader>
+          <CardTitle className="font-headline text-2xl">Complete Your Profile</CardTitle>
+          <CardDescription>
+            This information helps streamline your workflow, especially for payments on extra photo selections.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ProfileForm />
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
