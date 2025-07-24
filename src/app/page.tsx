@@ -4,8 +4,9 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
-import { CheckCircle, Camera, Users, ShieldCheck, FileKey2 } from 'lucide-react';
+import { CheckCircle, Camera, Users, ShieldCheck, FileKey2, BrainCircuit, Tags, Search } from 'lucide-react';
 import { MasonryGallery } from '@/components/masonry-gallery';
+import CardSwap, { Card as SwapCard } from '@/components/card-swap';
 
 const LandingHeader = () => (
   <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -136,6 +137,7 @@ export default function Home() {
                     stagger={0.05}
                     animateFrom="bottom"
                     scaleOnHover={true}
+                    hoverScale={1.05}
                     blurToFocus={true}
                     colorShiftOnHover={true}
                 />
@@ -207,16 +209,37 @@ export default function Home() {
         </section>
 
         {/* Funcionalidade de Marcação por IA */}
-        <section className="container py-20 md:py-32">
+        <section className="container py-20 md:py-32 overflow-hidden">
           <div className="grid md:grid-cols-2 gap-12 items-center">
-            <div className="relative h-full min-h-[300px] md:min-h-[400px]">
-              <Image
-                src="https://placehold.co/600x450.png"
-                alt="IA em ação"
-                fill
-                className="object-cover rounded-xl shadow-2xl"
-                data-ai-hint="artificial intelligence photography"
-              />
+            <div className="relative h-full min-h-[450px]">
+                <CardSwap
+                    cardDistance={60}
+                    verticalDistance={70}
+                    delay={4000}
+                    pauseOnHover={true}
+                >
+                    <SwapCard>
+                        <div className="flex flex-col items-center justify-center h-full text-center p-8 bg-card text-card-foreground">
+                            <BrainCircuit className="h-16 w-16 mb-4 text-primary" />
+                            <h3 className="font-headline text-2xl font-bold mb-2">Análise de Conteúdo</h3>
+                            <p className="text-muted-foreground">Nossa IA identifica os elementos principais em cada foto.</p>
+                        </div>
+                    </SwapCard>
+                    <SwapCard>
+                        <div className="flex flex-col items-center justify-center h-full text-center p-8 bg-card text-card-foreground">
+                            <Tags className="h-16 w-16 mb-4 text-primary" />
+                            <h3 className="font-headline text-2xl font-bold mb-2">Geração de Tags</h3>
+                            <p className="text-muted-foreground">Tags relevantes são criadas para descrever suas imagens automaticamente.</p>
+                        </div>
+                    </SwapCard>
+                    <SwapCard>
+                         <div className="flex flex-col items-center justify-center h-full text-center p-8 bg-card text-card-foreground">
+                            <Search className="h-16 w-16 mb-4 text-primary" />
+                            <h3 className="font-headline text-2xl font-bold mb-2">Busca Inteligente</h3>
+                            <p className="text-muted-foreground">Encontre qualquer foto em segundos usando palavras-chave.</p>
+                        </div>
+                    </SwapCard>
+                </CardSwap>
             </div>
             <div className="flex flex-col gap-4">
               <span className="font-headline text-primary font-semibold">🤖 POTENCIALIZADO POR INTELIGÊNCIA ARTIFICIAL</span>
