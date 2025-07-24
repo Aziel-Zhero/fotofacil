@@ -14,11 +14,11 @@ import gsap from "gsap";
 import "./card-swap.css";
 
 export const Card = forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
-  ({ customClass, ...rest }, ref) => (
+  ({ ...rest }, ref) => (
     <div
       ref={ref}
       {...rest}
-      className={`card ${customClass ?? ""} ${rest.className ?? ""}`.trim()}
+      className={`card ${rest.className ?? ""}`.trim()}
     />
   )
 );
@@ -184,8 +184,11 @@ const CardSwap = ({
       });
     };
 
-    swap();
-    intervalRef.current = window.setInterval(swap, delay);
+    if (childArr.length > 1) {
+        swap();
+        intervalRef.current = window.setInterval(swap, delay);
+    }
+    
 
     if (pauseOnHover) {
       const node = container.current;
@@ -241,4 +244,3 @@ const CardSwap = ({
 };
 
 export default CardSwap;
-

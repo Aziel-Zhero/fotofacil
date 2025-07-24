@@ -4,12 +4,13 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
-import { CheckCircle, Camera, Users, ShieldCheck, FileKey2, BrainCircuit, Tags, Search } from 'lucide-react';
+import { CheckCircle, Camera, Users, FileKey2, BrainCircuit, Tags, Search } from 'lucide-react';
 import { MasonryGallery } from '@/components/masonry-gallery';
 import CardSwap, { Card as SwapCard } from '@/components/card-swap';
+import DarkVeil from '@/components/dark-veil';
 
 const LandingHeader = () => (
-  <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+  <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-black/30 backdrop-blur-lg">
     <div className="container flex h-14 max-w-screen-2xl items-center justify-between">
       <Link href="/" className="flex items-center gap-2">
         <Camera className="h-6 w-6 text-primary" />
@@ -28,7 +29,7 @@ const LandingHeader = () => (
 );
 
 const LandingFooter = () => (
-  <footer className="border-t">
+  <footer className="border-t border-white/10 bg-black/20">
     <div className="container flex flex-col items-center justify-center gap-4 py-8 md:h-24 md:flex-row">
       <p className="text-center text-sm leading-loose text-muted-foreground md:text-left">
         Construído por seu parceiro criativo. &copy; {new Date().getFullYear()} FotoFácil. Todos os Direitos Reservados.
@@ -91,9 +92,21 @@ const galleryItems = [
     { id: "6", img: "https://placehold.co/600x950.png", dataAiHint: "fashion model", height: 450 },
 ];
 
+const GlassCard = ({ children, className }: { children: React.ReactNode, className?: string }) => (
+    <Card className={`bg-card/50 backdrop-blur-lg border border-white/10 shadow-2xl ${className}`}>
+        {children}
+    </Card>
+)
+
 export default function Home() {
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col bg-background text-foreground">
+      <DarkVeil
+        hueShift={210}
+        noiseIntensity={0.02}
+        warpAmount={0.5}
+        speed={0.2}
+       />
       <LandingHeader />
       <main className="flex-1">
         {/* Seção Hero */}
@@ -127,8 +140,8 @@ export default function Home() {
         </section>
 
         {/* Masonry Gallery Section */}
-        <section className="py-20 md:py-32 bg-muted/20">
-            <div className="container p-10 border rounded-xl">
+        <section className="py-20 md:py-32">
+            <div className="container p-10 border rounded-xl bg-black/20 backdrop-blur-sm border-white/10">
                  <h2 className="font-headline text-3xl md:text-4xl font-bold text-center mb-12">Galerias que Impressionam</h2>
                  <MasonryGallery
                     items={galleryItems}
@@ -146,7 +159,7 @@ export default function Home() {
 
 
         {/* Seção de Funcionalidades */}
-        <section id="features" className="bg-muted/50 py-20 md:py-32">
+        <section id="features" className="py-20 md:py-32">
           <div className="container">
             <div className="mx-auto mb-16 max-w-2xl text-center">
               <h2 className="font-headline text-3xl md:text-4xl font-bold">⚡ Um Fluxo de Trabalho Profissional a um Clique de Distância</h2>
@@ -155,7 +168,7 @@ export default function Home() {
               </p>
             </div>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              <Card className="transform transition-transform hover:-translate-y-2">
+              <GlassCard className="transform transition-transform hover:-translate-y-2">
                 <CardHeader className="flex flex-col items-start gap-4">
                    <div className="bg-primary/10 p-3 rounded-full">
                      <Camera className="h-6 w-6 text-primary" />
@@ -171,8 +184,8 @@ export default function Home() {
                   </ul>
                   <p className='text-muted-foreground mt-2'>Organize tudo com facilidade e controle total.</p>
                 </CardContent>
-              </Card>
-              <Card className="transform transition-transform hover:-translate-y-2">
+              </GlassCard>
+              <GlassCard className="transform transition-transform hover:-translate-y-2">
                 <CardHeader className="flex flex-col items-start gap-4">
                   <div className="bg-primary/10 p-3 rounded-full">
                     <Users className="h-6 w-6 text-primary" />
@@ -187,8 +200,8 @@ export default function Home() {
                   </ul>
                   <p className='text-muted-foreground mt-2'>Visualização protegida e privada, só para quem você autorizar.</p>
                 </CardContent>
-              </Card>
-              <Card className="transform transition-transform hover:-translate-y-2">
+              </GlassCard>
+              <GlassCard className="transform transition-transform hover:-translate-y-2">
                 <CardHeader className="flex flex-col items-start gap-4">
                   <div className="bg-primary/10 p-3 rounded-full">
                      <FileKey2 className="h-6 w-6 text-primary" />
@@ -203,7 +216,7 @@ export default function Home() {
                   </ul>
                   <p className='text-muted-foreground mt-2'>Processo simples e direto para o cliente.</p>
                 </CardContent>
-              </Card>
+              </GlassCard>
             </div>
           </div>
         </section>
@@ -240,25 +253,25 @@ export default function Home() {
                     pauseOnHover={true}
                 >
                     <SwapCard>
-                        <div className="flex flex-col items-center justify-center h-full text-center p-8 bg-card text-card-foreground">
+                        <GlassCard className="flex flex-col items-center justify-center h-full text-center p-8">
                             <BrainCircuit className="h-16 w-16 mb-4 text-primary" />
                             <h3 className="font-headline text-2xl font-bold mb-2">Análise de Conteúdo</h3>
                             <p className="text-muted-foreground">Nossa IA identifica os elementos principais em cada foto.</p>
-                        </div>
+                        </GlassCard>
                     </SwapCard>
                     <SwapCard>
-                        <div className="flex flex-col items-center justify-center h-full text-center p-8 bg-card text-card-foreground">
+                        <GlassCard className="flex flex-col items-center justify-center h-full text-center p-8">
                             <Tags className="h-16 w-16 mb-4 text-primary" />
                             <h3 className="font-headline text-2xl font-bold mb-2">Geração de Tags</h3>
                             <p className="text-muted-foreground">Tags relevantes são criadas para descrever suas imagens automaticamente.</p>
-                        </div>
+                        </GlassCard>
                     </SwapCard>
                     <SwapCard>
-                         <div className="flex flex-col items-center justify-center h-full text-center p-8 bg-card text-card-foreground">
+                         <GlassCard className="flex flex-col items-center justify-center h-full text-center p-8">
                             <Search className="h-16 w-16 mb-4 text-primary" />
                             <h3 className="font-headline text-2xl font-bold mb-2">Busca Inteligente</h3>
                             <p className="text-muted-foreground">Encontre qualquer foto em segundos usando palavras-chave.</p>
-                        </div>
+                        </GlassCard>
                     </SwapCard>
                 </CardSwap>
             </div>
@@ -266,7 +279,7 @@ export default function Home() {
         </section>
         
         {/* Seção de Preços */}
-        <section id="pricing" className="bg-muted/50 py-20 md:py-32">
+        <section id="pricing" className="py-20 md:py-32">
             <div className="container max-w-5xl">
                 <div className="mb-12 text-center">
                     <h2 className="text-4xl font-bold font-headline">Assinatura para Fotógrafos</h2>
@@ -276,7 +289,7 @@ export default function Home() {
                 </div>
                 <div className="grid lg:grid-cols-3 gap-8 items-start">
                     {plans.map(plan => (
-                        <Card key={plan.name} className={`flex flex-col h-full ${plan.isHighlighted ? 'border-primary border-2 shadow-xl' : ''}`}>
+                        <GlassCard key={plan.name} className={`flex flex-col h-full ${plan.isHighlighted ? 'border-primary border-2' : ''}`}>
                             <CardHeader>
                                 {plan.isHighlighted && (
                                     <div className="flex justify-center">
@@ -312,7 +325,7 @@ export default function Home() {
                                   <Link href="/register/photographer">Assinar Agora</Link>
                                 </Button>
                             </CardFooter>
-                        </Card>
+                        </GlassCard>
                     ))}
                 </div>
             </div>
