@@ -14,7 +14,7 @@ export default function AuthLayout({ children, title, description }: AuthLayoutP
         <div className="absolute top-8 left-8">
             <Link href="/" className="flex items-center gap-2 text-foreground">
                 <Camera className="h-6 w-6 text-primary" />
-                <span className="font-headline text-xl font-bold">PhotoFolio Flow</span>
+                <span className="font-headline text-xl font-bold">FotoFácil</span>
             </Link>
         </div>
       <Card className="w-full max-w-md shadow-xl">

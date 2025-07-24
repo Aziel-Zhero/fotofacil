@@ -21,7 +21,7 @@ const AutoImageTaggingInputSchema = z.object({
 export type AutoImageTaggingInput = z.infer<typeof AutoImageTaggingInputSchema>;
 
 const AutoImageTaggingOutputSchema = z.object({
-  tags: z.array(z.string()).describe('A list of tags describing the image.'),
+  tags: z.array(z.string()).describe('Uma lista de tags descrevendo a imagem.'),
 });
 export type AutoImageTaggingOutput = z.infer<typeof AutoImageTaggingOutputSchema>;
 
@@ -33,7 +33,7 @@ const prompt = ai.definePrompt({
   name: 'autoImageTaggingPrompt',
   input: {schema: AutoImageTaggingInputSchema},
   output: {schema: AutoImageTaggingOutputSchema},
-  prompt: `You are an expert image tagger.  Given the following image, generate a list of comma-separated tags that describe the image.  Focus on concrete nouns; do not include abstract concepts like "beauty".
+  prompt: `Você é um especialista em marcação de imagens. Dada a imagem a seguir, gere uma lista de tags separadas por vírgulas que descrevam a imagem. Concentre-se em substantivos concretos; não inclua conceitos abstratos como "beleza".
 
 Image: {{media url=photoDataUri}}
 

@@ -17,11 +17,11 @@ import {
 import { CardContent, CardFooter } from '@/components/ui/card';
 
 const formSchema = z.object({
-  fullName: z.string().min(1, 'Full name is required'),
-  whatsapp: z.string().min(1, 'WhatsApp number is required'),
-  email: z.string().email('Invalid email address'),
-  username: z.string().min(3, 'Username must be at least 3 characters'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
+  fullName: z.string().min(1, 'Nome completo é obrigatório'),
+  whatsapp: z.string().min(1, 'Número do WhatsApp é obrigatório'),
+  email: z.string().email('Endereço de email inválido'),
+  username: z.string().min(3, 'O nome de usuário deve ter pelo menos 3 caracteres'),
+  password: z.string().min(8, 'A senha deve ter pelo menos 8 caracteres'),
 });
 
 export function ClientRegisterForm() {
@@ -38,7 +38,7 @@ export function ClientRegisterForm() {
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     console.log(values);
-    // Handle client registration logic
+    // Lógica de registro do cliente
   }
 
   return (
@@ -46,25 +46,25 @@ export function ClientRegisterForm() {
       <form onSubmit={form.handleSubmit(onSubmit)}>
         <CardContent className="space-y-4">
           <FormField name="fullName" control={form.control} render={({ field }) => (
-            <FormItem><FormLabel>Full Name</FormLabel><FormControl><Input placeholder="Jane Doe" {...field} /></FormControl><FormMessage /></FormItem>
+            <FormItem><FormLabel>Nome Completo</FormLabel><FormControl><Input placeholder="Maria da Silva" {...field} /></FormControl><FormMessage /></FormItem>
           )} />
           <FormField name="whatsapp" control={form.control} render={({ field }) => (
-            <FormItem><FormLabel>WhatsApp</FormLabel><FormControl><Input placeholder="+1 (555) 123-4567" {...field} /></FormControl><FormMessage /></FormItem>
+            <FormItem><FormLabel>WhatsApp</FormLabel><FormControl><Input placeholder="(XX) 9XXXX-XXXX" {...field} /></FormControl><FormMessage /></FormItem>
           )} />
           <FormField name="email" control={form.control} render={({ field }) => (
-            <FormItem><FormLabel>Email</FormLabel><FormControl><Input placeholder="jane.doe@example.com" {...field} /></FormControl><FormMessage /></FormItem>
+            <FormItem><FormLabel>Email</FormLabel><FormControl><Input placeholder="maria.silva@example.com" {...field} /></FormControl><FormMessage /></FormItem>
           )} />
           <FormField name="username" control={form.control} render={({ field }) => (
-            <FormItem><FormLabel>Username</FormLabel><FormControl><Input placeholder="jane_doe" {...field} /></FormControl><FormMessage /></FormItem>
+            <FormItem><FormLabel>Nome de Usuário</FormLabel><FormControl><Input placeholder="maria_silva" {...field} /></FormControl><FormMessage /></FormItem>
           )} />
           <FormField name="password" control={form.control} render={({ field }) => (
-            <FormItem><FormLabel>Password</FormLabel><FormControl><Input type="password" placeholder="••••••••" {...field} /></FormControl><FormMessage /></FormItem>
+            <FormItem><FormLabel>Senha</FormLabel><FormControl><Input type="password" placeholder="••••••••" {...field} /></FormControl><FormMessage /></FormItem>
           )} />
         </CardContent>
         <CardFooter className="flex-col gap-4">
-          <Button type="submit" className="w-full">Create Account</Button>
+          <Button type="submit" className="w-full">Criar Conta</Button>
           <div className="text-sm text-muted-foreground">
-            Already have an account? <Link href="/login" className="underline">Login</Link>
+            Já tem uma conta? <Link href="/login" className="underline">Login</Link>
           </div>
         </CardFooter>
       </form>

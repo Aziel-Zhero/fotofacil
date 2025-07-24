@@ -13,14 +13,14 @@ import { Button } from '@/components/ui/button';
 import { ProfileForm } from './profile-form';
 
 export function ProfileCompletionDialog() {
-  // In a real app, this would be controlled by user state (e.g., from a context or store)
+  // Em um app real, isso seria controlado pelo estado do usuário (ex: de um contexto ou store)
   const [isOpen, setIsOpen] = useState(false);
 
-  // This is a mock trigger to show the dialog for demonstration purposes
-  // In a real app, you would remove this and control `isOpen` from a higher-level component
-  // e.g., useEffect on the dashboard page checking if profile is complete.
+  // Este é um gatilho de mock para mostrar o diálogo para fins de demonstração
+  // Em um app real, você removeria isso e controlaria `isOpen` de um componente de nível superior
+  // ex: useEffect na página do painel verificando se o perfil está completo.
   useState(() => {
-    // Simulating the dialog appearing for a new user
+    // Simulando o diálogo aparecendo para um novo usuário
     setTimeout(() => setIsOpen(true), 1500);
   }, []);
 
@@ -28,9 +28,9 @@ export function ProfileCompletionDialog() {
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="font-headline text-2xl">Complete Your Profile</DialogTitle>
+          <DialogTitle className="font-headline text-2xl">Complete Seu Perfil</DialogTitle>
           <DialogDescription>
-            Welcome! Before you get started, please add a few more details to your profile. This will help with features like payments for extra photos.
+            Bem-vindo(a)! Antes de começar, por favor, adicione mais alguns detalhes ao seu perfil. Isso ajudará com recursos como pagamentos por fotos extras.
           </DialogDescription>
         </DialogHeader>
         <div className="py-4">

@@ -4,8 +4,8 @@ import { PhotographerRegisterForm } from '@/components/auth/photographer-registe
 export default function PhotographerRegisterPage() {
   return (
     <AuthLayout
-      title="Create Your Photographer Account"
-      description="Start organizing and sharing your work today."
+      title="Crie Sua Conta de Fotógrafo"
+      description="Comece a organizar e compartilhar seu trabalho hoje."
     >
       <PhotographerRegisterForm />
     </AuthLayout>

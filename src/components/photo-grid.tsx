@@ -5,7 +5,7 @@ import { Card, CardContent } from './ui/card';
 const mockPhotos = Array.from({ length: 12 }, (_, i) => ({
     id: i + 1,
     url: `https://placehold.co/400x400.png`,
-    dataAiHint: 'wedding couple'
+    dataAiHint: 'casal de noivos'
 }));
 
 export function PhotoGrid() {
@@ -14,8 +14,8 @@ export function PhotoGrid() {
       <CardContent className="p-4">
         {mockPhotos.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-64 text-center">
-            <p className="text-muted-foreground">No photos uploaded yet.</p>
-            <p className="text-sm text-muted-foreground">Use the uploader to add photos to this album.</p>
+            <p className="text-muted-foreground">Nenhuma foto enviada ainda.</p>
+            <p className="text-sm text-muted-foreground">Use o uploader para adicionar fotos a este álbum.</p>
           </div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -23,7 +23,7 @@ export function PhotoGrid() {
               <div key={photo.id} className="relative group">
                 <Image
                   src={photo.url}
-                  alt={`Photo ${String(index + 1).padStart(3, '0')}`}
+                  alt={`Foto ${String(index + 1).padStart(3, '0')}`}
                   width={400}
                   height={400}
                   className="rounded-md object-cover aspect-square transition-transform group-hover:scale-105"

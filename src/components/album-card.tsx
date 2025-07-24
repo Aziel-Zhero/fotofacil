@@ -17,11 +17,11 @@ interface AlbumCardProps {
 export function AlbumCard({ album }: AlbumCardProps) {
   const getStatusVariant = (status: string) => {
     switch (status) {
-      case 'Awaiting Selection':
+      case 'Aguardando Seleção':
         return 'default';
-      case 'Selection Complete':
+      case 'Seleção Completa':
         return 'secondary';
-      case 'Expired':
+      case 'Expirado':
         return 'destructive';
       default:
         return 'outline';
@@ -43,12 +43,12 @@ export function AlbumCard({ album }: AlbumCardProps) {
         </div>
         <div className="flex items-center text-sm text-muted-foreground">
           <Camera className="mr-2 h-4 w-4" />
-          <span>{album.photoCount} photos</span>
+          <span>{album.photoCount} fotos</span>
         </div>
       </CardContent>
       <CardFooter>
         <Button asChild className="w-full">
-          <Link href={`/dashboard/album/${album.id}`}>Manage Album</Link>
+          <Link href={`/dashboard/album/${album.id}`}>Gerenciar Álbum</Link>
         </Button>
       </CardFooter>
     </Card>

@@ -26,10 +26,10 @@ import {
 import { Eye, EyeOff, Sparkles } from 'lucide-react';
 
 const formSchema = z.object({
-  name: z.string().min(1, "Album name is required."),
-  expirationDate: z.string().min(1, "Expiration date is required."),
+  name: z.string().min(1, "O nome do álbum é obrigatório."),
+  expirationDate: z.string().min(1, "A data de expiração é obrigatória."),
   password: z.string().optional(),
-  maxPhotos: z.coerce.number().min(1, "Please set a maximum number of photos."),
+  maxPhotos: z.coerce.number().min(1, "Por favor, defina um número máximo de fotos."),
   extraPhotoCost: z.coerce.number().optional(),
   pixKey: z.string().optional(),
 });
@@ -69,45 +69,45 @@ export function CreateAlbumDialog({ children }: { children: React.ReactNode }) {
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle className="font-headline">Create New Album</DialogTitle>
+          <DialogTitle className="font-headline">Criar Novo Álbum</DialogTitle>
           <DialogDescription>
-            Fill in the details below to create a new album for your client.
+            Preencha os detalhes abaixo para criar um novo álbum para seu cliente.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
                 <FormField name="name" control={form.control} render={({ field }) => (
-                    <FormItem><FormLabel>Album Name</FormLabel><FormControl><Input placeholder="e.g., Wedding in Tuscany" {...field} /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel>Nome do Álbum</FormLabel><FormControl><Input placeholder="ex: Casamento na Toscana" {...field} /></FormControl><FormMessage /></FormItem>
                 )} />
                 <FormField name="expirationDate" control={form.control} render={({ field }) => (
-                    <FormItem><FormLabel>Expiration Date</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel>Data de Expiração</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem>
                 )} />
                 <FormField name="password" control={form.control} render={({ field }) => (
-                    <FormItem><FormLabel>Access Password (Optional)</FormLabel><FormControl><Input type="password" placeholder="Leave blank for no password" {...field} /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel>Senha de Acesso (Opcional)</FormLabel><FormControl><Input type="password" placeholder="Deixe em branco para sem senha" {...field} /></FormControl><FormMessage /></FormItem>
                 )} />
                 <FormField name="maxPhotos" control={form.control} render={({ field }) => (
-                    <FormItem><FormLabel>Max Photo Selections</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel>Máx. de Seleções de Fotos</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>
                 )} />
                 <FormField name="extraPhotoCost" control={form.control} render={({ field }) => (
-                    <FormItem><FormLabel>Cost per 10 Extra Photos (R$)</FormLabel><FormControl><Input type="number" placeholder="e.g., 25" {...field} /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel>Custo por 10 Fotos Extras (R$)</FormLabel><FormControl><Input type="number" placeholder="ex: 25" {...field} /></FormControl><FormMessage /></FormItem>
                 )} />
                 <FormField name="pixKey" control={form.control} render={({ field }) => (
                     <FormItem>
-                        <FormLabel>PIX Key for Extras</FormLabel>
+                        <FormLabel>Chave PIX para Extras</FormLabel>
                         <div className="flex gap-2">
                              <FormControl>
-                                <Input placeholder="Your PIX key" {...field} />
+                                <Input placeholder="Sua chave PIX" {...field} />
                              </FormControl>
                              <Button type="button" variant="outline" size="icon" onClick={handleGeneratePixKey}>
                                 <Sparkles className="h-4 w-4"/>
-                                <span className="sr-only">Generate PIX Key</span>
+                                <span className="sr-only">Gerar Chave PIX</span>
                              </Button>
                         </div>
                         <FormMessage />
                     </FormItem>
                 )} />
                 <DialogFooter>
-                    <Button type="submit">Create Album</Button>
+                    <Button type="submit">Criar Álbum</Button>
                 </DialogFooter>
             </form>
         </Form>

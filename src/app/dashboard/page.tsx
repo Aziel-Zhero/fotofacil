@@ -5,10 +5,10 @@ import { PlusCircle } from 'lucide-react';
 import { ProfileCompletionDialog } from '@/components/profile-completion-dialog';
 
 const mockAlbums = [
-  { id: '1', name: 'Wedding in Tuscany', photoCount: 125, status: 'Awaiting Selection', client: 'The Smiths' },
-  { id: '2', name: 'Corporate Headshots Q2', photoCount: 50, status: 'Selection Complete', client: 'Innovate Corp' },
-  { id: '3', name: 'Newborn Session - Baby Leo', photoCount: 80, status: 'Expired', client: 'Jane Doe' },
-  { id: '4', name: 'Autumn Family Photos', photoCount: 200, status: 'Awaiting Selection', client: 'The Williams Family' },
+  { id: '1', name: 'Casamento na Toscana', photoCount: 125, status: 'Aguardando Seleção', client: 'Os Silva' },
+  { id: '2', name: 'Retratos Corporativos Q2', photoCount: 50, status: 'Seleção Completa', client: 'Innovate Corp' },
+  { id: '3', name: 'Sessão Newborn - Baby Leo', photoCount: 80, status: 'Expirado', client: 'Maria da Silva' },
+  { id: '4', name: 'Fotos de Família no Outono', photoCount: 200, status: 'Aguardando Seleção', client: 'A Família Williams' },
 ];
 
 
@@ -17,13 +17,13 @@ export default function DashboardPage() {
     <div className="container mx-auto py-8">
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-3xl font-bold font-headline">Your Albums</h1>
-          <p className="text-muted-foreground">Manage your projects and client selections.</p>
+          <h1 className="text-3xl font-bold font-headline">Seus Álbuns</h1>
+          <p className="text-muted-foreground">Gerencie seus projetos e seleções de clientes.</p>
         </div>
         <CreateAlbumDialog>
           <Button>
             <PlusCircle className="mr-2 h-4 w-4" />
-            Create Album
+            Criar Álbum
           </Button>
         </CreateAlbumDialog>
       </div>
@@ -34,7 +34,7 @@ export default function DashboardPage() {
         ))}
       </div>
       
-      {/* This dialog will be triggered based on user state in a real app */}
+      {/* Este diálogo será acionado com base no estado do usuário em um aplicativo real */}
       <ProfileCompletionDialog />
     </div>
   );

@@ -39,7 +39,7 @@ export function PhotoUploader() {
     setIsUploading(true);
     setProgress(0);
 
-    // Simulate upload progress
+    // Simula o progresso do upload
     const interval = setInterval(() => {
       setProgress((prev) => {
         if (prev >= 90) return 90;
@@ -57,19 +57,19 @@ export function PhotoUploader() {
         const generatedTags = await generateTagsForImage({ photoDataUri });
         setTags(generatedTags);
         toast({
-            title: "AI Tagging Complete!",
-            description: "Your photo has been successfully tagged.",
+            title: "Marcação com IA Concluída!",
+            description: "Sua foto foi marcada com sucesso.",
         });
       } catch (error) {
         toast({
-            title: "Tagging Failed",
-            description: "Could not generate tags for the image.",
+            title: "Falha na Marcação",
+            description: "Não foi possível gerar tags para a imagem.",
             variant: "destructive",
         });
       } finally {
         setIsTagging(false);
       }
-    }, 2000); // Simulate 2 seconds upload
+    }, 2000); // Simula 2 segundos de upload
   };
 
   const handleRemoveFile = () => {
@@ -93,13 +93,13 @@ export function PhotoUploader() {
             <div className="text-center">
               <UploadCloud className="mx-auto h-12 w-12 text-muted-foreground" />
               <p className="mt-2 text-sm text-muted-foreground">
-                <span className="font-semibold text-primary">Click to upload</span> or drag and drop
+                <span className="font-semibold text-primary">Clique para enviar</span> ou arraste e solte
               </p>
-              <p className="text-xs text-muted-foreground">PNG, JPG, or WEBP</p>
+              <p className="text-xs text-muted-foreground">PNG, JPG, ou WEBP</p>
             </div>
           )}
           {preview && (
-             <Image src={preview} alt="Image preview" width={150} height={150} className="object-contain max-h-full rounded-md" />
+             <Image src={preview} alt="Pré-visualização da imagem" width={150} height={150} className="object-contain max-h-full rounded-md" />
           )}
           <Input
             ref={fileInputRef}
@@ -127,13 +127,13 @@ export function PhotoUploader() {
             {isTagging && (
                 <div className="flex items-center justify-center gap-2 mt-2 text-sm text-muted-foreground">
                     <Loader2 className="h-4 w-4 animate-spin"/>
-                    <span>Generating AI tags...</span>
+                    <span>Gerando tags com IA...</span>
                 </div>
             )}
             
             {tags.length > 0 && (
                 <div className="mt-4">
-                    <h4 className="font-semibold text-sm mb-2">AI Generated Tags:</h4>
+                    <h4 className="font-semibold text-sm mb-2">Tags Geradas por IA:</h4>
                     <div className="flex flex-wrap gap-2">
                         {tags.map((tag, index) => (
                             <Badge key={index} variant="secondary">{tag}</Badge>

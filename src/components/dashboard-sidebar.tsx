@@ -1,15 +1,15 @@
 "use client"
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Camera, User, Settings, LogOut, Aperture } from 'lucide-react';
+import { Home, User, Settings, LogOut, Aperture } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  { href: '/dashboard', label: 'Dashboard', icon: Home },
-  { href: '/dashboard/profile', label: 'Profile', icon: User },
-  { href: '/dashboard/settings', label: 'Settings', icon: Settings },
+  { href: '/dashboard', label: 'Painel', icon: Home },
+  { href: '/dashboard/profile', label: 'Perfil', icon: User },
+  { href: '/dashboard/settings', label: 'Configurações', icon: Settings },
 ];
 
 export function DashboardSidebar() {
@@ -20,14 +20,14 @@ export function DashboardSidebar() {
       <div className="p-6 border-b">
         <Link href="/dashboard" className="flex items-center gap-2">
             <Aperture className="h-8 w-8 text-primary" />
-            <span className="font-headline text-xl font-bold">PhotoFolio</span>
+            <span className="font-headline text-xl font-bold">FotoFácil</span>
         </Link>
       </div>
 
       <div className="p-4 flex flex-col items-center border-b">
         <Avatar className="h-20 w-20 mb-2">
-            <AvatarImage src="https://placehold.co/100x100.png" alt="Photographer" />
-            <AvatarFallback>PH</AvatarFallback>
+            <AvatarImage src="https://placehold.co/100x100.png" alt="Fotógrafo" />
+            <AvatarFallback>JS</AvatarFallback>
         </Avatar>
         <h3 className="font-semibold font-headline">John Smith</h3>
         <p className="text-sm text-muted-foreground">ID: AZ00000001</p>
@@ -52,7 +52,7 @@ export function DashboardSidebar() {
       <div className="p-4 border-t">
         <Button variant="ghost" className="w-full justify-start">
             <LogOut className="mr-2 h-4 w-4" />
-            Logout
+            Sair
         </Button>
       </div>
     </aside>

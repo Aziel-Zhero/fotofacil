@@ -4,8 +4,8 @@ import RoleSelector from '@/components/auth/role-selector';
 export default function RegisterPage() {
   return (
     <AuthLayout
-      title="Join PhotoFolio Flow"
-      description="First, tell us who you are. This will help us tailor your experience."
+      title="Junte-se ao FotoFácil"
+      description="Primeiro, diga-nos quem você é. Isso nos ajudará a personalizar sua experiência."
     >
       <RoleSelector />
     </AuthLayout>

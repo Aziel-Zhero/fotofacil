@@ -6,9 +6,9 @@ export default function ProfilePage() {
     <div className="container mx-auto py-8 max-w-2xl">
       <Card>
         <CardHeader>
-          <CardTitle className="font-headline text-2xl">Complete Your Profile</CardTitle>
+          <CardTitle className="font-headline text-2xl">Complete seu Perfil</CardTitle>
           <CardDescription>
-            This information helps streamline your workflow, especially for payments on extra photo selections.
+            Essas informações ajudam a otimizar seu fluxo de trabalho, especialmente para pagamentos de seleções de fotos extras.
           </CardDescription>
         </CardHeader>
         <CardContent>

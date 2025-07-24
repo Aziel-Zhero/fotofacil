@@ -18,8 +18,8 @@ import {
 import { CardContent, CardFooter } from '@/components/ui/card';
 
 const formSchema = z.object({
-  username: z.string().min(1, { message: 'Username is required.' }),
-  password: z.string().min(1, { message: 'Password is required.' }),
+  username: z.string().min(1, { message: 'Nome de usuário é obrigatório.' }),
+  password: z.string().min(1, { message: 'Senha é obrigatória.' }),
 });
 
 export function LoginForm() {
@@ -33,7 +33,7 @@ export function LoginForm() {
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     console.log(values);
-    // Handle login logic here
+    // Lógica de login aqui
   }
 
   return (
@@ -45,9 +45,9 @@ export function LoginForm() {
             name="username"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Username</FormLabel>
+                <FormLabel>Nome de Usuário</FormLabel>
                 <FormControl>
-                  <Input placeholder="your_username" {...field} />
+                  <Input placeholder="seu_usuario" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -58,7 +58,7 @@ export function LoginForm() {
             name="password"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Password</FormLabel>
+                <FormLabel>Senha</FormLabel>
                 <FormControl>
                   <Input type="password" placeholder="••••••••" {...field} />
                 </FormControl>
@@ -73,7 +73,7 @@ export function LoginForm() {
           </Button>
           <div className="text-sm text-muted-foreground">
             <Link href="#" className="underline">
-              Forgot your password?
+              Esqueceu sua senha?
             </Link>
           </div>
         </CardFooter>

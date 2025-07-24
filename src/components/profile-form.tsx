@@ -18,9 +18,9 @@ import { Eye, EyeOff, Sparkles } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const profileSchema = z.object({
-    name: z.string().min(1, 'Name is required.'),
-    age: z.coerce.number().min(18, 'You must be at least 18.').optional(),
-    pixKey: z.string().min(1, 'A PIX key is required for payments.'),
+    name: z.string().min(1, 'Nome é obrigatório.'),
+    age: z.coerce.number().min(18, 'Você deve ter pelo menos 18 anos.').optional(),
+    pixKey: z.string().min(1, 'Uma chave PIX é necessária para pagamentos.'),
 });
 
 function generateRandomKey() {
@@ -32,7 +32,7 @@ export function ProfileForm({ onSave }: { onSave?: () => void }) {
     const [showPixKey, setShowPixKey] = useState(false);
     const form = useForm<z.infer<typeof profileSchema>>({
         resolver: zodResolver(profileSchema),
-        // Mock data, in a real app this would come from user data
+        // Dados de mock, em um app real viria dos dados do usuário
         defaultValues: {
             name: "John Smith",
             age: 32,
@@ -47,8 +47,8 @@ export function ProfileForm({ onSave }: { onSave?: () => void }) {
     function onSubmit(values: z.infer<typeof profileSchema>) {
         console.log(values);
         toast({
-            title: "Profile Updated",
-            description: "Your information has been saved successfully.",
+            title: "Perfil Atualizado",
+            description: "Suas informações foram salvas com sucesso.",
         });
         onSave?.();
       }
@@ -57,31 +57,31 @@ export function ProfileForm({ onSave }: { onSave?: () => void }) {
     <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <FormField name="name" control={form.control} render={({ field }) => (
-                <FormItem><FormLabel>Full Name</FormLabel><FormControl><Input placeholder="Your full name" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>Nome Completo</FormLabel><FormControl><Input placeholder="Seu nome completo" {...field} /></FormControl><FormMessage /></FormItem>
             )} />
             <FormField name="age" control={form.control} render={({ field }) => (
-                <FormItem><FormLabel>Age</FormLabel><FormControl><Input type="number" placeholder="e.g., 30" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>Idade</FormLabel><FormControl><Input type="number" placeholder="ex: 30" {...field} /></FormControl><FormMessage /></FormItem>
             )} />
             <FormField name="pixKey" control={form.control} render={({ field }) => (
                 <FormItem>
                     <FormLabel>Chave PIX (Aleatória)</FormLabel>
                     <div className="flex gap-2">
                          <FormControl>
-                            <Input type={showPixKey ? 'text' : 'password'} placeholder="Generate or enter a random key" {...field} />
+                            <Input type={showPixKey ? 'text' : 'password'} placeholder="Gere ou insira uma chave aleatória" {...field} />
                          </FormControl>
                          <Button type="button" variant="outline" size="icon" onClick={() => setShowPixKey(!showPixKey)}>
                             {showPixKey ? <EyeOff className="h-4 w-4"/> : <Eye className="h-4 w-4"/>}
-                            <span className="sr-only">{showPixKey ? 'Hide' : 'Show'} PIX Key</span>
+                            <span className="sr-only">{showPixKey ? 'Ocultar' : 'Mostrar'} Chave PIX</span>
                          </Button>
                          <Button type="button" variant="outline" size="icon" onClick={handleGeneratePixKey}>
                             <Sparkles className="h-4 w-4"/>
-                            <span className="sr-only">Generate Random PIX Key</span>
+                            <span className="sr-only">Gerar Chave PIX Aleatória</span>
                          </Button>
                     </div>
                     <FormMessage />
                 </FormItem>
             )} />
-            <Button type="submit" className="w-full">Save Changes</Button>
+            <Button type="submit" className="w-full">Salvar Alterações</Button>
         </form>
     </Form>
   );
