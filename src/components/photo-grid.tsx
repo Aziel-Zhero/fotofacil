@@ -21,11 +21,11 @@ export function PhotoGrid({ photos, viewMode }: PhotoGridProps) {
             <p className="text-sm text-muted-foreground">Use o uploader para adicionar fotos a este álbum.</p>
           </div>
         ) : (
-          <TooltipProvider delayDuration={500}>
+          <TooltipProvider delayDuration={200}>
              <div className={cn(
                 "gap-4",
-                viewMode === 'grid' && "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4",
-                viewMode === 'masonry' && "columns-2 md:columns-3 lg:columns-4"
+                viewMode === 'grid' && "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5",
+                viewMode === 'masonry' && "columns-2 md:columns-3 lg:columns-4 xl:columns-5"
              )}>
                 {photos.map((photo, index) => (
                     <Tooltip key={photo.id}>
@@ -38,7 +38,8 @@ export function PhotoGrid({ photos, viewMode }: PhotoGridProps) {
                                 height={viewMode === 'grid' ? 400 : 600}
                                 className={cn(
                                     "rounded-md object-cover w-full",
-                                    viewMode === 'grid' && "aspect-square transition-transform group-hover:scale-105"
+                                    viewMode === 'grid' && "aspect-square",
+                                    "transition-transform group-hover:scale-105"
                                 )}
                                 data-ai-hint={photo.dataAiHint}
                                 />
@@ -47,7 +48,7 @@ export function PhotoGrid({ photos, viewMode }: PhotoGridProps) {
                                 </Badge>
                             </div>
                         </TooltipTrigger>
-                        <TooltipContent className="p-0 border-0">
+                        <TooltipContent className="p-0 border-0 bg-transparent shadow-xl">
                              <Image
                                 src={photo.url}
                                 alt={`Pré-visualização ${photo.id}`}
