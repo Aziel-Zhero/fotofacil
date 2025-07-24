@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState } from 'react';
@@ -23,7 +24,7 @@ import {
     FormLabel,
     FormMessage,
   } from '@/components/ui/form';
-import { Sparkles, Copy, RefreshCw } from 'lucide-react';
+import { Copy, RefreshCw } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const formSchema = z.object({
@@ -32,7 +33,8 @@ const formSchema = z.object({
   expirationDate: z.string().optional(),
   password: z.string().optional(),
   maxPhotos: z.coerce.number().min(1, "Por favor, defina um número máximo de fotos."),
-  pixKey: z.string().optional(),
+  extraPhotoCost: z.coerce.number().min(0, "O valor deve ser zero ou maior.").optional(),
+  giftPhotos: z.coerce.number().min(0, "O valor deve ser zero ou maior.").optional(),
 });
 
 function generateSecurePassword() {
@@ -50,7 +52,8 @@ export function CreateAlbumDialog({ children }: { children: React.ReactNode }) {
             expirationDate: "",
             password: "",
             maxPhotos: 50,
-            pixKey: "",
+            extraPhotoCost: 0,
+            giftPhotos: 0,
         },
       });
 
@@ -121,14 +124,11 @@ export function CreateAlbumDialog({ children }: { children: React.ReactNode }) {
                 <FormField name="maxPhotos" control={form.control} render={({ field }) => (
                     <FormItem><FormLabel>Máx. de Seleções de Fotos</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>
                 )} />
-                <FormField name="pixKey" control={form.control} render={({ field }) => (
-                    <FormItem>
-                        <FormLabel>Sua Chave PIX (Opcional)</FormLabel>
-                        <FormControl>
-                           <Input placeholder="Chave para pagamentos de fotos extras" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                    </FormItem>
+                 <FormField name="extraPhotoCost" control={form.control} render={({ field }) => (
+                    <FormItem><FormLabel>Preço por Foto Extra (R$)</FormLabel><FormControl><Input type="number" placeholder="ex: 8.50" {...field} /></FormControl><FormMessage /></FormItem>
+                )} />
+                <FormField name="giftPhotos" control={form.control} render={({ field }) => (
+                    <FormItem><FormLabel>Fotos de Cortesia (Surpresa)</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>
                 )} />
                 <DialogFooter>
                     <Button type="submit">Criar Álbum</Button>
@@ -139,3 +139,4 @@ export function CreateAlbumDialog({ children }: { children: React.ReactNode }) {
     </Dialog>
   );
 }
+
