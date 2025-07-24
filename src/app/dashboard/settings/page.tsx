@@ -6,7 +6,7 @@ export default function SettingsPage() {
     <div className="container mx-auto py-8 max-w-3xl">
         <div className="mb-8">
             <h1 className="text-3xl font-bold font-headline">Configurações</h1>
-            <p className="text-muted-foreground">Gerencie suas preferências e configurações da conta.</p>
+            <p className="text-muted-foreground">Gerencie a aparência do sistema e seus links sociais.</p>
         </div>
         <SettingsForm />
     </div>

@@ -2,7 +2,7 @@
 "use client"
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, User, Settings, LogOut, Aperture, Crown } from 'lucide-react';
+import { Home, User, Settings, LogOut, Aperture, Crown, HelpCircle, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -13,11 +13,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { cn } from "@/lib/utils";
 
 const navItems = [
   { href: '/dashboard', label: 'Painel', icon: Home },
   { href: '/dashboard/profile', label: 'Perfil', icon: User },
   { href: '/dashboard/settings', label: 'Configurações', icon: Settings },
+  { href: '/dashboard/subscription', label: 'Assinatura', icon: Star },
+  { href: '/dashboard/help', label: 'Ajuda', icon: HelpCircle },
 ];
 
 export function DashboardHeader() {
@@ -32,7 +35,7 @@ export function DashboardHeader() {
                     <Aperture className="h-8 w-8 text-primary" />
                     <span className="font-headline text-xl font-bold">FotoFácil</span>
                 </Link>
-                <nav className="hidden md:flex items-center gap-4">
+                <nav className="hidden md:flex items-center gap-1">
                     {navItems.map((item) => (
                     <Button
                         key={item.href}
@@ -66,30 +69,22 @@ export function DashboardHeader() {
                                 {isSubscriber && <Crown className="h-4 w-4 text-yellow-500" />}
                             </div>
                             <p className="text-xs leading-none text-muted-foreground">
-                                ID: AZ00000001
+                                Fotografia John Smith
                             </p>
                         </div>
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                     <DropdownMenuItem asChild>
-                         <Link href="/dashboard">
-                            <Home className="mr-2 h-4 w-4" />
-                            <span>Painel</span>
-                         </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                         <Link href="/dashboard/profile">
-                            <User className="mr-2 h-4 w-4" />
-                            <span>Perfil</span>
-                         </Link>
-                    </DropdownMenuItem>
-                     <DropdownMenuItem asChild>
-                         <Link href="/dashboard/settings">
-                            <Settings className="mr-2 h-4 w-4" />
-                            <span>Configurações</span>
-                         </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
+                    <div className="md:hidden">
+                        {navItems.map(item => (
+                             <DropdownMenuItem key={item.href} asChild>
+                                 <Link href={item.href}>
+                                    <item.icon className="mr-2 h-4 w-4" />
+                                    <span>{item.label}</span>
+                                 </Link>
+                            </DropdownMenuItem>
+                        ))}
+                        <DropdownMenuSeparator />
+                    </div>
                     <DropdownMenuItem>
                         <LogOut className="mr-2 h-4 w-4" />
                         <span>Sair</span>

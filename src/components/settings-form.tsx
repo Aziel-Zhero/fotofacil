@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -17,8 +17,7 @@ import {
     FormDescription,
 } from '@/components/ui/form';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Instagram, Smartphone, Crown } from 'lucide-react';
+import { Instagram, Smartphone } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const settingsSchema = z.object({
@@ -38,11 +37,11 @@ export function SettingsForm() {
         },
     });
     
-    // Manage dark mode toggling
+    const darkMode = form.watch('darkMode');
+
     useEffect(() => {
-        const isDarkMode = form.watch('darkMode');
-        document.documentElement.classList.toggle('dark', isDarkMode);
-    }, [form.watch('darkMode')]);
+        document.documentElement.classList.toggle('dark', darkMode);
+    }, [darkMode]);
 
     function onSubmit(values: z.infer<typeof settingsSchema>) {
         console.log(values);
@@ -120,53 +119,6 @@ export function SettingsForm() {
                                 </FormItem>
                             )}
                         />
-                    </CardContent>
-                </Card>
-
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="font-headline">Assinatura</CardTitle>
-                         <CardDescription>Gerencie seu plano e veja os benefícios.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="flex items-center justify-between rounded-lg border border-yellow-500 bg-yellow-50 p-4 dark:bg-yellow-900/20">
-                            <div>
-                                <h3 className="font-bold flex items-center gap-2"><Crown className="text-yellow-500"/>Plano Pro</h3>
-                                <p className="text-sm text-muted-foreground">Você tem acesso a todos os recursos.</p>
-                            </div>
-                            <Button>Gerenciar</Button>
-                        </div>
-                         <p className="text-xs text-muted-foreground">A assinatura é gerenciada em uma plataforma de pagamentos segura.</p>
-                    </CardContent>
-                </Card>
-
-
-                <Card>
-                     <CardHeader>
-                        <CardTitle className="font-headline">Ajuda e Informações</CardTitle>
-                         <CardDescription>Tire suas dúvidas sobre o sistema.</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <Accordion type="single" collapsible className="w-full">
-                            <AccordionItem value="item-1">
-                                <AccordionTrigger>Como funciona a seleção de fotos pelo cliente?</AccordionTrigger>
-                                <AccordionContent>
-                                    Seu cliente recebe um link exclusivo para o álbum. Ele pode marcar as fotos favoritas. Quando atingir o limite do pacote, ele será notificado e poderá comprar fotos extras, se você tiver habilitado essa opção.
-                                </AccordionContent>
-                            </AccordionItem>
-                            <AccordionItem value="item-2">
-                                <AccordionTrigger>Como funcionam os pagamentos de fotos extras?</AccordionTrigger>
-                                <AccordionContent>
-                                    Ao configurar um álbum, você define o preço por foto extra. O cliente poderá pagar via PIX por meio de uma chave segura gerada para a transação. O valor é transferido diretamente para você.
-                                </AccordionContent>
-                            </AccordionItem>
-                             <AccordionItem value="item-3">
-                                <AccordionTrigger>O que são as fotos de cortesia?</AccordionTrigger>
-                                <AccordionContent>
-                                    É uma forma de surpreender seu cliente! Você pode adicionar algumas fotos extras como um presente. Elas serão reveladas ao cliente no final da seleção, como um bônus.
-                                </AccordionContent>
-                            </AccordionItem>
-                        </Accordion>
                     </CardContent>
                 </Card>
                 
