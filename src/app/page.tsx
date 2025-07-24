@@ -1,8 +1,11 @@
+
+"use client";
 import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { CheckCircle, Camera, Users, ShieldCheck, FileKey2 } from 'lucide-react';
+import { MasonryGallery } from '@/components/masonry-gallery';
 
 const LandingHeader = () => (
   <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -78,6 +81,15 @@ const plans = [
     }
 ]
 
+const galleryItems = [
+    { id: "1", img: "https://placehold.co/600x900.png", dataAiHint: "wedding photo", height: 400 },
+    { id: "2", img: "https://placehold.co/600x750.png", dataAiHint: "portrait photography", height: 250 },
+    { id: "3", img: "https://placehold.co/600x800.png", dataAiHint: "family picture", height: 600 },
+    { id: "4", img: "https://placehold.co/800x600.png", dataAiHint: "landscape shot", height: 300 },
+    { id: "5", img: "https://placehold.co/700x850.png", dataAiHint: "event photography", height: 500 },
+    { id: "6", img: "https://placehold.co/600x950.png", dataAiHint: "fashion model", height: 450 },
+];
+
 export default function Home() {
   return (
     <div className="flex min-h-screen flex-col">
@@ -95,7 +107,7 @@ export default function Home() {
             </p>
             <div className="flex gap-4">
               <Button size="lg" asChild>
-                <Link href="/dashboard">Comece Gratuitamente</Link>
+                <Link href="/register">Comece Gratuitamente</Link>
               </Button>
               <Button size="lg" variant="outline" asChild>
                 <Link href="#features">Saiba Mais</Link>
@@ -112,6 +124,15 @@ export default function Home() {
              />
           </div>
         </section>
+
+        {/* Masonry Gallery Section */}
+        <section className="py-20 md:py-32 bg-muted/20">
+            <div className="container">
+                 <h2 className="font-headline text-3xl md:text-4xl font-bold text-center mb-12">Galerias que Impressionam</h2>
+                <MasonryGallery items={galleryItems} />
+            </div>
+        </section>
+
 
         {/* Seção de Funcionalidades */}
         <section id="features" className="bg-muted/50 py-20 md:py-32">
