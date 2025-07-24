@@ -93,7 +93,7 @@ const galleryItems = [
 ];
 
 const GlassCard = ({ children, className }: { children: React.ReactNode, className?: string }) => (
-    <Card className={`bg-card/50 backdrop-blur-lg border border-white/10 shadow-2xl ${className}`}>
+    <Card className={`bg-card/50 backdrop-blur-lg border border-white/10 shadow-2xl rounded-xl ${className}`}>
         {children}
     </Card>
 )
