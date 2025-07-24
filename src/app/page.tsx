@@ -1,3 +1,4 @@
+
 "use client";
 import Link from 'next/link';
 import Image from 'next/image';
@@ -99,7 +100,7 @@ const GlassCard = ({ children, className }: { children: React.ReactNode, classNa
 
 export default function Home() {
   return (
-    <div className="flex min-h-screen flex-col bg-background text-foreground">
+    <div className="flex min-h-screen flex-col text-foreground">
       <DarkVeil
         hueShift={210}
         noiseIntensity={0.02}
@@ -161,7 +162,7 @@ export default function Home() {
         <section id="features" className="py-20 md:py-32">
           <div className="container">
             <div className="mx-auto mb-16 max-w-2xl text-center">
-              <h2 className="font-headline text-3xl md:text-4xl font-bold">⚡ Um Fluxo de Trabalho Profissional a um Clique de Distância</h2>
+              <h2 className="font-headline text-3xl md:text-4xl font-bold">Um Fluxo de Trabalho Profissional a um Clique de Distância</h2>
               <p className="mt-4 text-lg text-muted-foreground">
                 Tudo o que você precisa para entregar galerias incríveis e tornar o processo de aprovação de fotos simples, rápido e eficiente.
               </p>
@@ -224,7 +225,7 @@ export default function Home() {
         <section className="container py-20 md:py-32 overflow-hidden">
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div className="flex flex-col gap-4">
-              <span className="font-headline text-primary font-semibold">🤖 POTENCIALIZADO POR INTELIGÊNCIA ARTIFICIAL</span>
+              <span className="font-headline text-primary font-semibold">POTENCIALIZADO POR INTELIGÊNCIA ARTIFICIAL</span>
               <h2 className="font-headline text-3xl md:text-4xl font-bold">Marcação Automática de Imagens</h2>
               <p className="text-lg text-muted-foreground">
                 Economize horas de trabalho com nossa IA que organiza tudo para você. Você foca na fotografia — nós cuidamos da organização:
