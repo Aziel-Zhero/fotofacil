@@ -34,7 +34,7 @@ export function ClientPhotoGrid({ photos, viewMode, selectedPhotos, onToggleSele
             {photos.map((photo) => {
               const isSelected = selectedPhotos.has(photo.id);
               return (
-                <div key={photo.id} className="relative group mb-4 break-inside-avoid" onClick={() => onToggleSelection(photo.id)}>
+                <div key={photo.id} className="relative group mb-4 break-inside-avoid" onClick={() => onViewPhoto(photo)}>
                     <Image
                         src={photo.url}
                         alt={photo.name}
@@ -48,30 +48,22 @@ export function ClientPhotoGrid({ photos, viewMode, selectedPhotos, onToggleSele
                         data-ai-hint={photo.dataAiHint}
                     />
                     <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center rounded-md cursor-pointer">
-                       <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            className="text-white hover:bg-white/20 h-14 w-14 rounded-full"
-                            onClick={(e) => {
-                                e.stopPropagation(); // Evita que o clique no botão selecione a imagem
-                                onViewPhoto(photo);
-                            }}
-                        >
-                           <Eye className="h-7 w-7" />
-                       </Button>
+                       <Eye className="h-10 w-10 text-white" />
                     </div>
-                    {isSelected && (
-                        <div className="absolute top-3 right-3 text-white bg-primary rounded-full h-7 w-7 flex items-center justify-center">
-                            <CheckCircle2 className="h-7 w-7" />
-                        </div>
-                    )}
                      <div 
-                        className={cn(
-                            "absolute top-3 left-3 h-7 w-7 bg-background/80 rounded-full border-2 border-white flex items-center justify-center transition-all",
+                        className="absolute top-3 left-3"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onToggleSelection(photo.id);
+                        }}
+                     >
+                        <div className={cn(
+                            "h-7 w-7 bg-background/80 rounded-full border-2 border-white flex items-center justify-center transition-all cursor-pointer",
+                            "hover:bg-background/100",
                             isSelected && "border-primary bg-primary"
-                        )}
-                    >
-                         <CheckCircle2 className={cn("h-5 w-5 text-white transition-opacity", !isSelected && "opacity-0")} />
+                        )}>
+                            <CheckCircle2 className={cn("h-5 w-5 text-white transition-opacity", !isSelected && "opacity-0")} />
+                        </div>
                     </div>
                 </div>
               );

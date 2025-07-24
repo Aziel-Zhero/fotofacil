@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from 'react';
-import { ArrowLeft, Grid3x3, Rows, Square, Send, Eye, X } from "lucide-react";
+import { ArrowLeft, Grid3x3, Rows, Square, Send } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { PhotoCarousel } from '@/components/photo-carousel';
@@ -19,7 +19,7 @@ export default function ClientAlbumPage({ params }: { params: { albumId: string 
   const photoLimit = 50; // Mock data
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [selectedPhotos, setSelectedPhotos] = useState<Set<number>>(new Set());
-  const [viewingPhoto, setViewingPhoto] = useState<Photo | null>(null);
+  const [viewingPhotoIndex, setViewingPhotoIndex] = useState<number | null>(null);
   const { toast } = useToast();
 
   const [photos, setPhotos] = useState<Photo[]>(
@@ -60,6 +60,29 @@ export default function ClientAlbumPage({ params }: { params: { albumId: string 
     setSelectedPhotos(new Set());
   }
 
+  const handleViewPhoto = (photo: Photo) => {
+    const photoIndex = photos.findIndex(p => p.id === photo.id);
+    if(photoIndex !== -1) {
+        setViewingPhotoIndex(photoIndex);
+    }
+  }
+
+  const handleCloseViewer = () => {
+    setViewingPhotoIndex(null);
+  }
+
+  const handleNextPhoto = () => {
+    if (viewingPhotoIndex !== null) {
+      setViewingPhotoIndex((viewingPhotoIndex + 1) % photos.length);
+    }
+  };
+
+  const handlePrevPhoto = () => {
+    if (viewingPhotoIndex !== null) {
+      setViewingPhotoIndex((viewingPhotoIndex - 1 + photos.length) % photos.length);
+    }
+  };
+
   const renderGallery = () => {
     switch (viewMode) {
       case 'carousel':
@@ -73,7 +96,7 @@ export default function ClientAlbumPage({ params }: { params: { albumId: string 
                     viewMode={viewMode}
                     selectedPhotos={selectedPhotos}
                     onToggleSelection={toggleSelection}
-                    onViewPhoto={setViewingPhoto}
+                    onViewPhoto={handleViewPhoto}
                 />;
     }
   }
@@ -131,10 +154,15 @@ export default function ClientAlbumPage({ params }: { params: { albumId: string 
             </div>
         </footer>
 
-        {viewingPhoto && (
-            <PhotoViewerModal 
-                photo={viewingPhoto} 
-                onClose={() => setViewingPhoto(null)} 
+        {viewingPhotoIndex !== null && (
+            <PhotoViewerModal
+                photos={photos}
+                currentIndex={viewingPhotoIndex}
+                onClose={handleCloseViewer}
+                onNext={handleNextPhoto}
+                onPrev={handlePrevPhoto}
+                selectedPhotos={selectedPhotos}
+                onToggleSelection={toggleSelection}
             />
         )}
     </>
