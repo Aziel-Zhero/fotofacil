@@ -23,37 +23,51 @@ import {
     FormLabel,
     FormMessage,
   } from '@/components/ui/form';
-import { Eye, EyeOff, Sparkles } from 'lucide-react';
+import { Sparkles, Copy, RefreshCw } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 const formSchema = z.object({
   name: z.string().min(1, "O nome do álbum é obrigatório."),
-  expirationDate: z.string().min(1, "A data de expiração é obrigatória."),
+  clientName: z.string().min(1, "O nome do cliente é obrigatório."),
+  expirationDate: z.string().optional(),
   password: z.string().optional(),
   maxPhotos: z.coerce.number().min(1, "Por favor, defina um número máximo de fotos."),
-  extraPhotoCost: z.coerce.number().optional(),
   pixKey: z.string().optional(),
 });
 
-function generateRandomKey() {
-    return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+function generateSecurePassword() {
+    return Math.random().toString(36).substring(2, 12);
 }
 
 export function CreateAlbumDialog({ children }: { children: React.ReactNode }) {
     const [open, setOpen] = useState(false);
+    const { toast } = useToast();
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
             name: "",
+            clientName: "",
             expirationDate: "",
             password: "",
             maxPhotos: 50,
-            extraPhotoCost: 10,
             pixKey: "",
         },
       });
 
-    const handleGeneratePixKey = () => {
-        form.setValue('pixKey', generateRandomKey());
+    const handleGeneratePassword = () => {
+        const newPassword = generateSecurePassword();
+        form.setValue('password', newPassword);
+    }
+    
+    const copyPasswordToClipboard = () => {
+        const password = form.getValues('password');
+        if (password) {
+            navigator.clipboard.writeText(password);
+            toast({
+                title: "Senha Copiada!",
+                description: "A senha de acesso foi copiada para sua área de transferência.",
+            })
+        }
     }
 
     function onSubmit(values: z.infer<typeof formSchema>) {
@@ -79,30 +93,40 @@ export function CreateAlbumDialog({ children }: { children: React.ReactNode }) {
                 <FormField name="name" control={form.control} render={({ field }) => (
                     <FormItem><FormLabel>Nome do Álbum</FormLabel><FormControl><Input placeholder="ex: Casamento na Toscana" {...field} /></FormControl><FormMessage /></FormItem>
                 )} />
+                <FormField name="clientName" control={form.control} render={({ field }) => (
+                    <FormItem><FormLabel>Nome do Cliente/Família</FormLabel><FormControl><Input placeholder="ex: Os Silva" {...field} /></FormControl><FormMessage /></FormItem>
+                )} />
                 <FormField name="expirationDate" control={form.control} render={({ field }) => (
-                    <FormItem><FormLabel>Data de Expiração</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel>Data de Expiração (Opcional)</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem>
                 )} />
                 <FormField name="password" control={form.control} render={({ field }) => (
-                    <FormItem><FormLabel>Senha de Acesso (Opcional)</FormLabel><FormControl><Input type="password" placeholder="Deixe em branco para sem senha" {...field} /></FormControl><FormMessage /></FormItem>
+                    <FormItem>
+                        <FormLabel>Senha de Acesso</FormLabel>
+                        <div className="flex gap-2">
+                             <FormControl>
+                                <Input type="text" placeholder="Gere uma senha" {...field} readOnly className="bg-muted"/>
+                             </FormControl>
+                             <Button type="button" variant="outline" size="icon" onClick={handleGeneratePassword}>
+                                <RefreshCw className="h-4 w-4"/>
+                                <span className="sr-only">Gerar Senha</span>
+                             </Button>
+                             <Button type="button" variant="outline" size="icon" onClick={copyPasswordToClipboard} disabled={!field.value}>
+                                <Copy className="h-4 w-4"/>
+                                <span className="sr-only">Copiar Senha</span>
+                             </Button>
+                        </div>
+                        <FormMessage />
+                    </FormItem>
                 )} />
                 <FormField name="maxPhotos" control={form.control} render={({ field }) => (
                     <FormItem><FormLabel>Máx. de Seleções de Fotos</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>
                 )} />
-                <FormField name="extraPhotoCost" control={form.control} render={({ field }) => (
-                    <FormItem><FormLabel>Custo por 10 Fotos Extras (R$)</FormLabel><FormControl><Input type="number" placeholder="ex: 25" {...field} /></FormControl><FormMessage /></FormItem>
-                )} />
                 <FormField name="pixKey" control={form.control} render={({ field }) => (
                     <FormItem>
-                        <FormLabel>Chave PIX para Extras</FormLabel>
-                        <div className="flex gap-2">
-                             <FormControl>
-                                <Input placeholder="Sua chave PIX" {...field} />
-                             </FormControl>
-                             <Button type="button" variant="outline" size="icon" onClick={handleGeneratePixKey}>
-                                <Sparkles className="h-4 w-4"/>
-                                <span className="sr-only">Gerar Chave PIX</span>
-                             </Button>
-                        </div>
+                        <FormLabel>Sua Chave PIX (Opcional)</FormLabel>
+                        <FormControl>
+                           <Input placeholder="Chave para pagamentos de fotos extras" {...field} />
+                        </FormControl>
                         <FormMessage />
                     </FormItem>
                 )} />
