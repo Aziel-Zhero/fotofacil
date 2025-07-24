@@ -127,9 +127,18 @@ export default function Home() {
 
         {/* Masonry Gallery Section */}
         <section className="py-20 md:py-32 bg-muted/20">
-            <div className="container">
+            <div className="container p-10 border rounded-xl">
                  <h2 className="font-headline text-3xl md:text-4xl font-bold text-center mb-12">Galerias que Impressionam</h2>
-                <MasonryGallery items={galleryItems} />
+                 <MasonryGallery
+                    items={galleryItems}
+                    ease="power4.out"
+                    duration={0.6}
+                    stagger={0.05}
+                    animateFrom="bottom"
+                    scaleOnHover={true}
+                    blurToFocus={true}
+                    colorShiftOnHover={true}
+                />
             </div>
         </section>
 

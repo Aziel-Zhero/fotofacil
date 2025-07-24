@@ -20,20 +20,22 @@ const useMedia = (
     const [value, setValue] = useState(defaultValue);
 
     useEffect(() => {
+        if (typeof window === 'undefined') {
+            setValue(defaultValue);
+            return;
+        }
+        
         const get = () =>
             values[queries.findIndex((q) => matchMedia(q).matches)] ?? defaultValue;
 
         const handler = () => setValue(get);
         
-        // Set the initial value
         handler();
 
-        queries.forEach((q) => matchMedia(q).addEventListener("change", handler));
-        return () =>
-            queries.forEach((q) =>
-                matchMedia(q).removeEventListener("change", handler)
-            );
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+        const mqls = queries.map(q => matchMedia(q));
+        mqls.forEach((mql) => mql.addEventListener("change", handler));
+        
+        return () => mqls.forEach((mql) => mql.removeEventListener("change", handler));
     }, [queries, values, defaultValue]);
 
     return value;
@@ -160,19 +162,19 @@ export const MasonryGallery = ({
     return items.map((child) => {
       const col = colHeights.indexOf(Math.min(...colHeights));
       const x = columnWidth * col;
-      const height = (child.height / (child.height/columnWidth)) * (columnWidth/100);
+      const scaledHeight = (child.height * columnWidth) / 600; // Assuming original width was 600
       const y = colHeights[col];
 
-      colHeights[col] += (child.height / (child.height/columnWidth)) * (columnWidth/100);
+      colHeights[col] += scaledHeight;
 
-      return { ...child, x, y, w: columnWidth, h: child.height };
+      return { ...child, x, y, w: columnWidth, h: scaledHeight };
     });
   }, [columns, items, width]);
 
   const hasMounted = useRef(false);
 
   useLayoutEffect(() => {
-    if (!imagesReady) return;
+    if (!imagesReady || !width) return;
 
     grid.forEach((item, index) => {
       const selector = `[data-key="${item.id}"]`;
@@ -212,9 +214,10 @@ export const MasonryGallery = ({
       }
     });
 
-    hasMounted.current = true;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [grid, imagesReady, stagger, animateFrom, blurToFocus, duration, ease]);
+    if(!hasMounted.current) {
+        hasMounted.current = true;
+    }
+  }, [grid, imagesReady, stagger, animateFrom, blurToFocus, duration, ease, width]);
 
   const handleMouseEnter = (e: React.MouseEvent<HTMLDivElement, MouseEvent>, item: any) => {
     const selector = `[data-key="${item.id}"]`;
@@ -277,6 +280,10 @@ export const MasonryGallery = ({
             onClick={() => handleClick(item)}
             onMouseEnter={(e) => handleMouseEnter(e, item)}
             onMouseLeave={(e) => handleMouseLeave(e, item)}
+            style={{
+              // Set initial invisible state before animation
+              opacity: hasMounted.current ? 1 : 0,
+            }}
           >
             <div
               className="item-img"
