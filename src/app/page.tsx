@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { CheckCircle, Camera, Users, ShieldCheck, FileKey2 } from 'lucide-react';
 
 const LandingHeader = () => (
@@ -32,6 +32,51 @@ const LandingFooter = () => (
     </div>
   </footer>
 );
+
+const plans = [
+    {
+        name: "Fotógrafo Essencial",
+        price: "25,00",
+        period: "/mês",
+        description: "Ideal para começar com o pé direito.",
+        features: [
+            "Até 20 álbuns ativos",
+            "Upload de até 5.000 fotos",
+            "Marcação com IA (1000 fotos/mês)",
+            "Suporte por email"
+        ],
+        isHighlighted: false,
+    },
+    {
+        name: "Fotógrafo Pro",
+        price: "20,00",
+        period: "/mês",
+        billingInfo: "Cobrado R$120,00 a cada 6 meses",
+        description: "O mais popular para profissionais em crescimento.",
+        features: [
+            "Álbuns ilimitados",
+            "Upload de fotos ilimitado",
+            "Marcação com IA ilimitada",
+            "Monetização de fotos extras",
+            "Suporte prioritário via chat"
+        ],
+        isHighlighted: true,
+    },
+    {
+        name: "Estúdio Anual",
+        price: "17,50",
+        period: "/mês",
+        billingInfo: "Cobrado R$210,00 anualmente",
+        description: "A solução completa para estúdios e grandes volumes.",
+        features: [
+            "Todos os benefícios do Plano Pro",
+            "Logo e cores personalizadas",
+            "Relatórios de seleção de clientes",
+            "Múltiplos usuários (em breve)"
+        ],
+        isHighlighted: false,
+    }
+]
 
 export default function Home() {
   return (
@@ -79,38 +124,52 @@ export default function Home() {
             </div>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
               <Card className="transform transition-transform hover:-translate-y-2">
-                <CardHeader className="flex flex-row items-center gap-4">
+                <CardHeader className="flex flex-col items-start gap-4">
                    <div className="bg-primary/10 p-3 rounded-full">
                      <Camera className="h-6 w-6 text-primary" />
                    </div>
                   <CardTitle className="font-headline text-xl">Gerenciamento de Álbuns</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <CardDescription>
-                    Crie álbuns elegantes e personalizados com datas de validade, proteção por senha e limites de seleção definidos por você. Organize tudo com facilidade e controle total.
-                  </CardDescription>
+                <CardContent className="space-y-2">
+                  <p className='text-muted-foreground'>Crie álbuns elegantes e personalizados com:</p>
+                  <ul className="list-disc list-inside text-muted-foreground space-y-1">
+                      <li>Datas de validade</li>
+                      <li>Proteção por senha</li>
+                      <li>Limites de seleção definidos por você</li>
+                  </ul>
+                  <p className='text-muted-foreground mt-2'>Organize tudo com facilidade e controle total.</p>
                 </CardContent>
               </Card>
               <Card className="transform transition-transform hover:-translate-y-2">
-                <CardHeader className="flex flex-row items-center gap-4">
+                <CardHeader className="flex flex-col items-start gap-4">
                   <div className="bg-primary/10 p-3 rounded-full">
                     <Users className="h-6 w-6 text-primary" />
                   </div>
                   <CardTitle className="font-headline text-xl">Acesso Seguro para o Cliente</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <CardDescription>Compartilhe seus álbuns por meio de um ID exclusivo e um código secreto gerado automaticamente para uma visualização protegida e privada, só para quem você autorizar.</CardDescription>
+                <CardContent className="space-y-2">
+                    <p className='text-muted-foreground'>Compartilhe seus álbuns por meio de:</p>
+                     <ul className="list-disc list-inside text-muted-foreground space-y-1">
+                      <li>Um ID exclusivo</li>
+                      <li>Um código secreto gerado automaticamente</li>
+                  </ul>
+                  <p className='text-muted-foreground mt-2'>Visualização protegida e privada, só para quem você autorizar.</p>
                 </CardContent>
               </Card>
               <Card className="transform transition-transform hover:-translate-y-2">
-                <CardHeader className="flex flex-row items-center gap-4">
+                <CardHeader className="flex flex-col items-start gap-4">
                   <div className="bg-primary/10 p-3 rounded-full">
                      <FileKey2 className="h-6 w-6 text-primary" />
                   </div>
                   <CardTitle className="font-headline text-xl">Pagamentos PIX Integrados</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <CardDescription>Facilite a venda de fotos extras com pagamentos rápidos via PIX, usando chaves únicas por transação e um processo simples e direto para o cliente.</CardDescription>
+                <CardContent className='space-y-2'>
+                  <p className='text-muted-foreground'>Facilite a venda de fotos extras com pagamentos rápidos via PIX:</p>
+                   <ul className="list-disc list-inside text-muted-foreground space-y-1">
+                      <li>Valor adicional por fotos extras</li>
+                      <li>Chave PIX única por transação</li>
+                  </ul>
+                  <p className='text-muted-foreground mt-2'>Processo simples e direto para o cliente.</p>
                 </CardContent>
               </Card>
             </div>
@@ -133,7 +192,7 @@ export default function Home() {
               <span className="font-headline text-primary font-semibold">🤖 POTENCIALIZADO POR INTELIGÊNCIA ARTIFICIAL</span>
               <h2 className="font-headline text-3xl md:text-4xl font-bold">Marcação Automática de Imagens</h2>
               <p className="text-lg text-muted-foreground">
-                Economize horas de trabalho com nossa IA que organiza tudo para você. Você foca na fotografia — nós cuidamos da organização.
+                Economize horas de trabalho com nossa IA que organiza tudo para você. Você foca na fotografia — nós cuidamos da organização:
               </p>
               <ul className="grid gap-3">
                   <li className="flex items-center gap-3">
@@ -152,6 +211,61 @@ export default function Home() {
             </div>
           </div>
         </section>
+        
+        {/* Seção de Preços */}
+        <section id="pricing" className="bg-muted/50 py-20 md:py-32">
+            <div className="container max-w-5xl">
+                <div className="mb-12 text-center">
+                    <h2 className="text-4xl font-bold font-headline">Assinatura para Fotógrafos</h2>
+                    <p className="text-muted-foreground mt-2 max-w-2xl mx-auto">
+                        Escolha o plano que melhor se adapta ao seu volume de trabalho e comece a otimizar seu tempo hoje mesmo.
+                    </p>
+                </div>
+                <div className="grid lg:grid-cols-3 gap-8 items-start">
+                    {plans.map(plan => (
+                        <Card key={plan.name} className={`flex flex-col h-full ${plan.isHighlighted ? 'border-primary border-2 shadow-xl' : ''}`}>
+                            <CardHeader>
+                                {plan.isHighlighted && (
+                                    <div className="flex justify-center">
+                                        <div className="bg-primary text-primary-foreground font-bold text-xs py-1 px-3 rounded-full -mt-10 mb-4">
+                                            MAIS POPULAR
+                                        </div>
+                                    </div>
+                                )}
+                                <CardTitle className="font-headline text-2xl text-center">{plan.name}</CardTitle>
+                                <CardDescription className="text-center">{plan.description}</CardDescription>
+                            </CardHeader>
+                            <CardContent className="flex-grow space-y-6">
+                                <div className="text-center">
+                                    <span className="text-4xl font-bold">R$ {plan.price}</span>
+                                    <span className="text-lg font-normal text-muted-foreground">{plan.period}</span>
+                                    {plan.billingInfo && <p className="text-xs text-muted-foreground mt-1">{plan.billingInfo}</p>}
+                                </div>
+                                <ul className="space-y-3 text-sm">
+                                {plan.features.map(feature => (
+                                        <li key={feature} className="flex items-start gap-2">
+                                            <CheckCircle className={`h-5 w-5 mt-0.5 flex-shrink-0 ${plan.isHighlighted ? 'text-primary' : 'text-muted-foreground'}`}/>
+                                            <span>{feature}</span>
+                                        </li>
+                                ))}
+                                </ul>
+                            </CardContent>
+                            <CardFooter>
+                                <Button 
+                                    className="w-full" 
+                                    variant={plan.isHighlighted ? 'default' : 'outline'}
+                                    asChild
+                                >
+                                  <Link href="/register/photographer">Assinar Agora</Link>
+                                </Button>
+                            </CardFooter>
+                        </Card>
+                    ))}
+                </div>
+            </div>
+        </section>
+
+
       </main>
       <LandingFooter />
     </div>
