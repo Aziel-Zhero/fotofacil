@@ -12,11 +12,11 @@ const LandingHeader = () => (
         <span className="font-headline text-xl font-bold text-foreground">FotoFácil</span>
       </Link>
       <nav className="flex items-center gap-4">
-        <Button variant="ghost" asChild>
-          <Link href="/login">Login</Link>
+        <Button variant="outline" asChild>
+          <Link href="/dashboard">Acessar como Fotógrafo</Link>
         </Button>
         <Button asChild>
-          <Link href="/register">Cadastre-se</Link>
+          <Link href="/gallery">Acessar como Cliente</Link>
         </Button>
       </nav>
     </div>
@@ -50,7 +50,7 @@ export default function Home() {
             </p>
             <div className="flex gap-4">
               <Button size="lg" asChild>
-                <Link href="/register">Comece Gratuitamente</Link>
+                <Link href="/dashboard">Comece Gratuitamente</Link>
               </Button>
               <Button size="lg" variant="outline" asChild>
                 <Link href="#features">Saiba Mais</Link>
