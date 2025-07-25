@@ -102,7 +102,7 @@ export default function Home() {
   return (
     <div className="flex min-h-screen flex-col text-foreground">
       <DarkVeil
-        hueShift={210}
+        hueShift={40}
         noiseIntensity={0.02}
         warpAmount={0.5}
         speed={0.2}
