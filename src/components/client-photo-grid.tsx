@@ -47,6 +47,9 @@ export function ClientPhotoGrid({ photos, viewMode, selectedPhotos, onToggleSele
                         )}
                         data-ai-hint={photo.dataAiHint}
                     />
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        <span className="text-white/40 text-3xl font-bold font-headline select-none transform -rotate-12">FotoFácil</span>
+                    </div>
                     <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center rounded-md cursor-pointer">
                        <Eye className="h-10 w-10 text-white" />
                     </div>

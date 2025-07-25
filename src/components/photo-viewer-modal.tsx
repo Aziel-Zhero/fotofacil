@@ -91,6 +91,9 @@ export function PhotoViewerModal({
                 className="object-contain"
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 60vw"
             />
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <span className="text-white/40 text-5xl font-bold font-headline select-none transform -rotate-12">FotoFácil</span>
+            </div>
         </div>
         <div className="flex-shrink-0 flex items-center gap-4">
              <Button
