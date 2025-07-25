@@ -15,7 +15,7 @@ export default function ClientGalleryPage() {
             <div className="flex justify-between items-center mb-4 mt-8">
                  <div>
                     <h1 className="text-3xl font-bold font-headline mb-2">Seus Álbuns Compartilhados</h1>
-                    <p className="text-foreground/80">Aqui estão os álbuns compartilhados com você. Clique em um para iniciar sua seleção.</p>
+                    <p className="text-stone-300">Aqui estão os álbuns compartilhados com você. Clique em um para iniciar sua seleção.</p>
                 </div>
                 <Button variant="outline" asChild>
                     <Link href="/gallery/downloads">
