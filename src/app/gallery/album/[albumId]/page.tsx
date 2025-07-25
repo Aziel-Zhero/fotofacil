@@ -106,19 +106,19 @@ export default function ClientAlbumPage({ params }: { params: { albumId: string 
     <>
         <div className="container mx-auto py-8 mb-24"> {/* Margin bottom to make space for the footer */}
             <div className="mb-8">
-                <Button variant="ghost" asChild className="mb-4">
+                <Button variant="ghost" asChild className="mb-4 text-foreground/90">
                     <Link href="/gallery">
                         <ArrowLeft className="mr-2 h-4 w-4" />
                         Voltar para Meus Álbuns
                     </Link>
                 </Button>
-                <h1 className="text-3xl font-bold font-headline">Álbum: {albumName}</h1>
-                <p className="text-muted-foreground">Visualize as fotos e faça sua seleção. Você pode escolher até {photoLimit} fotos.</p>
+                <h1 className="text-3xl font-bold font-headline text-foreground/90">Álbum: {albumName}</h1>
+                <p className="text-muted-foreground text-foreground/80">Visualize as fotos e faça sua seleção. Você pode escolher até {photoLimit} fotos.</p>
             </div>
             
             <div>
                 <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-xl font-bold font-headline">Galeria</h2>
+                    <h2 className="text-xl font-bold font-headline text-foreground/90">Galeria</h2>
                     <ToggleGroup type="single" value={viewMode} onValueChange={(value: ViewMode) => value && setViewMode(value)} aria-label="Modo de Visualização">
                         <ToggleGroupItem value="grid" aria-label="Grade">
                             <Grid3x3 className="h-4 w-4" />
