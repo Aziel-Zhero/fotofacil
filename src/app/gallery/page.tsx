@@ -17,12 +17,6 @@ export default function ClientGalleryPage() {
                     <h1 className="text-3xl font-bold font-headline mb-2 text-stone-300">Seus Álbuns Compartilhados</h1>
                     <p className="text-stone-300">Aqui estão os álbuns compartilhados com você. Clique em um para iniciar sua seleção.</p>
                 </div>
-                <Button variant="outline" asChild>
-                    <Link href="/gallery/downloads">
-                        <Download className="mr-2 h-4 w-4" />
-                        Ver Downloads
-                    </Link>
-                </Button>
             </div>
 
 
