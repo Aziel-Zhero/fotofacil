@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useRef } from 'react';
@@ -13,7 +14,6 @@ import {
     FormItem,
     FormLabel,
     FormMessage,
-    FormDescription,
   } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
@@ -124,12 +124,14 @@ export function ProfileForm({ onSave }: { onSave?: () => void }) {
                             </FormItem>
                         )}
                     />
-                    <FormField name="name" control={form.control} render={({ field }) => (
-                        <FormItem><FormLabel>Nome Completo</FormLabel><FormControl><Input placeholder="Seu nome completo" {...field} /></FormControl><FormMessage /></FormItem>
-                    )} />
-                    <FormField name="companyName" control={form.control} render={({ field }) => (
-                        <FormItem><FormLabel>Nome da Empresa</FormLabel><FormControl><Input placeholder="Sua empresa de fotografia" {...field} /></FormControl><FormMessage /></FormItem>
-                    )} />
+                    <div className="grid md:grid-cols-2 gap-6">
+                        <FormField name="name" control={form.control} render={({ field }) => (
+                            <FormItem><FormLabel>Nome Completo</FormLabel><FormControl><Input placeholder="Seu nome completo" {...field} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                        <FormField name="companyName" control={form.control} render={({ field }) => (
+                            <FormItem><FormLabel>Nome da Empresa</FormLabel><FormControl><Input placeholder="Sua empresa de fotografia" {...field} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                    </div>
                 </CardContent>
             </Card>
 
@@ -143,7 +145,7 @@ export function ProfileForm({ onSave }: { onSave?: () => void }) {
                         <FormItem><FormLabel>Email</FormLabel><FormControl><Input type="email" placeholder="seu@email.com" {...field} /></FormControl><FormMessage /></FormItem>
                     )} />
                     <Separator />
-                    <div className='space-y-4'>
+                    <div className='grid md:grid-cols-2 gap-6'>
                         <FormField name="currentPassword" control={form.control} render={({ field }) => (
                             <FormItem><FormLabel>Senha Atual</FormLabel><FormControl><Input type="password" {...field} /></FormControl><FormMessage /></FormItem>
                         )} />
