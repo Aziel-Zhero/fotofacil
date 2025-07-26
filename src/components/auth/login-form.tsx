@@ -32,7 +32,6 @@ export function LoginForm() {
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
     // Lógica de login aqui
   }
 

@@ -79,7 +79,7 @@ export function ProfileForm({ onSave }: { onSave?: () => void }) {
     }
     
     function onSubmit(values: z.infer<typeof profileSchema>) {
-        console.log(values);
+        // Lógica de atualização de perfil aqui
         toast({
             title: "Perfil Atualizado",
             description: "Suas informações foram salvas com sucesso.",

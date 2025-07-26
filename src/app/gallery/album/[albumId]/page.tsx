@@ -52,7 +52,7 @@ export default function ClientAlbumPage({ params }: { params: { albumId: string 
   };
 
   const handleSubmitSelection = () => {
-    console.log("Fotos selecionadas:", Array.from(selectedPhotos));
+    // Aqui você enviaria os dados para o backend
     toast({
         title: "Seleção Enviada com Sucesso!",
         description: "O fotógrafo foi notificado. Em breve, um novo álbum com suas fotos editadas estará disponível para download.",

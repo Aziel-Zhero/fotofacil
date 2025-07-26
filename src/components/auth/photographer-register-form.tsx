@@ -37,7 +37,6 @@ export function PhotographerRegisterForm() {
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
     // Lógica de registro do fotógrafo
   }
 

@@ -74,7 +74,7 @@ export function CreateAlbumDialog({ children }: { children: React.ReactNode }) {
     }
 
     function onSubmit(values: z.infer<typeof formSchema>) {
-        console.log(values);
+        // Lógica de criação de álbum aqui
         setOpen(false);
         form.reset();
       }
@@ -139,4 +139,3 @@ export function CreateAlbumDialog({ children }: { children: React.ReactNode }) {
     </Dialog>
   );
 }
-

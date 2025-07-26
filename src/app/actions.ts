@@ -9,7 +9,7 @@ export async function generateTagsForImage(
     const output = await autoImageTagging(input);
     return output.tags;
   } catch (error) {
-    console.error("Error generating tags:", error);
+    // Em um app real, seria bom ter um sistema de log de erros mais robusto aqui.
     return [];
   }
 }
