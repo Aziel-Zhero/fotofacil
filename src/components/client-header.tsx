@@ -21,7 +21,7 @@ export function ClientHeader() {
         <div className="container flex h-16 items-center justify-between">
             <Link href="/" className="flex items-center gap-2">
                 <Camera className="h-6 w-6 text-primary" />
-                <span className="font-headline text-xl font-bold">FotoFácil</span>
+                <span className="font-headline text-xl font-bold text-foreground">FotoFácil</span>
             </Link>
             
             <div className="flex items-center gap-4">
