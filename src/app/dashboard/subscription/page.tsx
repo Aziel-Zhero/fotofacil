@@ -1,7 +1,8 @@
 
+
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
-import { CheckCircle } from "lucide-react";
+import { CheckCircle, Star } from "lucide-react";
 
 const plans = [
     {
@@ -11,9 +12,9 @@ const plans = [
         billingInfo: "Cobrado mensalmente",
         description: "Ideal para começar com o pé direito.",
         features: [
-            "Até 10 álbuns ativos",
+            "10 álbuns",
             "Até 120 fotos por álbum",
-            "Armazenamento de 1.200 fotos",
+            "Até 1.200 fotos",
             "Suporte via Email"
         ],
         isHighlighted: false,
@@ -22,12 +23,12 @@ const plans = [
         name: "Essencial Semestral",
         price: "23,90",
         period: "/mês",
-        billingInfo: "Cobrado R$143,40 a cada 6 meses",
+        billingInfo: "Cobrado R$ 143,40 a cada 6 meses",
         description: "Mais popular para um fluxo constante.",
         features: [
-            "Até 60 álbuns ativos",
+            "60 álbuns",
             "Até 210 fotos por álbum",
-            "Armazenamento de 12.600 fotos",
+            "Até 12.600 fotos",
             "Suporte via Email"
         ],
         isHighlighted: true,
@@ -36,12 +37,12 @@ const plans = [
         name: "Estúdio Anual",
         price: "34,99",
         period: "/mês",
-        billingInfo: "Cobrado R$419,88 anualmente",
+        billingInfo: "Cobrado R$ 419,88 anualmente",
         description: "A solução completa para estúdios.",
         features: [
             "Álbuns ilimitados",
             "Até 500 fotos por álbum",
-            "Upload de fotos ilimitado",
+            "Upload ilimitado",
             "Suporte Premium"
         ],
         isHighlighted: false,
@@ -62,45 +63,55 @@ export default function SubscriptionPage() {
         </div>
 
         <div className="grid lg:grid-cols-3 gap-8 items-start">
-            {plans.map(plan => (
-                <Card key={plan.name} className={`flex flex-col h-full ${plan.isHighlighted ? 'border-primary border-2 shadow-xl' : ''}`}>
-                    <CardHeader>
-                        {plan.isHighlighted && (
-                             <div className="flex justify-center">
-                                <div className="bg-primary text-primary-foreground font-bold text-xs py-1 px-3 rounded-full -mt-10 mb-4">
-                                    MAIS POPULAR
+            {plans.map(plan => {
+                const isCurrentPlan = currentPlan === plan.name;
+                return (
+                    <Card key={plan.name} className={`flex flex-col h-full ${plan.isHighlighted ? 'border-primary border-2 shadow-xl' : ''} ${isCurrentPlan ? 'border-yellow-500 border-2' : ''}`}>
+                        <CardHeader>
+                            {isCurrentPlan && (
+                                <div className="flex justify-center">
+                                    <div className="bg-yellow-500 text-black font-bold text-xs py-1 px-3 rounded-full -mt-10 mb-4 flex items-center gap-1">
+                                       <Star className="h-3 w-3"/> SEU PLANO ATUAL
+                                    </div>
                                 </div>
+                            )}
+                            {plan.isHighlighted && !isCurrentPlan && (
+                                <div className="flex justify-center">
+                                    <div className="bg-primary text-primary-foreground font-bold text-xs py-1 px-3 rounded-full -mt-10 mb-4">
+                                        MAIS POPULAR
+                                    </div>
+                                </div>
+                            )}
+                            <CardTitle className="font-headline text-2xl text-center">{plan.name}</CardTitle>
+                            <CardDescription className="text-center">{plan.description}</CardDescription>
+                        </CardHeader>
+                        <CardContent className="flex-grow space-y-6">
+                            <div className="text-center">
+                                <span className="text-4xl font-bold">R$ {plan.price}</span>
+                                <span className="text-lg font-normal text-muted-foreground">{plan.period}</span>
+                                {plan.billingInfo && <p className="text-xs text-muted-foreground mt-1">{plan.billingInfo}</p>}
                             </div>
-                        )}
-                        <CardTitle className="font-headline text-2xl text-center">{plan.name}</CardTitle>
-                        <CardDescription className="text-center">{plan.description}</CardDescription>
-                    </CardHeader>
-                    <CardContent className="flex-grow space-y-6">
-                        <div className="text-center">
-                            <span className="text-4xl font-bold">R$ {plan.price}</span>
-                            <span className="text-lg font-normal text-muted-foreground">{plan.period}</span>
-                            {plan.billingInfo && <p className="text-xs text-muted-foreground mt-1">{plan.billingInfo}</p>}
-                        </div>
-                        <ul className="space-y-3 text-sm">
-                           {plan.features.map(feature => (
-                                <li key={feature} className="flex items-start gap-2">
-                                    <CheckCircle className={`h-5 w-5 mt-0.5 flex-shrink-0 ${plan.isHighlighted ? 'text-primary' : 'text-muted-foreground'}`}/>
-                                    <span>{feature}</span>
-                                </li>
-                           ))}
-                        </ul>
-                    </CardContent>
-                    <CardFooter>
-                        <Button 
-                            className="w-full" 
-                            variant={plan.isHighlighted ? 'default' : 'outline'}
-                            disabled={currentPlan === plan.name}
-                        >
-                            {currentPlan === plan.name ? "Seu Plano Atual" : "Assinar Agora"}
-                        </Button>
-                    </CardFooter>
-                </Card>
-            ))}
+                            <ul className="space-y-3 text-sm">
+                            {plan.features.map(feature => (
+                                    <li key={feature} className="flex items-start gap-2">
+                                        <CheckCircle className={`h-5 w-5 mt-0.5 flex-shrink-0 ${plan.isHighlighted || isCurrentPlan ? 'text-primary' : 'text-muted-foreground'}`}/>
+                                        <span>{feature}</span>
+                                    </li>
+                            ))}
+                            </ul>
+                        </CardContent>
+                        <CardFooter>
+                            <Button 
+                                className="w-full" 
+                                variant={plan.isHighlighted ? 'default' : 'outline'}
+                                disabled={isCurrentPlan}
+                            >
+                                {isCurrentPlan ? "Plano Ativo" : "Assinar Agora"}
+                            </Button>
+                        </CardFooter>
+                    </Card>
+                )
+            })}
         </div>
         <div className="mt-12 text-center text-sm text-muted-foreground">
             <p>Dúvidas? <a href="/dashboard/help" className="underline text-primary">Visite nossa Central de Ajuda</a>.</p>
