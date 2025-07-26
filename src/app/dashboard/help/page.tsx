@@ -1,7 +1,7 @@
 
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Mail, MessageCircle, BookOpen } from "lucide-react";
+import { SupportForm } from "@/components/support-form";
 
 export default function HelpPage() {
   return (
@@ -12,6 +12,18 @@ export default function HelpPage() {
           Tem alguma dúvida? Estamos aqui para ajudar!
         </p>
       </div>
+
+      <Card className="mb-8">
+        <CardHeader>
+          <CardTitle className="font-headline">Fale Conosco</CardTitle>
+          <CardDescription>
+            Selecione o motivo do seu contato e preencha o formulário abaixo.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <SupportForm />
+        </CardContent>
+      </Card>
 
       <Card className="mb-8">
         <CardHeader>
@@ -52,30 +64,6 @@ export default function HelpPage() {
           </Accordion>
         </CardContent>
       </Card>
-
-      <div className="text-center">
-        <h2 className="text-2xl font-bold font-headline mb-4">Ainda precisa de ajuda?</h2>
-        <div className="grid md:grid-cols-2 gap-4 max-w-lg mx-auto">
-            <Card className="hover:shadow-md transition-shadow">
-                <CardHeader className="items-center">
-                    <Mail className="h-8 w-8 text-primary"/>
-                    <CardTitle className="font-headline text-lg">Email</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <p className="text-sm text-center text-muted-foreground">Envie-nos um email para <a href="mailto:suporte@fotofacil.com" className="text-primary underline">suporte@fotofacil.com</a></p>
-                </CardContent>
-            </Card>
-             <Card className="hover:shadow-md transition-shadow">
-                <CardHeader className="items-center">
-                    <MessageCircle className="h-8 w-8 text-primary"/>
-                    <CardTitle className="font-headline text-lg">Chat ao Vivo</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <p className="text-sm text-center text-muted-foreground">Converse com nossa equipe durante o horário comercial.</p>
-                </CardContent>
-            </Card>
-        </div>
-      </div>
     </div>
   );
 }

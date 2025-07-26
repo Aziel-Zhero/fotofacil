@@ -2,7 +2,7 @@
 "use client"
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { User, LogOut, Camera, FolderOpen, Image as ImageIcon } from 'lucide-react';
+import { User, LogOut, Camera, FolderOpen, Image as ImageIcon, HelpCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -21,6 +21,7 @@ export function ClientHeader() {
   const navItems = [
     { href: '/gallery', label: 'Seleção de Fotos', icon: ImageIcon },
     { href: '/gallery/delivered', label: 'Entregues', icon: FolderOpen },
+    { href: '/gallery/help', label: 'Ajuda', icon: HelpCircle },
   ];
 
   return (
