@@ -7,7 +7,7 @@ import { CheckCircle, Star } from "lucide-react";
 const plans = [
     {
         name: "Essencial Mensal",
-        price: "29,99",
+        price: "25,00",
         period: "/mês",
         billingInfo: "Cobrado mensalmente",
         description: "Ideal para começar com o pé direito.",

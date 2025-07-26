@@ -41,14 +41,14 @@ const LandingFooter = () => (
 const plans = [
     {
         name: "Essencial Mensal",
-        price: "29,99",
+        price: "25,00",
         period: "/mês",
         billingInfo: "Cobrado mensalmente",
         description: "Ideal para começar com o pé direito.",
         features: [
-            "Até 10 álbuns ativos",
+            "10 álbuns",
             "Até 120 fotos por álbum",
-            "Armazenamento de 1.200 fotos",
+            "Até 1.200 fotos",
             "Suporte via Email"
         ],
         isHighlighted: false,
@@ -57,12 +57,12 @@ const plans = [
         name: "Essencial Semestral",
         price: "23,90",
         period: "/mês",
-        billingInfo: "Cobrado R$143,40 a cada 6 meses",
+        billingInfo: "Cobrado R$ 143,40 a cada 6 meses",
         description: "Mais popular para um fluxo constante.",
         features: [
-            "Até 60 álbuns ativos",
+            "60 álbuns",
             "Até 210 fotos por álbum",
-            "Armazenamento de 12.600 fotos",
+            "Até 12.600 fotos",
             "Suporte via Email"
         ],
         isHighlighted: true,
@@ -71,12 +71,12 @@ const plans = [
         name: "Estúdio Anual",
         price: "34,99",
         period: "/mês",
-        billingInfo: "Cobrado R$419,88 anualmente",
+        billingInfo: "Cobrado R$ 419,88 anualmente",
         description: "A solução completa para estúdios.",
         features: [
             "Álbuns ilimitados",
             "Até 500 fotos por álbum",
-            "Upload de fotos ilimitado",
+            "Upload ilimitado",
             "Suporte Premium"
         ],
         isHighlighted: false,
