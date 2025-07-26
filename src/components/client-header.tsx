@@ -1,7 +1,7 @@
 
 "use client"
 import Link from "next/link";
-import { User, LogOut, Camera, Download, Image as ImageIcon } from 'lucide-react';
+import { User, LogOut, Camera, FolderOpen, Image as ImageIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -52,9 +52,9 @@ export function ClientHeader() {
                             </Link>
                         </DropdownMenuItem>
                          <DropdownMenuItem asChild>
-                            <Link href="/gallery/downloads">
-                                <Download className="mr-2 h-4 w-4" />
-                                <span>Downloads</span>
+                            <Link href="/gallery/delivered">
+                                <FolderOpen className="mr-2 h-4 w-4" />
+                                <span>Entregues</span>
                             </Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild>
