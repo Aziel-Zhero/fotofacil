@@ -2,7 +2,7 @@
 "use client"
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, User, Settings, LogOut, Aperture, Crown, HelpCircle, Star, FolderArchive, BarChart } from 'lucide-react';
+import { Home, User, Settings, LogOut, Aperture, Crown, HelpCircle, Star, FolderArchive, BarChart, Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -19,7 +19,6 @@ const navItems = [
   { href: '/dashboard', label: 'Painel', icon: Home },
   { href: '/dashboard/analysis', label: 'Análise', icon: BarChart },
   { href: '/dashboard/delivered', label: 'Entregues', icon: FolderArchive },
-  { href: '/dashboard/profile', label: 'Perfil', icon: User },
   { href: '/dashboard/settings', label: 'Configurações', icon: Settings },
   { href: '/dashboard/subscription', label: 'Assinatura', icon: Star },
   { href: '/dashboard/help', label: 'Ajuda', icon: HelpCircle },
@@ -54,48 +53,60 @@ export function DashboardHeader() {
                 </nav>
             </div>
             
-            <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-                         <Avatar className="h-10 w-10">
-                            <AvatarImage src="https://placehold.co/100x100.png" alt="Fotógrafo" />
-                            <AvatarFallback>JS</AvatarFallback>
-                        </Avatar>
-                    </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56" align="end" forceMount>
-                    <DropdownMenuLabel className="font-normal">
-                        <div className="flex flex-col space-y-1">
-                            <div className="flex items-center gap-2">
-                                <p className="text-sm font-medium leading-none font-headline">John Smith</p>
-                                {isSubscriber && <Crown className="h-4 w-4 text-yellow-500" />}
+            <div className="flex items-center gap-2">
+                <Button variant="ghost" size="icon">
+                    <Bell className="h-5 w-5" />
+                    <span className="sr-only">Notificações</span>
+                </Button>
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+                            <Avatar className="h-10 w-10">
+                                <AvatarImage src="https://placehold.co/100x100.png" alt="Fotógrafo" />
+                                <AvatarFallback>JS</AvatarFallback>
+                            </Avatar>
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="w-56" align="end" forceMount>
+                        <DropdownMenuLabel className="font-normal">
+                            <div className="flex flex-col space-y-1">
+                                <div className="flex items-center gap-2">
+                                    <p className="text-sm font-medium leading-none font-headline">John Smith</p>
+                                    {isSubscriber && <Crown className="h-4 w-4 text-yellow-500" />}
+                                </div>
+                                <p className="text-xs leading-none text-muted-foreground">
+                                    Fotografia John Smith
+                                </p>
                             </div>
-                            <p className="text-xs leading-none text-muted-foreground">
-                                Fotografia John Smith
-                            </p>
-                        </div>
-                    </DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <div className="md:hidden">
-                        {navItems.map(item => (
-                             <DropdownMenuItem key={item.href} asChild>
-                                 <Link href={item.href}>
-                                    <item.icon className="mr-2 h-4 w-4" />
-                                    <span>{item.label}</span>
-                                 </Link>
-                            </DropdownMenuItem>
-                        ))}
+                        </DropdownMenuLabel>
                         <DropdownMenuSeparator />
-                    </div>
-                    <DropdownMenuItem asChild>
-                        <Link href="/">
-                            <LogOut className="mr-2 h-4 w-4" />
-                            <span>Sair</span>
-                        </Link>
-                    </DropdownMenuItem>
-                </DropdownMenuContent>
-            </DropdownMenu>
-
+                        <div className="md:hidden">
+                            {navItems.map(item => (
+                                <DropdownMenuItem key={item.href} asChild>
+                                    <Link href={item.href}>
+                                        <item.icon className="mr-2 h-4 w-4" />
+                                        <span>{item.label}</span>
+                                    </Link>
+                                </DropdownMenuItem>
+                            ))}
+                            <DropdownMenuSeparator />
+                        </div>
+                        <DropdownMenuItem asChild>
+                           <Link href="/dashboard/profile">
+                                <User className="mr-2 h-4 w-4" />
+                                <span>Perfil</span>
+                            </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem asChild>
+                            <Link href="/">
+                                <LogOut className="mr-2 h-4 w-4" />
+                                <span>Sair</span>
+                            </Link>
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            </div>
         </div>
     </header>
   );

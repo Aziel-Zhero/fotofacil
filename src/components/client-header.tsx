@@ -2,7 +2,7 @@
 "use client"
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { User, LogOut, Camera, FolderOpen, Image as ImageIcon, HelpCircle } from 'lucide-react';
+import { User, LogOut, Camera, FolderOpen, Image as ImageIcon, HelpCircle, Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -48,8 +48,12 @@ export function ClientHeader() {
                 </nav>
             </div>
             
-            <div className="flex items-center gap-4">
-                 <p className="text-sm text-muted-foreground hidden sm:block">{clientId}</p>
+            <div className="flex items-center gap-2">
+                <p className="text-sm text-muted-foreground hidden sm:block">{clientId}</p>
+                <Button variant="ghost" size="icon">
+                    <Bell className="h-5 w-5" />
+                    <span className="sr-only">Notificações</span>
+                </Button>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="ghost" className="relative h-10 w-10 rounded-full">
