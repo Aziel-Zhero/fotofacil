@@ -86,9 +86,11 @@ export function DashboardHeader() {
                         ))}
                         <DropdownMenuSeparator />
                     </div>
-                    <DropdownMenuItem>
-                        <LogOut className="mr-2 h-4 w-4" />
-                        <span>Sair</span>
+                    <DropdownMenuItem asChild>
+                        <Link href="/">
+                            <LogOut className="mr-2 h-4 w-4" />
+                            <span>Sair</span>
+                        </Link>
                     </DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>
