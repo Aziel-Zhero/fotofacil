@@ -4,6 +4,7 @@
 import { useState } from "react";
 import "./folder.css";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 const darkenColor = (hex: string, percent: number) => {
   let color = hex.startsWith("#") ? hex.slice(1) : hex;
@@ -58,10 +59,9 @@ const Folder = ({
   const paper3 = "#ffffff";
 
   const handleClick = (e: React.MouseEvent) => {
-    e.preventDefault(); // Prevent link navigation on first click
-    setOpen((prev) => !prev);
-    if (open) {
-      setPaperOffsets(Array.from({ length: maxItems }, () => ({ x: 0, y: 0 })));
+    if (!open) {
+        e.preventDefault(); 
+        setOpen(true);
     }
   };
 
