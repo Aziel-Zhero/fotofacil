@@ -17,7 +17,7 @@ export function ClientHeader() {
   const clientId = "ID:USR-12345"; // Mock data
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background">
+    <header className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-lg">
         <div className="container flex h-16 items-center justify-between">
             <Link href="/" className="flex items-center gap-2">
                 <Camera className="h-6 w-6 text-primary" />
