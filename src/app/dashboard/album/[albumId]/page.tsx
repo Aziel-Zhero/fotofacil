@@ -32,7 +32,7 @@ export default function AlbumDetailPage({ params }: { params: { albumId: string 
   );
 
   const addPhoto = (newPhoto: Photo) => {
-    setPhotos(prevPhotos => [...prevPhotos, newPhoto]);
+    setPhotos(prevPhotos => [newPhoto, ...prevPhotos]);
   };
 
   const renderGallery = () => {
