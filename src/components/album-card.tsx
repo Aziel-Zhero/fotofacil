@@ -1,9 +1,10 @@
+
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from './ui/button';
 import { Camera, Users, Calendar } from 'lucide-react';
-import { format } from 'date-fns';
+import { format, isValid } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
 interface AlbumCardProps {
@@ -13,7 +14,7 @@ interface AlbumCardProps {
     photoCount: number;
     status: string;
     client: string;
-    createdAt: string;
+    createdAt?: string; // Tornar opcional para segurança
     maxPhotos: number;
   };
 }
@@ -27,10 +28,14 @@ export function AlbumCard({ album }: AlbumCardProps) {
         return 'secondary';
       case 'Expirado':
         return 'destructive';
+      case 'Entregue':
+        return 'outline';
       default:
         return 'outline';
     }
   };
+  
+  const creationDate = album.createdAt ? new Date(album.createdAt) : null;
 
   return (
     <Card className="flex flex-col hover:shadow-lg transition-shadow duration-300">
@@ -49,10 +54,12 @@ export function AlbumCard({ album }: AlbumCardProps) {
           <Camera className="mr-2 h-4 w-4" />
           <span>{album.photoCount} de {album.maxPhotos} fotos</span>
         </div>
-        <div className="flex items-center text-sm text-muted-foreground">
-          <Calendar className="mr-2 h-4 w-4" />
-          <span>Criado em {format(new Date(album.createdAt), "dd 'de' MMM, yyyy", { locale: ptBR })}</span>
-        </div>
+        {creationDate && isValid(creationDate) && (
+            <div className="flex items-center text-sm text-muted-foreground">
+                <Calendar className="mr-2 h-4 w-4" />
+                <span>Criado em {format(creationDate, "dd 'de' MMM, yyyy", { locale: ptBR })}</span>
+            </div>
+        )}
       </CardContent>
       <CardFooter>
         <Button asChild className="w-full">

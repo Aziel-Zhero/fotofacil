@@ -1,3 +1,4 @@
+
 import { AlbumCard } from '@/components/album-card';
 import { Button } from '@/components/ui/button';
 import { CreateAlbumDialog } from '@/components/create-album-dialog';
@@ -5,10 +6,10 @@ import { PlusCircle } from 'lucide-react';
 import { ProfileCompletionDialog } from '@/components/profile-completion-dialog';
 
 const mockAlbums = [
-  { id: '1', name: 'Casamento na Toscana', photoCount: 125, status: 'Aguardando Seleção', client: 'Os Silva', createdAt: '2024-07-28', maxPhotos: 210 },
-  { id: '2', name: 'Retratos Corporativos Q2', photoCount: 50, status: 'Seleção Completa', client: 'Innovate Corp', createdAt: '2024-07-25', maxPhotos: 120 },
-  { id: '3', name: 'Sessão Newborn - Baby Leo', photoCount: 80, status: 'Expirado', client: 'Maria da Silva', createdAt: '2024-06-15', maxPhotos: 120 },
-  { id: '4', name: 'Fotos de Família no Outono', photoCount: 200, status: 'Aguardando Seleção', client: 'A Família Williams', createdAt: '2024-07-29', maxPhotos: 210 },
+  { id: '1', name: 'Casamento na Toscana', photoCount: 125, status: 'Aguardando Seleção', client: 'Os Silva', createdAt: '2024-07-28T00:00:00', maxPhotos: 210 },
+  { id: '2', name: 'Retratos Corporativos Q2', photoCount: 50, status: 'Seleção Completa', client: 'Innovate Corp', createdAt: '2024-07-25T00:00:00', maxPhotos: 120 },
+  { id: '3', name: 'Sessão Newborn - Baby Leo', photoCount: 80, status: 'Expirado', client: 'Maria da Silva', createdAt: '2024-06-15T00:00:00', maxPhotos: 120 },
+  { id: '4', name: 'Fotos de Família no Outono', photoCount: 200, status: 'Aguardando Seleção', client: 'A Família Williams', createdAt: '2024-07-29T00:00:00', maxPhotos: 210 },
 ];
 
 
