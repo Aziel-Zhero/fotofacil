@@ -40,44 +40,44 @@ const LandingFooter = () => (
 
 const plans = [
     {
-        name: "Fotógrafo Essencial",
-        price: "25,00",
+        name: "Essencial Mensal",
+        price: "29,99",
         period: "/mês",
+        billingInfo: "Cobrado mensalmente",
         description: "Ideal para começar com o pé direito.",
         features: [
-            "Até 20 álbuns ativos",
-            "Upload de até 5.000 fotos",
-            "Marcação com IA (1000 fotos/mês)",
-            "Suporte por email"
+            "Até 10 álbuns ativos",
+            "Até 120 fotos por álbum",
+            "Armazenamento de 1.200 fotos",
+            "Suporte via Email"
         ],
         isHighlighted: false,
     },
     {
-        name: "Fotógrafo Pro",
-        price: "20,00",
+        name: "Essencial Semestral",
+        price: "23,90",
         period: "/mês",
-        billingInfo: "Cobrado R$120,00 a cada 6 meses",
-        description: "O mais popular para profissionais em crescimento.",
+        billingInfo: "Cobrado R$143,40 a cada 6 meses",
+        description: "Mais popular para um fluxo constante.",
         features: [
-            "Álbuns ilimitados",
-            "Upload de fotos ilimitado",
-            "Marcação com IA ilimitada",
-            "Monetização de fotos extras",
-            "Suporte prioritário via chat"
+            "Até 60 álbuns ativos",
+            "Até 210 fotos por álbum",
+            "Armazenamento de 12.600 fotos",
+            "Suporte via Email"
         ],
         isHighlighted: true,
     },
     {
         name: "Estúdio Anual",
-        price: "17,50",
+        price: "34,99",
         period: "/mês",
-        billingInfo: "Cobrado R$210,00 anualmente",
-        description: "A solução completa para estúdios e grandes volumes.",
+        billingInfo: "Cobrado R$419,88 anualmente",
+        description: "A solução completa para estúdios.",
         features: [
-            "Todos os benefícios do Plano Pro",
-            "Logo e cores personalizadas",
-            "Relatórios de seleção de clientes",
-            "Múltiplos usuários (em breve)"
+            "Álbuns ilimitados",
+            "Até 500 fotos por álbum",
+            "Upload de fotos ilimitado",
+            "Suporte Premium"
         ],
         isHighlighted: false,
     }
