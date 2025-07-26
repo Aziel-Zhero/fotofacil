@@ -322,7 +322,7 @@ export default function Home() {
                                     variant={plan.isHighlighted ? 'default' : 'outline'}
                                     asChild
                                 >
-                                  <Link href="/register/photographer">Assinar Agora</Link>
+                                  <Link href="/dashboard/checkout">Assinar Agora</Link>
                                 </Button>
                             </CardFooter>
                         </GlassCard>

@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { CheckCircle, Star } from "lucide-react";
+import Link from "next/link";
 
 const plans = [
     {
@@ -105,8 +106,11 @@ export default function SubscriptionPage() {
                                 className="w-full" 
                                 variant={plan.isHighlighted ? 'default' : 'outline'}
                                 disabled={isCurrentPlan}
+                                asChild
                             >
-                                {isCurrentPlan ? "Plano Ativo" : "Assinar Agora"}
+                                <Link href="/dashboard/checkout">
+                                    {isCurrentPlan ? "Plano Ativo" : "Assinar Agora"}
+                                </Link>
                             </Button>
                         </CardFooter>
                     </Card>
