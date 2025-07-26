@@ -23,7 +23,7 @@ export default function ClientAlbumPage({ params }: { params: { albumId: string 
   const { toast } = useToast();
 
   const [photos, setPhotos] = useState<Photo[]>(
-    Array.from({ length: 12 }, (_, i) => ({
+    Array.from({ length: 125 }, (_, i) => ({
         id: i + 1,
         url: `https://placehold.co/400x${i % 2 === 0 ? '400' : '600'}.png`,
         dataAiHint: 'casal de noivos',
@@ -113,7 +113,9 @@ export default function ClientAlbumPage({ params }: { params: { albumId: string 
                     </Link>
                 </Button>
                 <h1 className="text-3xl font-bold font-headline text-foreground/90">Álbum: {albumName}</h1>
-                <p className="text-muted-foreground text-foreground/80">Visualize as fotos e faça sua seleção. Você pode escolher até {photoLimit} fotos.</p>
+                <p className="text-muted-foreground text-foreground/80">
+                    Visualize as {photos.length} fotos e faça sua seleção. Você pode escolher até {photoLimit} fotos.
+                </p>
             </div>
             
             <div>

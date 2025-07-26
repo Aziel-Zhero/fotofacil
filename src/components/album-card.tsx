@@ -14,6 +14,7 @@ interface AlbumCardProps {
     status: string;
     client: string;
     createdAt: string;
+    maxPhotos: number;
   };
 }
 
@@ -46,7 +47,7 @@ export function AlbumCard({ album }: AlbumCardProps) {
         </div>
         <div className="flex items-center text-sm text-muted-foreground">
           <Camera className="mr-2 h-4 w-4" />
-          <span>{album.photoCount} fotos</span>
+          <span>{album.photoCount} de {album.maxPhotos} fotos</span>
         </div>
         <div className="flex items-center text-sm text-muted-foreground">
           <Calendar className="mr-2 h-4 w-4" />
