@@ -2,7 +2,7 @@
 "use client"
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, User, Settings, LogOut, Aperture, Crown, HelpCircle, Star, FolderArchive } from 'lucide-react';
+import { Home, User, Settings, LogOut, Aperture, Crown, HelpCircle, Star, FolderArchive, BarChart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -17,6 +17,7 @@ import { cn } from "@/lib/utils";
 
 const navItems = [
   { href: '/dashboard', label: 'Painel', icon: Home },
+  { href: '/dashboard/analysis', label: 'Análise', icon: BarChart },
   { href: '/dashboard/delivered', label: 'Entregues', icon: FolderArchive },
   { href: '/dashboard/profile', label: 'Perfil', icon: User },
   { href: '/dashboard/settings', label: 'Configurações', icon: Settings },
