@@ -1,6 +1,7 @@
 
 "use client"
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { User, LogOut, Camera, FolderOpen, Image as ImageIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -14,15 +15,37 @@ import {
 } from "@/components/ui/dropdown-menu"
 
 export function ClientHeader() {
+  const pathname = usePathname();
   const clientId = "ID:USR-12345"; // Mock data
+
+  const navItems = [
+    { href: '/gallery', label: 'Meus Álbuns', icon: ImageIcon },
+    { href: '/gallery/delivered', label: 'Entregues', icon: FolderOpen },
+  ];
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-lg">
         <div className="container flex h-16 items-center justify-between">
-            <Link href="/" className="flex items-center gap-2">
-                <Camera className="h-6 w-6 text-primary" />
-                <span className="font-headline text-xl font-bold text-foreground">FotoFácil</span>
-            </Link>
+            <div className="flex items-center gap-6">
+                <Link href="/" className="flex items-center gap-2">
+                    <Camera className="h-6 w-6 text-primary" />
+                    <span className="font-headline text-xl font-bold text-foreground">FotoFácil</span>
+                </Link>
+                <nav className="hidden md:flex items-center gap-1">
+                    {navItems.map((item) => (
+                    <Button
+                        key={item.href}
+                        variant={pathname === item.href ? 'secondary' : 'ghost'}
+                        asChild
+                    >
+                        <Link href={item.href}>
+                        <item.icon className="mr-2 h-4 w-4" />
+                        {item.label}
+                        </Link>
+                    </Button>
+                    ))}
+                </nav>
+            </div>
             
             <div className="flex items-center gap-4">
                  <p className="text-sm text-muted-foreground hidden sm:block">{clientId}</p>
@@ -45,18 +68,17 @@ export function ClientHeader() {
                             </div>
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
-                         <DropdownMenuItem asChild>
-                            <Link href="/gallery">
-                                <ImageIcon className="mr-2 h-4 w-4" />
-                                <span>Meus Álbuns</span>
-                            </Link>
-                        </DropdownMenuItem>
-                         <DropdownMenuItem asChild>
-                            <Link href="/gallery/delivered">
-                                <FolderOpen className="mr-2 h-4 w-4" />
-                                <span>Entregues</span>
-                            </Link>
-                        </DropdownMenuItem>
+                        <div className="md:hidden">
+                             {navItems.map(item => (
+                                <DropdownMenuItem key={item.href} asChild>
+                                    <Link href={item.href}>
+                                        <item.icon className="mr-2 h-4 w-4" />
+                                        <span>{item.label}</span>
+                                    </Link>
+                                </DropdownMenuItem>
+                             ))}
+                             <DropdownMenuSeparator />
+                        </div>
                         <DropdownMenuItem asChild>
                             <Link href="/gallery/profile">
                                 <User className="mr-2 h-4 w-4" />
