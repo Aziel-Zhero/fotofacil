@@ -2,13 +2,11 @@
 .list {
   position: relative;
   width: 100%;
-  height: 100vh;
 }
 
 .item-wrapper {
   position: absolute;
   will-change: transform, width, height, opacity;
-  border-radius: 0.5rem;
   overflow: hidden;
   cursor: pointer;
 }

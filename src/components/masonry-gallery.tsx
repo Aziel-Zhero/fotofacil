@@ -89,6 +89,7 @@ interface MasonryGalleryProps {
   hoverScale?: number;
   blurToFocus?: boolean;
   colorShiftOnHover?: boolean;
+  gap?: number;
 };
 
 export const MasonryGallery = ({
@@ -101,6 +102,7 @@ export const MasonryGallery = ({
   hoverScale = 0.95,
   blurToFocus = true,
   colorShiftOnHover = false,
+  gap = 16,
 }: MasonryGalleryProps) => {
   const columns = useMedia(
     [
@@ -113,7 +115,7 @@ export const MasonryGallery = ({
     1
   );
 
-  const [containerRef, { width }] = useMeasure();
+  const [containerRef, { width, height }] = useMeasure();
   const [imagesReady, setImagesReady] = useState(false);
 
   const getInitialPosition = (item: any) => {
@@ -154,29 +156,32 @@ export const MasonryGallery = ({
   }, [items]);
 
   const grid = useMemo(() => {
-    if (!width) return [];
+    if (!width) return { gridItems: [], containerHeight: 0 };
 
-    const colHeights = new Array(columns).fill(0);
-    const columnWidth = width / columns;
-
-    return items.map((child) => {
+    let colHeights = new Array(columns).fill(0);
+    let columnWidth = (width - (columns - 1) * gap) / columns;
+    let gridItems = items.map((child) => {
       const col = colHeights.indexOf(Math.min(...colHeights));
-      const x = columnWidth * col;
-      const scaledHeight = (child.height * columnWidth) / 600; // Assuming original width was 600
+      const x = col * (columnWidth + gap);
+      const scaledHeight = (child.height * columnWidth) / 600; 
       const y = colHeights[col];
 
-      colHeights[col] += scaledHeight;
+      colHeights[col] += scaledHeight + gap;
 
       return { ...child, x, y, w: columnWidth, h: scaledHeight };
     });
-  }, [columns, items, width]);
+
+    const containerHeight = Math.max(...colHeights) - gap;
+    return { gridItems, containerHeight };
+
+  }, [columns, items, width, gap]);
 
   const hasMounted = useRef(false);
 
   useLayoutEffect(() => {
     if (!imagesReady || !width) return;
 
-    grid.forEach((item, index) => {
+    grid.gridItems.forEach((item, index) => {
       const selector = `[data-key="${item.id}"]`;
       const animationProps = {
         x: item.x,
@@ -217,7 +222,7 @@ export const MasonryGallery = ({
     if(!hasMounted.current) {
         hasMounted.current = true;
     }
-  }, [grid, imagesReady, stagger, animateFrom, blurToFocus, duration, ease, width]);
+  }, [grid.gridItems, imagesReady, stagger, animateFrom, blurToFocus, duration, ease, width]);
 
   const handleMouseEnter = (e: React.MouseEvent<HTMLDivElement, MouseEvent>, item: any) => {
     const selector = `[data-key="${item.id}"]`;
@@ -270,8 +275,8 @@ export const MasonryGallery = ({
   }
 
   return (
-    <div ref={containerRef} className="list">
-      {grid.map((item) => {
+    <div ref={containerRef} className="list" style={{height: grid.containerHeight}}>
+      {grid.gridItems.map((item) => {
         return (
           <div
             key={item.id}
@@ -281,7 +286,6 @@ export const MasonryGallery = ({
             onMouseEnter={(e) => handleMouseEnter(e, item)}
             onMouseLeave={(e) => handleMouseLeave(e, item)}
             style={{
-              // Set initial invisible state before animation
               opacity: hasMounted.current ? 1 : 0,
             }}
           >
