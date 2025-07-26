@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { CreateAlbumDialog } from '@/components/create-album-dialog';
 import { PlusCircle } from 'lucide-react';
 import { ProfileCompletionDialog } from '@/components/profile-completion-dialog';
+import { DashboardStats } from '@/components/dashboard-stats';
 
 const mockAlbums = [
   { id: '1', name: 'Casamento na Toscana', photoCount: 125, status: 'Aguardando Seleção', client: 'Os Silva', createdAt: '2024-07-28T00:00:00', maxPhotos: 210 },
@@ -16,7 +17,10 @@ const mockAlbums = [
 export default function DashboardPage() {
   return (
     <div className="container mx-auto py-8">
-      <div className="flex justify-between items-center mb-8">
+      {/* Seção de Estatísticas */}
+      <DashboardStats />
+
+      <div className="flex justify-between items-center mb-8 mt-12">
         <div>
           <h1 className="text-3xl font-bold font-headline">Seus Álbuns</h1>
           <p className="text-muted-foreground">Gerencie seus projetos e seleções de clientes.</p>
