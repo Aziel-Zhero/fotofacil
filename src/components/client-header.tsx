@@ -19,7 +19,7 @@ export function ClientHeader() {
   const clientId = "ID:USR-12345"; // Mock data
 
   const navItems = [
-    { href: '/gallery', label: 'Meus Álbuns', icon: ImageIcon },
+    { href: '/gallery', label: 'Seleção de Fotos', icon: ImageIcon },
     { href: '/gallery/delivered', label: 'Entregues', icon: FolderOpen },
   ];
 

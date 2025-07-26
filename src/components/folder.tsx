@@ -1,7 +1,9 @@
+
 "use client";
 
 import { useState } from "react";
 import "./folder.css";
+import Link from "next/link";
 
 const darkenColor = (hex: string, percent: number) => {
   let color = hex.startsWith("#") ? hex.slice(1) : hex;
@@ -55,7 +57,8 @@ const Folder = ({
   const paper2 = darkenColor("#ffffff", 0.05);
   const paper3 = "#ffffff";
 
-  const handleClick = () => {
+  const handleClick = (e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent link navigation on first click
     setOpen((prev) => !prev);
     if (open) {
       setPaperOffsets(Array.from({ length: maxItems }, () => ({ x: 0, y: 0 })));
@@ -133,7 +136,7 @@ const Folder = ({
           </div>
         </div>
       </div>
-      <p className="mt-4 text-center font-headline text-lg text-foreground/90">{albumName}</p>
+      <p className="mt-8 text-center font-headline text-lg text-stone-300">{albumName}</p>
     </div>
   );
 };
