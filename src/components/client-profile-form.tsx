@@ -123,12 +123,14 @@ export function ClientProfileForm({ onSave }: { onSave?: () => void }) {
                             </FormItem>
                         )}
                     />
-                    <FormField name="name" control={form.control} render={({ field }) => (
-                        <FormItem><FormLabel>Nome Completo</FormLabel><FormControl><Input placeholder="Seu nome completo" {...field} /></FormControl><FormMessage /></FormItem>
-                    )} />
-                     <FormField name="whatsapp" control={form.control} render={({ field }) => (
-                        <FormItem><FormLabel>WhatsApp</FormLabel><FormControl><Input placeholder="(XX) 9XXXX-XXXX" {...field} /></FormControl><FormMessage /></FormItem>
-                    )} />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <FormField name="name" control={form.control} render={({ field }) => (
+                            <FormItem><FormLabel>Nome Completo</FormLabel><FormControl><Input placeholder="Seu nome completo" {...field} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                        <FormField name="whatsapp" control={form.control} render={({ field }) => (
+                            <FormItem><FormLabel>WhatsApp</FormLabel><FormControl><Input placeholder="(XX) 9XXXX-XXXX" {...field} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                    </div>
                 </CardContent>
             </Card>
 
@@ -141,7 +143,7 @@ export function ClientProfileForm({ onSave }: { onSave?: () => void }) {
                         <FormItem><FormLabel>Email</FormLabel><FormControl><Input type="email" placeholder="seu@email.com" {...field} /></FormControl><FormMessage /></FormItem>
                     )} />
                     <Separator />
-                    <div className='space-y-4'>
+                    <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
                         <FormField name="currentPassword" control={form.control} render={({ field }) => (
                             <FormItem><FormLabel>Senha Atual</FormLabel><FormControl><Input type="password" {...field} /></FormControl><FormMessage /></FormItem>
                         )} />
