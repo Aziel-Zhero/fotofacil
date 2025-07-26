@@ -102,7 +102,7 @@ export function ProfileForm({ onSave }: { onSave?: () => void }) {
                         render={({ field }) => (
                             <FormItem>
                                 <FormLabel>Foto de Perfil</FormLabel>
-                                <div className='flex items-center gap-4'>
+                                <div className='flex flex-col sm:flex-row sm:items-center gap-4'>
                                     <Avatar className="h-20 w-20">
                                         <AvatarImage src={avatarPreview} />
                                         <AvatarFallback>JS</AvatarFallback>
