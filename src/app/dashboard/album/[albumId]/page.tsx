@@ -50,24 +50,24 @@ export default function AlbumDetailPage({ params }: { params: { albumId: string 
   return (
     <div className="container mx-auto py-8">
         <div className="mb-8">
-            <Button variant="ghost" asChild className="mb-4 text-foreground">
+            <Button variant="ghost" asChild className="mb-4 text-white">
                 <Link href="/dashboard">
                     <ArrowLeft className="mr-2 h-4 w-4" />
                     Voltar para Álbuns
                 </Link>
             </Button>
-            <h1 className="text-3xl font-bold font-headline text-foreground">Gerenciar Álbum: {albumName}</h1>
+            <h1 className="text-3xl font-bold font-headline text-white">Gerenciar Álbum: {albumName}</h1>
             <p className="text-muted-foreground">Faça upload de novas fotos e veja a galeria atual.</p>
         </div>
         
         <div className="space-y-12">
             <div>
-                <h2 className="text-xl font-bold font-headline mb-4 text-foreground">Enviar Fotos</h2>
+                <h2 className="text-xl font-bold font-headline mb-4 text-white">Enviar Fotos</h2>
                 <PhotoUploader onUploadComplete={addPhoto} />
             </div>
             <div>
                 <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-xl font-bold font-headline text-foreground">Galeria</h2>
+                    <h2 className="text-xl font-bold font-headline text-white">Galeria</h2>
                     <ToggleGroup type="single" value={viewMode} onValueChange={(value: ViewMode) => value && setViewMode(value)} aria-label="Modo de Visualização">
                         <ToggleGroupItem value="grid" aria-label="Grade">
                             <Grid3x3 className="h-4 w-4" />
