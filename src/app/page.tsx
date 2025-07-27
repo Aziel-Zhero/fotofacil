@@ -17,11 +17,14 @@ const LandingHeader = () => (
         <span className="font-headline text-xl font-bold text-foreground">FotoFácil</span>
       </Link>
       <nav className="flex items-center gap-4">
-        <Button variant="outline" asChild>
-          <Link href="/dashboard">Acessar como Fotógrafo</Link>
+        <Button variant="ghost" asChild>
+          <Link href="/login">Login</Link>
         </Button>
-        <Button asChild>
+        <Button variant="outline" asChild>
           <Link href="/gallery">Acessar como Cliente</Link>
+        </Button>
+         <Button asChild>
+          <Link href="/register">Criar Conta</Link>
         </Button>
       </nav>
     </div>
