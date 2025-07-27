@@ -13,7 +13,7 @@ export default function DashboardLayout({
   const isSubscribed = true; // Mock data
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col bg-background text-foreground">
       <DashboardHeader />
       {isSubscribed && (
         <div className="bg-primary/10 border-b border-primary/20">

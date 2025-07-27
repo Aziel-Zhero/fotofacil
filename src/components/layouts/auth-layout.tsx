@@ -10,7 +10,7 @@ interface AuthLayoutProps {
 
 export default function AuthLayout({ children, title, description }: AuthLayoutProps) {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center p-4">
+    <div className="flex min-h-screen flex-col items-center justify-center p-4 bg-background text-foreground">
         <div className="absolute top-8 left-8">
             <Link href="/" className="flex items-center gap-2 text-foreground">
                 <Camera className="h-6 w-6 text-primary" />

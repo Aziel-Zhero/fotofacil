@@ -4,33 +4,33 @@
 
 @layer base {
   :root {
-    --background: 230 92% 19%; /* #03045e */
-    --foreground: 197 71% 91%; /* #caf0f8 */
+    --background: 276 56% 96%; /* #F1E5F8 - Lavender */
+    --foreground: 276 10% 20%; /* Dark purple text */
 
-    --card: 221 95% 27%; /* #023e8a */
-    --card-foreground: 197 71% 91%;
+    --card: 276 56% 100%;
+    --card-foreground: 276 10% 20%;
 
-    --popover: 230 92% 19%;
-    --popover-foreground: 197 71% 91%;
+    --popover: 276 56% 100%;
+    --popover-foreground: 276 10% 20%;
 
-    --primary: 190 100% 59%; /* #48cae4 */
-    --primary-foreground: 230 92% 10%;
+    --primary: 276 63% 59%; /* #A059D3 - Purple */
+    --primary-foreground: 300 100% 98%; /* Light text on primary */
 
-    --secondary: 196 100% 42%; /* #0096c7 */
-    --secondary-foreground: 230 92% 10%;
+    --secondary: 276 40% 90%;
+    --secondary-foreground: 276 10% 20%;
 
-    --muted: 221 95% 27%; /* #023e8a */
-    --muted-foreground: 197 71% 84%; /* #ade8f4 */
+    --muted: 276 40% 94%;
+    --muted-foreground: 276 10% 40%;
 
-    --accent: 205 100% 36%; /* #0077b6 */
-    --accent-foreground: 197 71% 91%;
+    --accent: 25 78% 65%; /* #E59866 - Orange */
+    --accent-foreground: 300 100% 98%;
 
     --destructive: 0 84% 60%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 205 100% 36%;
-    --input: 221 95% 27%;
-    --ring: 190 100% 59%;
+    --border: 276 20% 85%;
+    --input: 276 20% 90%;
+    --ring: 276 63% 59%;
 
     --radius: 0.8rem;
   }

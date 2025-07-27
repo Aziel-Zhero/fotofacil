@@ -6,7 +6,7 @@ export default function GalleryLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex min-h-screen flex-col text-foreground">
+    <div className="flex min-h-screen flex-col bg-background text-foreground">
       <ClientHeader />
       <main className="flex-1 p-4 sm:p-8">
         {children}
