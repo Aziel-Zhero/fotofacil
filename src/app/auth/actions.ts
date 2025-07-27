@@ -36,9 +36,8 @@ export async function signup(formData: FormData) {
     options: {
       data: {
         full_name: fullName,
-        username,
+        username: username,
         company_name: companyName,
-        role: 'photographer'
       },
     },
   });
@@ -47,8 +46,15 @@ export async function signup(formData: FormData) {
     if (error.message.includes("User already registered")) {
         return { error: "Este email já está cadastrado. Tente fazer login." };
     }
-     if (error.message.includes("duplicate key value violates unique constraint \"profiles_username_key\"")) {
-      return { error: "Este nome de usuário já está em uso. Por favor, escolha outro." };
+    // Este erro genérico do Postgres indica uma violação de chave única.
+    // Mapeamos para uma mensagem mais amigável.
+     if (error.message.includes("duplicate key value violates unique constraint")) {
+        if (error.message.includes("photographers_username_key")) {
+            return { error: "Este nome de usuário já está em uso. Por favor, escolha outro." };
+        }
+         if (error.message.includes("photographers_email_key")) {
+            return { error: "Este email já está cadastrado. Tente fazer login." };
+        }
     }
     return { error: `Ocorreu um erro ao registrar: ${error.message}` };
   }
