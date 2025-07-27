@@ -1,6 +1,20 @@
 import type { Metadata } from 'next';
 import { Toaster } from "@/components/ui/toaster"
+import { Belleza, Alegreya } from 'next/font/google';
+import { cn } from '@/lib/utils';
 import './globals.css';
+
+const fontHeadline = Belleza({
+  subsets: ['latin'],
+  weight: ['400'],
+  variable: '--font-headline',
+});
+
+const fontBody = Alegreya({
+  subsets: ['latin'],
+  weight: ['400', '700'],
+  variable: '--font-body',
+});
 
 export const metadata: Metadata = {
   title: 'FotoFácil',
@@ -14,12 +28,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR" suppressHydrationWarning>
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Alegreya:wght@400;700&family=Belleza&display=swap" rel="stylesheet" />
-      </head>
-      <body className="font-body antialiased">
+      <body className={cn(
+          "font-body antialiased",
+          fontHeadline.variable,
+          fontBody.variable
+      )}>
         {children}
         <Toaster />
       </body>
