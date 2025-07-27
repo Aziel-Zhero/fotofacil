@@ -16,7 +16,7 @@ const LandingHeader = () => (
         <Camera className="h-6 w-6 text-primary" />
         <span className="font-headline text-xl font-bold text-foreground">FotoFácil</span>
       </Link>
-      <nav className="flex items-center gap-4">
+      <nav className="flex items-center gap-2 sm:gap-4">
         <Button variant="ghost" asChild>
           <Link href="/login">Login</Link>
         </Button>
@@ -103,7 +103,7 @@ const GlassCard = ({ children, className }: { children: React.ReactNode, classNa
 
 export default function Home() {
   return (
-    <div className="flex min-h-screen flex-col text-foreground">
+    <div className="flex min-h-screen flex-col text-foreground bg-background">
       <DarkVeil
         hueShift={40}
         noiseIntensity={0.02}
@@ -122,7 +122,7 @@ export default function Home() {
             <p className="max-w-[600px] text-lg text-muted-foreground">
               FotoFácil é a plataforma inteligente para fotógrafos organizarem, compartilharem e gerenciarem seleções de fotos de forma profissional e segura. Otimize seu fluxo de trabalho e encante seus clientes com experiências visuais impecáveis.
             </p>
-            <div className="flex gap-4">
+            <div className="flex flex-col sm:flex-row gap-4">
               <Button size="lg" asChild>
                 <Link href="/register">Comece Gratuitamente</Link>
               </Button>
@@ -131,7 +131,7 @@ export default function Home() {
               </Button>
             </div>
           </div>
-          <div className="relative h-full min-h-[300px] md:min-h-[400px]">
+          <div className="relative h-64 min-h-[300px] md:min-h-[400px]">
              <Image
                 src="https://placehold.co/600x400.png"
                 alt="Portfólio de fotógrafo"
@@ -144,7 +144,7 @@ export default function Home() {
 
         {/* Masonry Gallery Section */}
         <section className="py-20 md:py-32">
-            <div className="container p-10 border rounded-xl bg-black/20 backdrop-blur-sm border-white/10">
+            <div className="container p-4 sm:p-10 border rounded-xl bg-black/20 backdrop-blur-sm border-white/10">
                  <h2 className="font-headline text-3xl md:text-4xl font-bold text-center mb-12">Galerias que Impressionam</h2>
                  <MasonryGallery
                     items={galleryItems}

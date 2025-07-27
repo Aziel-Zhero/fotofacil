@@ -4,33 +4,33 @@
 
 @layer base {
   :root {
-    --background: 220 41% 95%; /* Base: #ade8f4 */
-    --foreground: 230 92% 19%; /* Base: #03045e */
-    
-    --card: 219 44% 97%; /* Ligeiramente mais claro que o fundo: #caf0f8 */
-    --card-foreground: 230 92% 19%;
+    --background: 230 92% 19%; /* #03045e */
+    --foreground: 197 71% 91%; /* #caf0f8 */
 
-    --popover: 219 44% 97%;
-    --popover-foreground: 230 92% 19%;
+    --card: 221 95% 27%; /* #023e8a */
+    --card-foreground: 197 71% 91%;
 
-    --primary: 205 100% 36%; /* Principal: #0077b6 */
-    --primary-foreground: 210 40% 98%; /* Texto branco/claro para contraste */
+    --popover: 230 92% 19%;
+    --popover-foreground: 197 71% 91%;
 
-    --secondary: 196 100% 42%; /* Secundária: #0096c7 */
-    --secondary-foreground: 210 40% 98%;
+    --primary: 190 100% 59%; /* #48cae4 */
+    --primary-foreground: 230 92% 10%;
 
-    --muted: 197 71% 84%; /* Muted: #ade8f4 */
-    --muted-foreground: 205 100% 25%; /* Texto mais escuro para Muted */
-    
-    --accent: 190 100% 59%; /* Accent: #48cae4 */
-    --accent-foreground: 230 92% 19%;
+    --secondary: 196 100% 42%; /* #0096c7 */
+    --secondary-foreground: 230 92% 10%;
 
-    --destructive: 0 84% 60%; /* Padrão */
+    --muted: 221 95% 27%; /* #023e8a */
+    --muted-foreground: 197 71% 84%; /* #ade8f4 */
+
+    --accent: 205 100% 36%; /* #0077b6 */
+    --accent-foreground: 197 71% 91%;
+
+    --destructive: 0 84% 60%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 197 71% 84%; /* Mesma que muted para bordas suaves */
-    --input: 197 71% 88%; /* Um pouco mais claro que a borda */
-    --ring: 205 100% 36%; /* Mesma que a primária */
+    --border: 205 100% 36%;
+    --input: 221 95% 27%;
+    --ring: 190 100% 59%;
 
     --radius: 0.8rem;
   }
@@ -73,8 +73,7 @@
     @apply border-border;
   }
   body {
-    @apply text-foreground;
-    background-color: #000;
+    @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
 }

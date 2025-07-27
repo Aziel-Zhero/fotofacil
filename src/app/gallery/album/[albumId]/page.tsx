@@ -117,7 +117,7 @@ export default function ClientAlbumPage({ params }: { params: { albumId: string 
   }
 
   if (isLoading) {
-    return <div className="container mx-auto py-8 text-center">Carregando...</div>;
+    return <div className="container mx-auto py-8 text-center text-foreground">Carregando...</div>;
   }
 
   if (!isAuthenticated) {
@@ -147,16 +147,16 @@ export default function ClientAlbumPage({ params }: { params: { albumId: string 
 
   return (
     <>
-        <div className="container mx-auto py-8 mb-24"> {/* Margin bottom to make space for the footer */}
+        <div className="container mx-auto py-8 mb-24 md:mb-20"> {/* Margin bottom to make space for the footer */}
             <div className="mb-8">
                 <h1 className="text-3xl font-bold font-headline text-foreground/90">Álbum: {albumName}</h1>
-                <p className="text-muted-foreground text-foreground/80">
+                <p className="text-muted-foreground">
                     Visualize as {photos.length} fotos e faça sua seleção. Você pode escolher até {photoLimit} fotos.
                 </p>
             </div>
             
             <div>
-                <div className="flex justify-between items-center mb-4">
+                <div className="flex flex-col sm:flex-row justify-between items-center mb-4 gap-4">
                     <h2 className="text-xl font-bold font-headline text-foreground/90">Galeria</h2>
                     <ToggleGroup type="single" value={viewMode} onValueChange={(value: ViewMode) => value && setViewMode(value)} aria-label="Modo de Visualização">
                         <ToggleGroupItem value="grid" aria-label="Grade">
@@ -175,7 +175,7 @@ export default function ClientAlbumPage({ params }: { params: { albumId: string 
         </div>
 
         {/* Footer com contador e botão */}
-        <footer className="fixed bottom-0 left-0 right-0 bg-background border-t shadow-lg z-50">
+        <footer className="fixed bottom-0 left-0 right-0 bg-background/90 backdrop-blur-sm border-t shadow-lg z-50">
             <div className="container flex items-center justify-between h-20">
                 <div>
                     <p className="text-lg font-bold">
