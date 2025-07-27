@@ -31,7 +31,8 @@ export async function signup(formData: FormData) {
 
   const { email, password, fullName, username, companyName, phone } = parsed.data;
 
-  // Etapa 1: Criar o usuário no Supabase Auth
+  // Etapa Única: Criar o usuário no Supabase Auth com metadados.
+  // O gatilho no banco de dados cuidará da criação do perfil na tabela 'photographers'.
   const { data: authData, error: authError } = await supabase.auth.signUp({
     email,
     password,
@@ -41,7 +42,7 @@ export async function signup(formData: FormData) {
         username: username,
         companyName: companyName,
         phone: phone,
-        role: 'photographer',
+        role: 'photographer', // Essencial para o gatilho funcionar
       },
       emailRedirectTo: `/auth/callback`,
     },
@@ -51,6 +52,14 @@ export async function signup(formData: FormData) {
     if (authError.message.includes("User already registered")) {
         return { error: "Este email já está cadastrado. Tente fazer login." };
     }
+    if (authError.message.includes("duplicate key value violates unique constraint")) {
+       if (authError.message.includes("photographers_username_key")) {
+            return { error: "Este nome de usuário já está em uso. Por favor, escolha outro." };
+        }
+         if (authError.message.includes("photographers_email_key")) {
+            return { error: "Este email já está cadastrado. Tente fazer login." };
+        }
+    }
     return { error: `Erro no cadastro: ${authError.message}` };
   }
   
@@ -58,31 +67,7 @@ export async function signup(formData: FormData) {
     return { error: "Ocorreu um erro: o usuário não foi criado." };
   }
 
-  // Etapa 2: Inserir o perfil na tabela `photographers`
-  const { error: profileError } = await supabase.from('photographers').insert({
-    user_id: authData.user.id,
-    full_name: fullName,
-    email: email,
-    username: username,
-    company_name: companyName,
-    phone: phone,
-  });
-
-  if (profileError) {
-    // Se a criação do perfil falhar, o ideal seria deletar o usuário criado no Auth
-    // para evitar contas órfãs. Para simplificar, vamos apenas notificar o erro.
-     if (profileError.message.includes("duplicate key value violates unique constraint")) {
-        if (profileError.message.includes("photographers_username_key")) {
-            return { error: "Este nome de usuário já está em uso. Por favor, escolha outro." };
-        }
-         if (profileError.message.includes("photographers_email_key")) {
-            return { error: "Este email já está cadastrado. Tente fazer login." };
-        }
-    }
-    // Deleta o usuário órfão do Auth se a inserção no perfil falhar
-    await supabase.auth.admin.deleteUser(authData.user.id);
-    return { error: `Erro ao criar perfil: ${profileError.message}` };
-  }
-
+  // A criação do perfil agora é tratada automaticamente pelo gatilho no DB.
+  // Redireciona o usuário para a página de login com uma mensagem de sucesso.
   return redirect('/login?message=Cadastro realizado com sucesso! Por favor, faça o login.');
 }
