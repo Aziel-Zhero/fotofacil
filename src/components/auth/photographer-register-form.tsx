@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from 'next/link';
@@ -15,6 +16,10 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { CardContent, CardFooter } from '@/components/ui/card';
+import { signup } from '@/app/auth/actions';
+import { useState } from 'react';
+import { useToast } from '@/hooks/use-toast';
+import { Loader2 } from 'lucide-react';
 
 const formSchema = z.object({
   fullName: z.string().min(1, 'Nome completo é obrigatório'),
@@ -25,6 +30,9 @@ const formSchema = z.object({
 });
 
 export function PhotographerRegisterForm() {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -36,8 +44,23 @@ export function PhotographerRegisterForm() {
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    // Lógica de registro do fotógrafo
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    setIsSubmitting(true);
+    const formData = new FormData();
+    Object.entries(values).forEach(([key, value]) => {
+      formData.append(key, value);
+    });
+    
+    const result = await signup(formData);
+
+    if (result?.error) {
+      toast({
+        title: "Erro no Cadastro",
+        description: result.error,
+        variant: "destructive",
+      });
+    }
+    setIsSubmitting(false);
   }
 
   return (
@@ -51,7 +74,7 @@ export function PhotographerRegisterForm() {
             <FormItem><FormLabel>Nome da Empresa</FormLabel><FormControl><Input placeholder="Fotografia João da Silva" {...field} /></FormControl><FormMessage /></FormItem>
           )} />
           <FormField name="email" control={form.control} render={({ field }) => (
-            <FormItem><FormLabel>Email</FormLabel><FormControl><Input placeholder="joao.silva@example.com" {...field} /></FormControl><FormMessage /></FormItem>
+            <FormItem><FormLabel>Email</FormLabel><FormControl><Input type="email" placeholder="joao.silva@example.com" {...field} /></FormControl><FormMessage /></FormItem>
           )} />
           <FormField name="username" control={form.control} render={({ field }) => (
             <FormItem><FormLabel>Nome de Usuário</FormLabel><FormControl><Input placeholder="joao_silva_foto" {...field} /></FormControl><FormMessage /></FormItem>
@@ -61,7 +84,10 @@ export function PhotographerRegisterForm() {
           )} />
         </CardContent>
         <CardFooter className="flex-col gap-4">
-          <Button type="submit" className="w-full">Criar Conta</Button>
+          <Button type="submit" className="w-full" disabled={isSubmitting}>
+             {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            Criar Conta
+          </Button>
            <div className="text-sm text-muted-foreground">
             Já tem uma conta? <Link href="/login" className="underline">Login</Link>
           </div>
