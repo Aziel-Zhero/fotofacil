@@ -1,8 +1,8 @@
 
 "use client";
 
-import { useState } from 'react';
-import { ArrowLeft, Grid3x3, Rows, Square, Send } from "lucide-react";
+import { useState, useEffect } from 'react';
+import { ArrowLeft, Grid3x3, Rows, Square, Send, ShieldAlert } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { PhotoCarousel } from '@/components/photo-carousel';
@@ -11,17 +11,19 @@ import { Photo } from '@/app/dashboard/album/[albumId]/page';
 import { ClientPhotoGrid } from '@/components/client-photo-grid';
 import { PhotoViewerModal } from '@/components/photo-viewer-modal';
 import { useToast } from '@/hooks/use-toast';
+import { useRouter } from 'next/navigation';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 
 export type ViewMode = 'grid' | 'masonry' | 'carousel';
 
 export default function ClientAlbumPage({ params }: { params: { albumId: string } }) {
-  const albumName = "Casamento na Toscana"; // Mock data
-  const photoLimit = 50; // Mock data
-  const [viewMode, setViewMode] = useState<ViewMode>('grid');
-  const [selectedPhotos, setSelectedPhotos] = useState<Set<number>>(new Set());
-  const [viewingPhotoIndex, setViewingPhotoIndex] = useState<number | null>(null);
-  const { toast } = useToast();
+  const router = useRouter();
+  const [isAuthenticated, setIsAuthenticated] = useState(false); // Simula o estado de autenticação
+  const [isLoading, setIsLoading] = useState(true);
 
+  // Mock data - em uma aplicação real, seria buscado após a validação da senha
+  const albumName = "Casamento na Toscana"; 
+  const photoLimit = 50;
   const [photos, setPhotos] = useState<Photo[]>(
     Array.from({ length: 125 }, (_, i) => ({
         id: i + 1,
@@ -30,6 +32,20 @@ export default function ClientAlbumPage({ params }: { params: { albumId: string 
         name: `Foto_${String(i + 1).padStart(3, '0')}.jpg`
     }))
   );
+
+  useEffect(() => {
+    // Simula a verificação de um token/sessão
+    const sessionToken = sessionStorage.getItem(`album_token_${params.albumId}`);
+    if (sessionToken === 'true') {
+        setIsAuthenticated(true);
+    }
+    setIsLoading(false);
+  }, [params.albumId]);
+  
+  const [viewMode, setViewMode] = useState<ViewMode>('grid');
+  const [selectedPhotos, setSelectedPhotos] = useState<Set<number>>(new Set());
+  const [viewingPhotoIndex, setViewingPhotoIndex] = useState<number | null>(null);
+  const { toast } = useToast();
 
   const toggleSelection = (photoId: number) => {
     setSelectedPhotos(prev => {
@@ -52,7 +68,6 @@ export default function ClientAlbumPage({ params }: { params: { albumId: string 
   };
 
   const handleSubmitSelection = () => {
-    // Aqui você enviaria os dados para o backend
     toast({
         title: "Seleção Enviada com Sucesso!",
         description: "O fotógrafo foi notificado. Em breve, um novo álbum com suas fotos editadas estará disponível para download.",
@@ -87,7 +102,6 @@ export default function ClientAlbumPage({ params }: { params: { albumId: string 
   const renderGallery = () => {
     switch (viewMode) {
       case 'carousel':
-        // O carrossel é apenas para visualização, não para seleção
         return <PhotoCarousel photos={photos} />;
       case 'masonry':
       case 'grid':
@@ -102,16 +116,39 @@ export default function ClientAlbumPage({ params }: { params: { albumId: string 
     }
   }
 
+  if (isLoading) {
+    return <div className="container mx-auto py-8 text-center">Carregando...</div>;
+  }
+
+  if (!isAuthenticated) {
+     return (
+        <div className="container flex items-center justify-center min-h-[60vh]">
+            <Card className="w-full max-w-md text-center">
+                <CardHeader>
+                     <div className="mx-auto bg-destructive/10 p-3 rounded-full w-fit">
+                        <ShieldAlert className="w-8 h-8 text-destructive"/>
+                    </div>
+                    <CardTitle className="font-headline mt-4">Acesso Negado</CardTitle>
+                    <CardDescription>
+                        Você precisa de uma senha para visualizar este álbum.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <Button asChild>
+                        <Link href={`/gallery/access/${params.albumId}`}>
+                            Ir para a página de acesso
+                        </Link>
+                    </Button>
+                </CardContent>
+            </Card>
+        </div>
+    );
+  }
+
   return (
     <>
         <div className="container mx-auto py-8 mb-24"> {/* Margin bottom to make space for the footer */}
             <div className="mb-8">
-                <Button variant="ghost" asChild className="mb-4 text-foreground/90">
-                    <Link href="/gallery">
-                        <ArrowLeft className="mr-2 h-4 w-4" />
-                        Voltar para Meus Álbuns
-                    </Link>
-                </Button>
                 <h1 className="text-3xl font-bold font-headline text-foreground/90">Álbum: {albumName}</h1>
                 <p className="text-muted-foreground text-foreground/80">
                     Visualize as {photos.length} fotos e faça sua seleção. Você pode escolher até {photoLimit} fotos.
