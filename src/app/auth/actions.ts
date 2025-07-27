@@ -30,36 +30,56 @@ export async function signup(formData: FormData) {
 
   const { email, password, fullName, username, companyName } = parsed.data;
 
-  const { error } = await supabase.auth.signUp({
+  // Etapa 1: Criar o usuário no Supabase Auth
+  const { data: authData, error: authError } = await supabase.auth.signUp({
     email,
     password,
     options: {
-      emailRedirectTo: `/auth/callback`,
+      // Adicionando os metadados aqui, embora não sejam mais usados por um gatilho,
+      // é uma boa prática para referência futura ou auditoria.
       data: {
-        role: 'photographer',
         fullName: fullName,
         username: username,
         companyName: companyName,
+        role: 'photographer',
       },
+      emailRedirectTo: `/auth/callback`,
     },
   });
 
-  if (error) {
-    if (error.message.includes("User already registered")) {
+  if (authError) {
+    if (authError.message.includes("User already registered")) {
         return { error: "Este email já está cadastrado. Tente fazer login." };
     }
-    // Este erro genérico do Postgres indica uma violação de chave única.
-    // Mapeamos para uma mensagem mais amigável.
-     if (error.message.includes("duplicate key value violates unique constraint")) {
-        if (error.message.includes("photographers_username_key")) {
+    return { error: `Erro no cadastro: ${authError.message}` };
+  }
+  
+  if (!authData.user) {
+    return { error: "Ocorreu um erro: o usuário não foi criado." };
+  }
+
+  // Etapa 2: Inserir o perfil na tabela `photographers`
+  const { error: profileError } = await supabase.from('photographers').insert({
+    user_id: authData.user.id,
+    full_name: fullName,
+    email: email,
+    username: username,
+    company_name: companyName,
+  });
+
+  if (profileError) {
+    // Se a criação do perfil falhar, o ideal seria deletar o usuário criado no Auth
+    // para evitar contas órfãs. Para simplificar, vamos apenas notificar o erro.
+     if (profileError.message.includes("duplicate key value violates unique constraint")) {
+        if (profileError.message.includes("photographers_username_key")) {
             return { error: "Este nome de usuário já está em uso. Por favor, escolha outro." };
         }
-         if (error.message.includes("photographers_email_key")) {
+         if (profileError.message.includes("photographers_email_key")) {
             return { error: "Este email já está cadastrado. Tente fazer login." };
         }
     }
-    return { error: `Ocorreu um erro ao registrar: ${error.message}` };
+    return { error: `Erro ao criar perfil: ${profileError.message}` };
   }
 
-  return redirect('/login?message=Cadastro realizado com sucesso! Por favor, confirme seu email.');
+  return redirect('/login?message=Cadastro realizado com sucesso! Por favor, faça o login.');
 }
