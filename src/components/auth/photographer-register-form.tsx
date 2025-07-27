@@ -27,6 +27,7 @@ const formSchema = z.object({
   username: z.string().min(3, 'O nome de usuário deve ter pelo menos 3 caracteres'),
   password: z.string().min(8, 'A senha deve ter pelo menos 8 caracteres'),
   companyName: z.string().min(1, 'Nome da empresa é obrigatório'),
+  phone: z.string().min(10, 'Telefone inválido'),
 });
 
 export function PhotographerRegisterForm() {
@@ -41,6 +42,7 @@ export function PhotographerRegisterForm() {
       username: '',
       password: '',
       companyName: '',
+      phone: '',
     },
   });
 
@@ -75,6 +77,9 @@ export function PhotographerRegisterForm() {
           )} />
           <FormField name="email" control={form.control} render={({ field }) => (
             <FormItem><FormLabel>Email</FormLabel><FormControl><Input type="email" placeholder="joao.silva@example.com" {...field} /></FormControl><FormMessage /></FormItem>
+          )} />
+           <FormField name="phone" control={form.control} render={({ field }) => (
+            <FormItem><FormLabel>Telefone</FormLabel><FormControl><Input placeholder="(11) 99999-8888" {...field} /></FormControl><FormMessage /></FormItem>
           )} />
           <FormField name="username" control={form.control} render={({ field }) => (
             <FormItem><FormLabel>Nome de Usuário</FormLabel><FormControl><Input placeholder="joao_silva_foto" {...field} /></FormControl><FormMessage /></FormItem>

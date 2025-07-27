@@ -11,6 +11,7 @@ const signupSchema = z.object({
   fullName: z.string().min(1, 'Nome completo é obrigatório.'),
   username: z.string().min(3, 'O nome de usuário deve ter pelo menos 3 caracteres.'),
   companyName: z.string().min(1, 'Nome da empresa é obrigatório.'),
+  phone: z.string().min(1, 'Telefone é obrigatório.'),
 });
 
 export async function signup(formData: FormData) {
@@ -28,19 +29,19 @@ export async function signup(formData: FormData) {
     return { error: errorMessages.trim() };
   }
 
-  const { email, password, fullName, username, companyName } = parsed.data;
+  const { email, password, fullName, username, companyName, phone } = parsed.data;
 
   // Etapa 1: Criar o usuário no Supabase Auth
   const { data: authData, error: authError } = await supabase.auth.signUp({
     email,
     password,
     options: {
-      // Adicionando os metadados aqui, embora não sejam mais usados por um gatilho,
-      // é uma boa prática para referência futura ou auditoria.
+      // Este metadado é útil para referência, mas não usado por gatilhos.
       data: {
         fullName: fullName,
         username: username,
         companyName: companyName,
+        phone: phone,
         role: 'photographer',
       },
       emailRedirectTo: `/auth/callback`,
@@ -65,6 +66,7 @@ export async function signup(formData: FormData) {
     email: email,
     username: username,
     company_name: companyName,
+    phone: phone,
   });
 
   if (profileError) {
@@ -78,8 +80,11 @@ export async function signup(formData: FormData) {
             return { error: "Este email já está cadastrado. Tente fazer login." };
         }
     }
+    // Deleta o usuário órfão do Auth se a inserção no perfil falhar
+    await supabase.auth.admin.deleteUser(authData.user.id);
     return { error: `Erro ao criar perfil: ${profileError.message}` };
   }
 
   return redirect('/login?message=Cadastro realizado com sucesso! Por favor, faça o login.');
 }
+

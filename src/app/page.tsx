@@ -103,7 +103,7 @@ const GlassCard = ({ children, className }: { children: React.ReactNode, classNa
 
 export default function Home() {
   return (
-    <div className="flex min-h-screen flex-col text-foreground bg-background">
+    <div className="flex min-h-screen flex-col text-foreground bg-background dark">
       <DarkVeil
         hueShift={40}
         noiseIntensity={0.02}
