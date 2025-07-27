@@ -35,9 +35,10 @@ export async function signup(formData: FormData) {
     password,
     options: {
       data: {
-        full_name: fullName,
-        username: username,
-        company_name: companyName,
+        role: 'photographer',
+        fullName,
+        username,
+        companyName,
       },
     },
   });
