@@ -36,7 +36,6 @@ export async function signup(formData: FormData) {
     email,
     password,
     options: {
-      // Este metadado é útil para referência, mas não usado por gatilhos.
       data: {
         fullName: fullName,
         username: username,
@@ -87,4 +86,3 @@ export async function signup(formData: FormData) {
 
   return redirect('/login?message=Cadastro realizado com sucesso! Por favor, faça o login.');
 }
-
