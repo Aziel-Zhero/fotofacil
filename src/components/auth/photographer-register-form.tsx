@@ -2,7 +2,7 @@
 "use client";
 
 import Link from 'next/link';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Button } from '@/components/ui/button';
@@ -20,6 +20,7 @@ import { signup } from '@/app/auth/actions';
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
+import PhoneInput from 'react-phone-number-input';
 
 const formSchema = z.object({
   fullName: z.string().min(1, 'Nome completo é obrigatório'),
@@ -78,9 +79,26 @@ export function PhotographerRegisterForm() {
           <FormField name="email" control={form.control} render={({ field }) => (
             <FormItem><FormLabel>Email</FormLabel><FormControl><Input type="email" placeholder="joao.silva@example.com" {...field} /></FormControl><FormMessage /></FormItem>
           )} />
-           <FormField name="phone" control={form.control} render={({ field }) => (
-            <FormItem><FormLabel>Telefone</FormLabel><FormControl><Input placeholder="(11) 99999-8888" {...field} /></FormControl><FormMessage /></FormItem>
-          )} />
+           <Controller
+            name="phone"
+            control={form.control}
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Telefone</FormLabel>
+                <FormControl>
+                  <PhoneInput
+                    international
+                    defaultCountry="BR"
+                    placeholder="Seu número de telefone"
+                    value={field.value}
+                    onChange={field.onChange}
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+           />
           <FormField name="username" control={form.control} render={({ field }) => (
             <FormItem><FormLabel>Nome de Usuário</FormLabel><FormControl><Input placeholder="joao_silva_foto" {...field} /></FormControl><FormMessage /></FormItem>
           )} />

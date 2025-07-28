@@ -1,6 +1,4 @@
--- Limpa o estado anterior (garantindo a ordem correta de exclusão)
-DROP TRIGGER IF EXISTS on_auth_user_created_photographer ON auth.users;
-DROP FUNCTION IF EXISTS public.handle_new_photographer;
+-- Limpa o estado anterior (caso esteja recriando)
 DROP TABLE IF EXISTS public.clients CASCADE;
 DROP TABLE IF EXISTS public.photographers CASCADE;
 DROP TYPE IF EXISTS public.user_role;
@@ -36,53 +34,37 @@ ALTER TABLE public.photographers ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.clients ENABLE ROW LEVEL SECURITY;
 
 -- Políticas de segurança para fotógrafos
-CREATE POLICY "Photographers can access their own profile" ON public.photographers
-  FOR ALL USING (auth.uid() = user_id)
+CREATE POLICY "Photographer can access only own profile"
+  ON public.photographers
+  FOR ALL
+  USING (auth.uid() = user_id)
   WITH CHECK (auth.uid() = user_id);
+  
+CREATE POLICY "Allow service_role to insert"
+  ON public.photographers
+  FOR INSERT
+  TO service_role
+  WITH CHECK (true);
 
-CREATE POLICY "Allow service_role to insert photographers" ON public.photographers
-  FOR INSERT TO service_role WITH CHECK (true);
 
--- Políticas de segurança para clientes (separadas para mais segurança)
-CREATE POLICY "Photographers can view their own clients" ON public.clients
-  FOR SELECT USING (auth.uid() = photographer_id);
+-- Políticas de segurança para clientes
+CREATE POLICY "Photographers can view their clients"
+  ON public.clients
+  FOR SELECT
+  USING (auth.uid() = photographer_id);
 
-CREATE POLICY "Photographers can add their own clients" ON public.clients
-  FOR INSERT WITH CHECK (auth.uid() = photographer_id);
-
-CREATE POLICY "Photographers can update their own clients" ON public.clients
-    FOR UPDATE USING (auth.uid() = photographer_id)
+CREATE POLICY "Photographers can add their clients"
+  ON public.clients
+  FOR INSERT
+  WITH CHECK (auth.uid() = photographer_id);
+  
+CREATE POLICY "Photographers can update their own clients"
+    ON public.clients
+    FOR UPDATE
+    USING (auth.uid() = photographer_id)
     WITH CHECK (auth.uid() = photographer_id);
 
-CREATE POLICY "Photographers can delete their own clients" ON public.clients
-    FOR DELETE USING (auth.uid() = photographer_id);
-
-
--- Função para criar fotógrafo automaticamente ao registrar no Supabase Auth
-CREATE OR REPLACE FUNCTION public.handle_new_photographer()
-RETURNS TRIGGER
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path = public
-AS $$
-BEGIN
-  IF (NEW.raw_user_meta_data ->> 'role') = 'photographer' THEN
-    INSERT INTO public.photographers (user_id, full_name, email, username, company_name, phone)
-    VALUES (
-      NEW.id,
-      NEW.raw_user_meta_data ->> 'fullName',
-      NEW.email,
-      NEW.raw_user_meta_data ->> 'username',
-      NEW.raw_user_meta_data ->> 'companyName',
-      NEW.raw_user_meta_data ->> 'phone'
-    );
-  END IF;
-  RETURN NEW;
-END;
-$$;
-
--- Gatilho para executar a função ao criar novo usuário
-CREATE TRIGGER on_auth_user_created_photographer
-  AFTER INSERT ON auth.users
-  FOR EACH ROW
-  EXECUTE FUNCTION public.handle_new_photographer();
+CREATE POLICY "Photographers can delete their own clients"
+    ON public.clients
+    FOR DELETE
+    USING (auth.uid() = photographer_id);

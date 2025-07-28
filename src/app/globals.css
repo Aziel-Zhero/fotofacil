@@ -87,3 +87,16 @@
   z-index: -1;
   pointer-events: none;
 }
+
+/* react-phone-number-input styles */
+.PhoneInputInput {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  outline: none;
+}
+
+.PhoneInputCountry {
+  margin-right: 0.5rem;
+}
