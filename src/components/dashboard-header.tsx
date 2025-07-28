@@ -36,8 +36,6 @@ export function DashboardHeader() {
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [isSubscriber, setIsSubscriber] = useState(true); // Mock data for subscription status
   const currentPlan = "Essencial Semestral"; // Mock data
-  const planActivationDate = "25 de Julho, 2024"; // Mock data
-  const planExpirationDate = "25 de Janeiro, 2025"; // Mock data
 
   useEffect(() => {
     const supabase = createClient();
@@ -125,16 +123,6 @@ export function DashboardHeader() {
                             ))}
                         </DropdownMenuGroup>
                         <DropdownMenuSeparator />
-                         {isSubscriber && (
-                            <>
-                                <div className="px-2 py-1.5 text-xs text-muted-foreground">
-                                    <p className="font-semibold text-foreground mb-1">Plano Atual: {currentPlan}</p>
-                                    <p>Ativo desde: {planActivationDate}</p>
-                                    <p>Expira em: {planExpirationDate}</p>
-                                </div>
-                                <DropdownMenuSeparator />
-                            </>
-                         )}
                          <div className="md:hidden">
                             {navItems.map(item => (
                                 <DropdownMenuItem key={item.href} asChild>
