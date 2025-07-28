@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -18,11 +18,13 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Separator } from './ui/separator';
-import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
-import { Upload } from 'lucide-react';
+import { Avatar, AvatarImage, AvatarFallback } from './ui/avatar';
+import { Upload, Loader2 } from 'lucide-react';
+import { createClient } from '@/lib/supabase/client';
+import { type User } from '@supabase/supabase-js';
 
 const profileSchema = z.object({
-    name: z.string().min(1, 'Nome é obrigatório.'),
+    fullName: z.string().min(1, 'Nome é obrigatório.'),
     companyName: z.string().min(1, "Nome da empresa é obrigatório"),
     email: z.string().email('Endereço de email inválido'),
     currentPassword: z.string().optional(),
@@ -50,22 +52,26 @@ const profileSchema = z.object({
 });
 
 
-export function ProfileForm({ onSave }: { onSave?: () => void }) {
+export function ProfileForm({ user, onSave }: { user: User, onSave?: () => void }) {
     const { toast } = useToast();
+    const supabase = createClient();
     const avatarInputRef = useRef<HTMLInputElement>(null);
-    const [avatarPreview, setAvatarPreview] = useState("https://placehold.co/100x100.png");
+    const [avatarPreview, setAvatarPreview] = useState(user?.user_metadata.avatar_url || "https://placehold.co/100x100.png");
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const form = useForm<z.infer<typeof profileSchema>>({
         resolver: zodResolver(profileSchema),
         defaultValues: {
-            name: "John Smith",
-            companyName: "Fotografia John Smith",
-            email: "joao.silva@example.com",
+            fullName: user?.user_metadata.fullName || '',
+            companyName: user?.user_metadata.companyName || '',
+            email: user?.email || '',
             currentPassword: "",
             newPassword: "",
             confirmPassword: "",
         },
       });
+
+    const { formState: { isDirty } } = form;
 
     const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -78,18 +84,32 @@ export function ProfileForm({ onSave }: { onSave?: () => void }) {
         }
     }
     
-    function onSubmit(values: z.infer<typeof profileSchema>) {
-        // Lógica de atualização de perfil aqui
-        toast({
-            title: "Perfil Atualizado",
-            description: "Suas informações foram salvas com sucesso.",
-        });
-        onSave?.();
+    async function onSubmit(values: z.infer<typeof profileSchema>) {
+        setIsSubmitting(true);
+        const { fullName, companyName } = values;
+        const { error } = await supabase.auth.updateUser({
+            data: { fullName, companyName }
+        })
+
+        if (error) {
+            toast({
+                title: "Erro ao salvar perfil",
+                description: error.message,
+                variant: "destructive"
+            });
+        } else {
+             toast({
+                title: "Perfil Atualizado",
+                description: "Suas informações foram salvas com sucesso.",
+            });
+            onSave?.();
+        }
+        setIsSubmitting(false);
       }
 
   return (
     <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <Card>
                 <CardHeader>
                     <CardTitle className="text-xl">Informações Pessoais</CardTitle>
@@ -105,7 +125,7 @@ export function ProfileForm({ onSave }: { onSave?: () => void }) {
                                 <div className='flex flex-col sm:flex-row sm:items-center gap-4'>
                                     <Avatar className="h-20 w-20">
                                         <AvatarImage src={avatarPreview} />
-                                        <AvatarFallback>JS</AvatarFallback>
+                                        <AvatarFallback>{user?.user_metadata.fullName?.charAt(0) || 'U'}</AvatarFallback>
                                     </Avatar>
                                     <Button type="button" variant="outline" onClick={() => avatarInputRef.current?.click()}>
                                         <Upload className="mr-2"/>
@@ -125,7 +145,7 @@ export function ProfileForm({ onSave }: { onSave?: () => void }) {
                         )}
                     />
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <FormField name="name" control={form.control} render={({ field }) => (
+                        <FormField name="fullName" control={form.control} render={({ field }) => (
                             <FormItem><FormLabel>Nome Completo</FormLabel><FormControl><Input placeholder="Seu nome completo" {...field} /></FormControl><FormMessage /></FormItem>
                         )} />
                         <FormField name="companyName" control={form.control} render={({ field }) => (
@@ -142,9 +162,14 @@ export function ProfileForm({ onSave }: { onSave?: () => void }) {
                 </CardHeader>
                 <CardContent className="space-y-6">
                      <FormField name="email" control={form.control} render={({ field }) => (
-                        <FormItem><FormLabel>Email</FormLabel><FormControl><Input type="email" placeholder="seu@email.com" {...field} /></FormControl><FormMessage /></FormItem>
+                        <FormItem>
+                            <FormLabel>Email</FormLabel>
+                            <FormControl><Input type="email" readOnly disabled placeholder="seu@email.com" {...field} /></FormControl>
+                            <FormMessage />
+                        </FormItem>
                     )} />
                     <Separator />
+                    <p className="text-sm text-muted-foreground">Para alterar sua senha, preencha os campos abaixo. Caso contrário, deixe-os em branco.</p>
                     <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
                         <FormField name="currentPassword" control={form.control} render={({ field }) => (
                             <FormItem><FormLabel>Senha Atual</FormLabel><FormControl><Input type="password" {...field} /></FormControl><FormMessage /></FormItem>
@@ -160,7 +185,10 @@ export function ProfileForm({ onSave }: { onSave?: () => void }) {
             </Card>
 
             <div className="flex justify-end">
-                <Button type="submit">Salvar Alterações</Button>
+                <Button type="submit" disabled={!isDirty || isSubmitting}>
+                     {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Salvar Alterações
+                </Button>
             </div>
         </form>
     </Form>

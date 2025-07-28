@@ -1,9 +1,10 @@
-
 import { AlbumCard } from '@/components/album-card';
 import { Button } from '@/components/ui/button';
 import { CreateAlbumDialog } from '@/components/create-album-dialog';
 import { PlusCircle } from 'lucide-react';
 import { ProfileCompletionDialog } from '@/components/profile-completion-dialog';
+import { createClient } from '@/lib/supabase/server';
+import { redirect } from 'next/navigation';
 
 const mockAlbums = [
   { id: '1', name: 'Casamento na Toscana', photoCount: 125, status: 'Aguardando Seleção', client: 'Os Silva', createdAt: '2024-07-28T00:00:00', maxPhotos: 210 },
@@ -13,7 +14,18 @@ const mockAlbums = [
 ];
 
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+  const supabase = createClient();
+
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    return redirect('/login');
+  }
+
+  // Verificar se o perfil está completo. Em um app real, você teria uma coluna como `profile_complete`
+  const isProfileComplete = user.user_metadata?.companyName; // Usando companyName como indicador
+
   return (
     <div className="container mx-auto py-8">
 
@@ -36,8 +48,9 @@ export default function DashboardPage() {
         ))}
       </div>
       
-      {/* Este diálogo será acionado com base no estado do usuário em um aplicativo real */}
-      <ProfileCompletionDialog />
+      {!isProfileComplete && (
+        <ProfileCompletionDialog user={user} />
+      )}
     </div>
   );
 }

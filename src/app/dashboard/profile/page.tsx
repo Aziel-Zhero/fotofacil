@@ -1,7 +1,16 @@
 import { ProfileForm } from "@/components/profile-form";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { createClient } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
 
-export default function ProfilePage() {
+export default async function ProfilePage() {
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+        return redirect('/login');
+    }
+
   return (
     <div className="container mx-auto py-8 max-w-2xl">
       <Card>
@@ -12,7 +21,7 @@ export default function ProfilePage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <ProfileForm />
+          <ProfileForm user={user} />
         </CardContent>
       </Card>
     </div>
