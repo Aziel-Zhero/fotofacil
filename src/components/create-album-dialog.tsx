@@ -24,8 +24,9 @@ import {
     FormLabel,
     FormMessage,
   } from '@/components/ui/form';
-import { Copy, RefreshCw } from 'lucide-react';
+import { Copy, Loader2, RefreshCw } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { createAlbum } from '../app/dashboard/actions';
 
 const formSchema = z.object({
   name: z.string().min(1, "O nome do álbum é obrigatório."),
@@ -43,6 +44,7 @@ function generateSecurePassword() {
 
 export function CreateAlbumDialog({ children }: { children: React.ReactNode }) {
     const [open, setOpen] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const { toast } = useToast();
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -73,11 +75,33 @@ export function CreateAlbumDialog({ children }: { children: React.ReactNode }) {
         }
     }
 
-    function onSubmit(values: z.infer<typeof formSchema>) {
-        // Lógica de criação de álbum aqui
+    async function onSubmit(values: z.infer<typeof formSchema>) {
+      setIsSubmitting(true);
+      const formData = new FormData();
+      Object.entries(values).forEach(([key, value]) => {
+          if (value !== undefined && value !== null) {
+            formData.append(key, String(value));
+          }
+      });
+
+      const result = await createAlbum(formData);
+
+      if (result?.error) {
+        toast({
+          title: "Erro ao Criar Álbum",
+          description: result.error,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Álbum Criado com Sucesso!",
+          description: `O álbum "${values.name}" foi criado.`,
+        });
         setOpen(false);
         form.reset();
       }
+      setIsSubmitting(false);
+    }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -86,7 +110,7 @@ export function CreateAlbumDialog({ children }: { children: React.ReactNode }) {
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle className="font-headline">Criar Novo Álbum</DialogTitle>
+          <DialogTitle className="font-headline text-textDark">Criar Novo Álbum</DialogTitle>
           <DialogDescription>
             Preencha os detalhes abaixo para criar um novo álbum para seu cliente.
           </DialogDescription>
@@ -107,7 +131,7 @@ export function CreateAlbumDialog({ children }: { children: React.ReactNode }) {
                         <FormLabel>Senha de Acesso</FormLabel>
                         <div className="flex gap-2">
                              <FormControl>
-                                <Input type="text" placeholder="Gere uma senha" {...field} readOnly className="bg-muted"/>
+                                <Input type="text" placeholder="Gere uma senha" {...field} readOnly className="bg-muted/50"/>
                              </FormControl>
                              <Button type="button" variant="outline" size="icon" onClick={handleGeneratePassword}>
                                 <RefreshCw className="h-4 w-4"/>
@@ -131,7 +155,10 @@ export function CreateAlbumDialog({ children }: { children: React.ReactNode }) {
                     <FormItem><FormLabel>Fotos de Cortesia (Surpresa)</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>
                 )} />
                 <DialogFooter>
-                    <Button type="submit">Criar Álbum</Button>
+                    <Button type="submit" disabled={isSubmitting}>
+                      {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      Criar Álbum
+                    </Button>
                 </DialogFooter>
             </form>
         </Form>

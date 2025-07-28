@@ -14,7 +14,7 @@ interface AlbumCardProps {
     photoCount: number;
     status: string;
     client: string;
-    createdAt?: string; // Tornar opcional para segurança
+    createdAt?: string;
     maxPhotos: number;
   };
 }
@@ -38,9 +38,9 @@ export function AlbumCard({ album }: AlbumCardProps) {
   const creationDate = album.createdAt ? new Date(album.createdAt) : null;
 
   return (
-    <Card className="flex flex-col hover:shadow-lg transition-shadow duration-300">
+    <Card className="flex flex-col hover:shadow-lg transition-shadow duration-300 bg-card text-card-foreground">
       <CardHeader>
-        <CardTitle className="font-headline truncate">{album.name}</CardTitle>
+        <CardTitle className="font-headline truncate text-textDark">{album.name}</CardTitle>
         <CardDescription>
             <Badge variant={getStatusVariant(album.status)}>{album.status}</Badge>
         </CardDescription>

@@ -21,10 +21,14 @@ const navItems = [
   { href: '/dashboard', label: 'Painel', icon: Home },
   { href: '/dashboard/analysis', label: 'Análise', icon: BarChart },
   { href: '/dashboard/delivered', label: 'Entregues', icon: FolderArchive },
-  { href: '/dashboard/settings', label: 'Configurações', icon: Settings },
   { href: '/dashboard/subscription', label: 'Assinatura', icon: Star },
-  { href: '/dashboard/help', label: 'Ajuda', icon: HelpCircle },
 ];
+
+const profileNavItems = [
+    { href: '/dashboard/profile', label: 'Perfil', icon: User },
+    { href: '/dashboard/settings', label: 'Configurações', icon: Settings },
+    { href: '/dashboard/help', label: 'Ajuda', icon: HelpCircle },
+]
 
 export function DashboardHeader() {
   const pathname = usePathname();
@@ -50,18 +54,18 @@ export function DashboardHeader() {
   }
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background">
+    <header className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-sm">
         <div className="container flex h-16 items-center justify-between">
             <div className="flex items-center gap-6">
                 <Link href="/dashboard" className="flex items-center gap-2">
-                    <Aperture className="h-8 w-8 text-primary" />
-                    <span className="font-headline text-xl font-bold">FotoFácil</span>
+                    <Aperture className="h-8 w-8 text-accent" />
+                    <span className="font-headline text-xl font-bold text-textDark">FotoFácil</span>
                 </Link>
                 <nav className="hidden md:flex items-center gap-1">
                     {navItems.map((item) => (
                     <Button
                         key={item.href}
-                        variant={pathname === item.href ? 'secondary' : 'ghost'}
+                        variant={pathname.startsWith(item.href) && (item.href !== '/dashboard' || pathname === '/dashboard') ? 'secondary' : 'ghost'}
                         className="justify-start"
                         asChild
                     >
@@ -82,7 +86,7 @@ export function DashboardHeader() {
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-                            <Avatar className="h-10 w-10">
+                            <Avatar className="h-10 w-10 border-2 border-border">
                                 <AvatarImage src={user?.user_metadata.avatar_url} alt={user?.user_metadata.fullName} />
                                 <AvatarFallback>
                                     {getInitials(user?.user_metadata.fullName || '')}
@@ -94,7 +98,7 @@ export function DashboardHeader() {
                         <DropdownMenuLabel className="font-normal">
                             <div className="flex flex-col space-y-1">
                                 <div className="flex items-center gap-2">
-                                    <p className="text-sm font-medium leading-none font-headline">{user?.user_metadata.fullName || "Usuário"}</p>
+                                    <p className="text-sm font-medium leading-none font-headline text-textDark">{user?.user_metadata.fullName || "Usuário"}</p>
                                     {isSubscriber && <Crown className="h-4 w-4 text-yellow-500" />}
                                 </div>
                                 <p className="text-xs leading-none text-muted-foreground">
@@ -114,15 +118,20 @@ export function DashboardHeader() {
                             ))}
                             <DropdownMenuSeparator />
                         </div>
-                        <DropdownMenuItem asChild>
-                           <Link href="/dashboard/profile">
-                                <User className="mr-2 h-4 w-4" />
-                                <span>Perfil</span>
-                            </Link>
-                        </DropdownMenuItem>
+                         {profileNavItems.map(item => (
+                                <DropdownMenuItem key={item.href} asChild>
+                                    <Link href={item.href}>
+                                        <item.icon className="mr-2 h-4 w-4" />
+                                        <span>{item.label}</span>
+                                    </Link>
+                                </DropdownMenuItem>
+                            ))}
                         <DropdownMenuSeparator />
                         <DropdownMenuItem asChild>
-                            <Link href="/">
+                            <Link href="/login" onClick={async () => {
+                                const supabase = createClient();
+                                await supabase.auth.signOut();
+                            }}>
                                 <LogOut className="mr-2 h-4 w-4" />
                                 <span>Sair</span>
                             </Link>
