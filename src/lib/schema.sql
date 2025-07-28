@@ -1,11 +1,11 @@
--- Limpa o estado anterior para garantir um ambiente limpo
+-- Limpa o estado anterior (caso esteja recriando)
 DROP TRIGGER IF EXISTS on_auth_user_created_photographer ON auth.users;
 DROP FUNCTION IF EXISTS public.handle_new_photographer();
 DROP TABLE IF EXISTS public.clients CASCADE;
 DROP TABLE IF EXISTS public.photographers CASCADE;
 DROP TYPE IF EXISTS public.user_role;
 
--- Cria enum para papel do usuário
+-- Cria enum para papel do usuário (opcional, se quiser usar no futuro)
 CREATE TYPE public.user_role AS ENUM ('photographer', 'client');
 
 -- Cria a tabela de fotógrafos
@@ -36,23 +36,27 @@ ALTER TABLE public.photographers ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.clients ENABLE ROW LEVEL SECURITY;
 
 -- Políticas de segurança para fotógrafos
-CREATE POLICY "Photographers can access their own profile"
-  ON public.photographers FOR ALL
-  USING (auth.uid() = user_id)
-  WITH CHECK (auth.uid() = user_id);
-
 CREATE POLICY "Allow service_role to insert photographers"
-  ON public.photographers FOR INSERT
+  ON public.photographers
+  FOR INSERT
   TO service_role
   WITH CHECK (true);
 
+CREATE POLICY "Photographer can access only own profile"
+  ON public.photographers
+  FOR ALL
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
+
 -- Políticas de segurança para clientes
 CREATE POLICY "Photographers can view their own clients"
-  ON public.clients FOR SELECT
+  ON public.clients
+  FOR SELECT
   USING (auth.uid() = photographer_id);
 
-CREATE POLICY "Photographers can insert their own clients"
-  ON public.clients FOR INSERT
+CREATE POLICY "Photographers can add their own clients"
+  ON public.clients
+  FOR INSERT
   WITH CHECK (auth.uid() = photographer_id);
 
 -- Função para criar fotógrafo automaticamente ao registrar no Supabase Auth
@@ -77,7 +81,6 @@ BEGIN
   RETURN NEW;
 END;
 $$;
-
 
 -- Gatilho para executar a função ao criar novo usuário
 CREATE TRIGGER on_auth_user_created_photographer
