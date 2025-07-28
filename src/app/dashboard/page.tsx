@@ -1,3 +1,4 @@
+
 import { AlbumCard } from '@/components/album-card';
 import { Button } from '@/components/ui/button';
 import { CreateAlbumDialog } from '@/components/create-album-dialog';
@@ -15,36 +16,42 @@ export default async function DashboardPage() {
     return redirect('/login');
   }
 
-  const { data: albums, error } = await supabase
+  // Fetch albums first
+  const { data: albums, error: albumsError } = await supabase
     .from('albums')
-    .select(`
-      id,
-      name,
-      status,
-      created_at,
-      selection_limit,
-      photos(count),
-      clients(name)
-    `)
+    .select('*')
     .eq('photographer_id', user.id)
     .order('created_at', { ascending: false });
 
-  if (error) {
-    console.error("Error fetching albums:", error);
-    // Handle error appropriately
+  if (albumsError) {
+    console.error("Error fetching albums:", albumsError);
+    // You could return an error message to the user here
+    return <div>Error loading albums.</div>;
+  }
+  
+  const getClientName = async (clientId: string) => {
+    const { data, error } = await supabase.from('clients').select('name').eq('id', clientId).single();
+    if (error) return 'Cliente não encontrado';
+    return data.name;
+  };
+
+  const getPhotoCount = async (albumId: string) => {
+    const { count, error } = await supabase.from('photos').select('*', { count: 'exact', head: true }).eq('album_id', albumId);
+    if (error) return 0;
+    return count;
   }
 
-  const isProfileComplete = user.user_metadata?.companyName; 
-
-  const formattedAlbums = albums?.map(album => ({
+  const formattedAlbums = await Promise.all(albums?.map(async (album) => ({
     id: album.id,
     name: album.name,
-    photoCount: album.photos[0]?.count || 0,
+    photoCount: await getPhotoCount(album.id),
     maxPhotos: album.selection_limit,
     status: album.status,
-    client: (album.clients as { name: string })?.name || 'Cliente não encontrado',
+    client: await getClientName(album.client_id),
     createdAt: album.created_at,
-  })) || [];
+  })) || []);
+  
+  const isProfileComplete = user.user_metadata?.companyName;
 
   return (
     <div className="container mx-auto py-8">
