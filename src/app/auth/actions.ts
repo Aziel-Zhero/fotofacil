@@ -35,6 +35,7 @@ export async function signup(formData: FormData) {
     password,
     options: {
       data: {
+        role: 'photographer', // Adicionando o role aqui
         fullName,
         username,
         companyName,
@@ -59,4 +60,38 @@ export async function signup(formData: FormData) {
 
   // Redireciona o usuário para a página de login com uma mensagem de sucesso.
   return redirect('/login?message=Cadastro realizado com sucesso! Por favor, faça o login.');
+}
+
+
+const loginSchema = z.object({
+    email: z.string().email({ message: 'Email inválido.' }),
+    password: z.string().min(1, { message: 'Senha é obrigatória.' }),
+});
+
+export async function login(formData: FormData) {
+    const supabase = createClient();
+    const data = Object.fromEntries(formData.entries());
+
+    const parsed = loginSchema.safeParse(data);
+
+    if (!parsed.success) {
+        let errorMessages = '';
+        parsed.error.issues.forEach(issue => {
+            errorMessages += issue.message + '\n';
+        });
+        return { error: errorMessages.trim() };
+    }
+
+    const { email, password } = parsed.data;
+
+    const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+    });
+
+    if (error) {
+        return { error: "Credenciais inválidas. Por favor, tente novamente." };
+    }
+
+    return redirect('/dashboard');
 }

@@ -16,11 +16,10 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { CardContent, CardFooter } from '@/components/ui/card';
-import { createClient } from '@/lib/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { Loader2 } from 'lucide-react';
+import { login } from '@/app/auth/actions';
 
 const formSchema = z.object({
   email: z.string().email({ message: 'Email inválido.' }),
@@ -29,7 +28,6 @@ const formSchema = z.object({
 
 export function LoginForm() {
   const { toast } = useToast();
-  const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -42,24 +40,19 @@ export function LoginForm() {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true);
-    const supabase = createClient();
-    
-    const { error } = await supabase.auth.signInWithPassword({
-        email: values.email,
-        password: values.password,
+    const formData = new FormData();
+    Object.entries(values).forEach(([key, value]) => {
+      formData.append(key, value);
     });
 
-    if (error) {
+    const result = await login(formData);
+
+    if (result?.error) {
         toast({
             title: "Erro no Login",
-            description: "Credenciais inválidas. Por favor, tente novamente.",
+            description: result.error,
             variant: "destructive",
         });
-    } else {
-        // O middleware do Supabase gerencia o redirecionamento baseado na sessão,
-        // mas podemos forçar um refresh ou redirecionamento aqui se necessário.
-        router.push('/dashboard');
-        router.refresh();
     }
     setIsSubmitting(false);
   }
