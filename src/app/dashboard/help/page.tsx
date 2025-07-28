@@ -61,6 +61,12 @@ export default function HelpPage() {
                     Sim. A segurança é nossa prioridade. Usamos as melhores práticas de mercado para proteger seus dados e as fotos de seus clientes. Os álbuns podem ser protegidos por senha para garantir a privacidade.
                 </AccordionContent>
             </AccordionItem>
+             <AccordionItem value="item-6">
+                <AccordionTrigger>Por que um novo usuário às vezes não aparece em outras tabelas?</AccordionTrigger>
+                <AccordionContent>
+                    Em sistemas que sincronizam dados (por exemplo, criar um perfil de "usuário" a partir de uma conta de "autenticação"), usamos gatilhos de banco de dados. Às vezes, um novo registro de autenticação pode não criar o registro de perfil correspondente se o gatilho falhar silenciosamente. A causa mais comum é um problema de permissão: a função do gatilho pode não ter o nível de acesso necessário (como `service_role` em vez de `public`) para inserir dados em outra tabela. A solução é sempre garantir que a função do gatilho seja executada com as permissões corretas para realizar a operação desejada.
+                </AccordionContent>
+            </AccordionItem>
           </Accordion>
         </CardContent>
       </Card>
