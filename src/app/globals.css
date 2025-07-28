@@ -4,67 +4,95 @@
 
 @layer base {
   :root {
-    --background: 209 69% 84%; /* Columbia Blue - #b9d6f2 */
-    --foreground: 219 83% 14%; /* Oxford Blue - #061a40 */
+    --background: 21 56% 88%; /* Pale Dogwood (#edc4b3) */
+    --foreground: 19 39% 34%; /* Bole (#774936) */
 
-    --card: 209 69% 88%; /* Lighter Columbia Blue */
-    --card-foreground: 219 83% 14%;
+    --card: 22 58% 93%; /* Lighter Desert Sand */
+    --card-foreground: 19 39% 34%;
 
-    --popover: 209 69% 88%;
-    --popover-foreground: 219 83% 14%;
+    --popover: 22 58% 93%;
+    --popover-foreground: 19 39% 34%;
 
-    --primary: 210 96% 33%; /* Sapphire - #0353a4 */
-    --primary-foreground: 209 69% 95%;
+    --primary: 24 53% 72%; /* Buff (#deab90) */
+    --primary-foreground: 19 39% 30%;
 
-    --secondary: 209 60% 92%;
-    --secondary-foreground: 219 83% 14%;
+    --secondary: 22 58% 83%; /* Desert Sand (#e6b8a2) */
+    --secondary-foreground: 19 39% 34%;
     
-    --muted: 209 60% 94%;
-    --muted-foreground: 219 83% 30%;
+    --muted: 25 48% 77%; /* Lighter Buff Dark */
+    --muted-foreground: 22 31% 47%; /* Brown Sugar (#9d6b53) */
 
-    --accent: 202 100% 33%; /* Bice Blue - #006daa */
-    --accent-foreground: 209 69% 95%;
+    --accent: 24 38% 60%; /* Persian Orange (#c38e70) */
+    --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 209 50% 80%;
-    --input: 209 50% 85%;
-    --ring: 210 96% 33%;
+    --border: 21 33% 80%; /* Lighter Raw Umber */
+    --input: 21 33% 85%;
+    --ring: 24 53% 72%;
 
     --radius: 0.8rem;
   }
 
   .dark {
-    --background: 230 92% 19%;
-    --foreground: 209 69% 84%; /* Columbia Blue */
-
-    --card: 230 92% 22%;
-    --card-foreground: 209 69% 84%;
-
-    --popover: 230 92% 19%;
-    --popover-foreground: 209 69% 84%;
-
-    --primary: 202 100% 45%; /* Brighter Bice Blue */
-    --primary-foreground: 230 92% 10%;
-
-    --secondary: 210 96% 33%; /* Sapphire */
-    --secondary-foreground: 209 69% 95%;
-
-    --muted: 230 92% 22%;
-    --muted-foreground: 209 69% 75%;
-
-    --accent: 202 100% 45%;
-    --accent-foreground: 209 69% 95%;
+    --background: 222 47% 11%;
+    --foreground: 210 40% 98%;
+    
+    --card: 222 47% 14%;
+    --card-foreground: 210 40% 98%;
+    
+    --popover: 222 47% 11%;
+    --popover-foreground: 210 40% 98%;
+    
+    --primary: 210 40% 98%;
+    --primary-foreground: 222 47% 11%;
+    
+    --secondary: 217 33% 17%;
+    --secondary-foreground: 210 40% 98%;
+    
+    --muted: 217 33% 17%;
+    --muted-foreground: 215 20% 65%;
+    
+    --accent: 217 33% 25%;
+    --accent-foreground: 210 40% 98%;
     
     --destructive: 0 63% 31%;
+    --destructive-foreground: 210 40% 98%;
+    
+    --border: 217 33% 17%;
+    --input: 217 33% 22%;
+    --ring: 215 20% 65%;
+  }
+
+  .theme-blue {
+    --background: 175 50% 95%; /* Ice Blue (#e0f2f1) */
+    --foreground: 175 100% 13%; /* Dark Teal (#004d40) */
+
+    --card: 176 50% 97%; /* Lighter Powder Blue */
+    --card-foreground: 175 100% 13%;
+
+    --popover: 175 50% 95%;
+    --popover-foreground: 175 100% 13%;
+
+    --primary: 174 63% 41%; /* Soft Ocean (#26a69a) */
+    --primary-foreground: 0 0% 100%;
+    
+    --secondary: 176 49% 78%; /* Powder Blue (#b2dfdb) */
+    --secondary-foreground: 175 100% 13%;
+
+    --muted: 175 32% 66%; /* Aqua Mist (#80cbc4) */
+    --muted-foreground: 175 100% 18%;
+
+    --accent: 175 100% 24%; /* Deep Lagoon (#00796b) */
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 210 96% 33%;
-    --input: 230 92% 24%;
-    --ring: 202 100% 45%;
-
-    --radius: 0.8rem;
+    --border: 180 33% 94%; /* Cool Gray (#eceff1) */
+    --input: 176 49% 88%;
+    --ring: 174 63% 41%;
   }
 }
 

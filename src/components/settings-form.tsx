@@ -7,7 +7,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Switch } from '@/components/ui/switch';
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+
 import {
     Form,
     FormControl,
@@ -15,13 +16,13 @@ import {
     FormItem,
     FormLabel,
     FormDescription,
-} from '@/components/ui/form';
+  } from '@/components/ui/form';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Instagram, Smartphone } from 'lucide-react';
+import { Instagram, Smartphone, Palette, Sun, Moon, Droplets } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const settingsSchema = z.object({
-    darkMode: z.boolean().default(false),
+    theme: z.string().default('light'),
     instagram: z.string().optional(),
     whatsapp: z.string().optional(),
 });
@@ -31,17 +32,30 @@ export function SettingsForm() {
     const form = useForm<z.infer<typeof settingsSchema>>({
         resolver: zodResolver(settingsSchema),
         defaultValues: {
-            darkMode: false,
+            theme: 'light',
             instagram: "https://instagram.com/seu-perfil",
             whatsapp: "5511999998888",
         },
     });
+
+    // Sincronizar o formulário com o tema atual no carregamento
+    useEffect(() => {
+        const currentTheme = document.documentElement.classList.contains('dark') ? 'dark' : 
+                             document.documentElement.classList.contains('theme-blue') ? 'blue' : 'light';
+        form.setValue('theme', currentTheme);
+    }, []);
     
-    const darkMode = form.watch('darkMode');
+    const theme = form.watch('theme');
 
     useEffect(() => {
-        document.documentElement.classList.toggle('dark', darkMode);
-    }, [darkMode]);
+        const root = window.document.documentElement;
+        root.classList.remove('dark', 'theme-blue');
+        if (theme === 'dark') {
+            root.classList.add('dark');
+        } else if (theme === 'blue') {
+            root.classList.add('theme-blue');
+        }
+    }, [theme]);
 
     function onSubmit(values: z.infer<typeof settingsSchema>) {
         console.log(values);
@@ -60,23 +74,42 @@ export function SettingsForm() {
                         <CardDescription>Personalize a aparência do aplicativo.</CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <FormField
+                       <FormField
                             control={form.control}
-                            name="darkMode"
+                            name="theme"
                             render={({ field }) => (
-                                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                                    <div className="space-y-0.5">
-                                        <FormLabel className="text-base">Modo Escuro</FormLabel>
-                                        <FormDescription>
-                                            Ative para uma experiência com cores escuras.
-                                        </FormDescription>
-                                    </div>
-                                    <FormControl>
-                                        <Switch
-                                            checked={field.value}
-                                            onCheckedChange={field.onChange}
-                                        />
-                                    </FormControl>
+                                <FormItem className="space-y-4">
+                                    <FormLabel className="text-base flex items-center gap-2">
+                                        <Palette />
+                                        Tema Visual
+                                    </FormLabel>
+                                    <RadioGroup
+                                        onValueChange={field.onChange}
+                                        value={field.value}
+                                        className="grid grid-cols-1 sm:grid-cols-3 gap-4"
+                                    >
+                                        <FormItem>
+                                            <RadioGroupItem value="light" id="light" className="sr-only" />
+                                            <FormLabel htmlFor="light" className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground [&:has([data-state=checked])]:border-primary cursor-pointer">
+                                                <Sun className="mb-3 h-6 w-6" />
+                                                Padrão
+                                            </FormLabel>
+                                        </FormItem>
+                                        <FormItem>
+                                            <RadioGroupItem value="blue" id="blue" className="sr-only" />
+                                            <FormLabel htmlFor="blue" className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground [&:has([data-state=checked])]:border-primary cursor-pointer">
+                                                <Droplets className="mb-3 h-6 w-6" />
+                                                Azul
+                                            </FormLabel>
+                                        </FormItem>
+                                        <FormItem>
+                                            <RadioGroupItem value="dark" id="dark" className="sr-only" />
+                                            <FormLabel htmlFor="dark" className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground [&:has([data-state=checked])]:border-primary cursor-pointer">
+                                                <Moon className="mb-3 h-6 w-6" />
+                                                Escuro
+                                            </FormLabel>
+                                        </FormItem>
+                                    </RadioGroup>
                                 </FormItem>
                             )}
                         />
