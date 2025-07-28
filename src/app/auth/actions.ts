@@ -35,9 +35,8 @@ export async function signup(formData: FormData) {
     email,
     password,
     options: {
-      // Note: O 'data' aqui é apenas para metadados, não o usamos mais para o gatilho.
-      // Poderia ser útil para outras coisas no futuro.
       data: {
+        // Esses metadados não são mais usados pelo gatilho, mas podem ser úteis.
         fullName: fullName,
         username: username,
       },
@@ -57,6 +56,7 @@ export async function signup(formData: FormData) {
   }
 
   // Etapa 2: Inserir o perfil do fotógrafo na tabela `photographers`
+  // Usamos o cliente Supabase com bypass RLS para esta operação de sistema.
   const { error: profileError } = await supabase
     .from('photographers')
     .insert({ 
