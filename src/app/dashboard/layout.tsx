@@ -3,6 +3,7 @@
 
 import { DashboardHeader } from '@/components/dashboard-header';
 import { Crown } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 export default function DashboardLayout({
   children,
@@ -13,7 +14,7 @@ export default function DashboardLayout({
   const isSubscribed = true; // Mock data
 
   return (
-    <div className="flex min-h-screen flex-col bg-background text-foreground">
+    <div className={cn("flex min-h-screen flex-col bg-background text-foreground")}>
       <DashboardHeader />
       {isSubscribed && (
         <div className="bg-primary/10 border-b border-primary/20">
