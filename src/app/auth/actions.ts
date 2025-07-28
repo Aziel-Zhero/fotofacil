@@ -4,6 +4,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { z } from 'zod';
 import { redirect } from 'next/navigation';
+import { headers } from 'next/headers';
 
 const signupSchema = z.object({
   email: z.string().email('Email inválido.'),
@@ -15,6 +16,7 @@ const signupSchema = z.object({
 });
 
 export async function signup(formData: FormData) {
+  const origin = headers().get('origin');
   const supabase = createClient();
   const data = Object.fromEntries(formData.entries());
 
@@ -35,13 +37,13 @@ export async function signup(formData: FormData) {
     password,
     options: {
       data: {
-        role: 'photographer', // Adicionando o role aqui
+        role: 'photographer',
         fullName,
         username,
         companyName,
         phone
       },
-      emailRedirectTo: `/auth/callback`,
+      emailRedirectTo: `${origin}/auth/callback`,
     },
   });
 
@@ -52,14 +54,10 @@ export async function signup(formData: FormData) {
     if (error.message.includes('duplicate key value violates unique constraint "photographers_username_key"')) {
         return { error: "Este nome de usuário já está em uso. Por favor, escolha outro." };
     }
-    if (error.message.includes('duplicate key value violates unique constraint "photographers_email_key"')) {
-         return { error: "Este email já está cadastrado. Tente fazer login." };
-    }
     return { error: `Erro no cadastro: ${error.message}` };
   }
 
-  // Redireciona o usuário para a página de login com uma mensagem de sucesso.
-  return redirect('/login?message=Cadastro realizado com sucesso! Por favor, faça o login.');
+  return redirect('/login?message=Cadastro realizado com sucesso! Verifique seu email para confirmar sua conta.');
 }
 
 
@@ -90,6 +88,9 @@ export async function login(formData: FormData) {
     });
 
     if (error) {
+        if (error.message.includes('Email not confirmed')) {
+            return { error: "Seu email ainda não foi confirmado. Por favor, verifique sua caixa de entrada." };
+        }
         return { error: "Credenciais inválidas. Por favor, tente novamente." };
     }
 

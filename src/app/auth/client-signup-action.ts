@@ -4,6 +4,8 @@
 import { createClient } from '@/lib/supabase/server';
 import { z } from 'zod';
 import { redirect } from 'next/navigation';
+import { headers } from 'next/headers';
+
 
 const signupSchema = z.object({
   email: z.string().email('Email inválido.'),
@@ -15,6 +17,7 @@ const signupSchema = z.object({
 });
 
 export async function clientSignup(formData: FormData) {
+  const origin = headers().get('origin');
   const supabase = createClient();
   const data = Object.fromEntries(formData.entries());
 
@@ -41,7 +44,7 @@ export async function clientSignup(formData: FormData) {
         phone,
         photographerId,
       },
-      emailRedirectTo: `/auth/callback`,
+      emailRedirectTo: `${origin}/auth/callback`,
     },
   });
 
@@ -52,5 +55,5 @@ export async function clientSignup(formData: FormData) {
     return { error: `Erro no cadastro: ${error.message}` };
   }
 
-  return redirect('/login?message=Cadastro de cliente realizado com sucesso! Por favor, faça o login.');
+  return redirect('/login?message=Cadastro de cliente realizado com sucesso! Verifique seu email para confirmar.');
 }
