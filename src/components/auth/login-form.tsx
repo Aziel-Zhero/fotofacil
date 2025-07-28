@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from 'next/link';
@@ -6,7 +7,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import {
   Form,
   FormControl,
@@ -16,24 +16,52 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { CardContent, CardFooter } from '@/components/ui/card';
+import { createClient } from '@/lib/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { Loader2 } from 'lucide-react';
 
 const formSchema = z.object({
-  username: z.string().min(1, { message: 'Nome de usuário é obrigatório.' }),
+  email: z.string().email({ message: 'Email inválido.' }),
   password: z.string().min(1, { message: 'Senha é obrigatória.' }),
 });
 
 export function LoginForm() {
+  const { toast } = useToast();
+  const router = useRouter();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      username: '',
+      email: '',
       password: '',
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    // Lógica de login aqui
-    console.log(values);
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    setIsSubmitting(true);
+    const supabase = createClient();
+    
+    const { error } = await supabase.auth.signInWithPassword({
+        email: values.email,
+        password: values.password,
+    });
+
+    if (error) {
+        toast({
+            title: "Erro no Login",
+            description: "Credenciais inválidas. Por favor, tente novamente.",
+            variant: "destructive",
+        });
+    } else {
+        // O middleware do Supabase gerencia o redirecionamento baseado na sessão,
+        // mas podemos forçar um refresh ou redirecionamento aqui se necessário.
+        router.push('/dashboard');
+        router.refresh();
+    }
+    setIsSubmitting(false);
   }
 
   return (
@@ -42,12 +70,12 @@ export function LoginForm() {
         <CardContent className="space-y-4">
           <FormField
             control={form.control}
-            name="username"
+            name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Nome de Usuário</FormLabel>
+                <FormLabel>Email</FormLabel>
                 <FormControl>
-                  <Input placeholder="seu_usuario" {...field} />
+                  <Input placeholder="seu@email.com" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -68,7 +96,8 @@ export function LoginForm() {
           />
         </CardContent>
         <CardFooter className="flex-col gap-4">
-          <Button type="submit" className="w-full">
+          <Button type="submit" className="w-full" disabled={isSubmitting}>
+            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Login
           </Button>
           <div className="text-sm text-muted-foreground">
