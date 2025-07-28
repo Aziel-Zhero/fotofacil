@@ -13,7 +13,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { cn } from "@/lib/utils";
+import { useEffect, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
+import { type User as SupabaseUser } from "@supabase/supabase-js";
 
 const navItems = [
   { href: '/dashboard', label: 'Painel', icon: Home },
@@ -26,7 +28,26 @@ const navItems = [
 
 export function DashboardHeader() {
   const pathname = usePathname();
-  const isSubscriber = true; // Mock data for subscription status
+  const [user, setUser] = useState<SupabaseUser | null>(null);
+  const [isSubscriber, setIsSubscriber] = useState(true); // Mock data for subscription status
+
+  useEffect(() => {
+    const supabase = createClient();
+    const fetchUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+    };
+    fetchUser();
+  }, []);
+
+  const getInitials = (name: string) => {
+    if (!name) return 'U';
+    const names = name.split(' ');
+    if (names.length > 1) {
+      return `${names[0][0]}${names[names.length - 1][0]}`;
+    }
+    return name.substring(0, 2);
+  }
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background">
@@ -62,8 +83,10 @@ export function DashboardHeader() {
                     <DropdownMenuTrigger asChild>
                         <Button variant="ghost" className="relative h-10 w-10 rounded-full">
                             <Avatar className="h-10 w-10">
-                                <AvatarImage src="https://placehold.co/100x100.png" alt="Fotógrafo" />
-                                <AvatarFallback>JS</AvatarFallback>
+                                <AvatarImage src={user?.user_metadata.avatar_url} alt={user?.user_metadata.fullName} />
+                                <AvatarFallback>
+                                    {getInitials(user?.user_metadata.fullName || '')}
+                                </AvatarFallback>
                             </Avatar>
                         </Button>
                     </DropdownMenuTrigger>
@@ -71,11 +94,11 @@ export function DashboardHeader() {
                         <DropdownMenuLabel className="font-normal">
                             <div className="flex flex-col space-y-1">
                                 <div className="flex items-center gap-2">
-                                    <p className="text-sm font-medium leading-none font-headline">John Smith</p>
+                                    <p className="text-sm font-medium leading-none font-headline">{user?.user_metadata.fullName || "Usuário"}</p>
                                     {isSubscriber && <Crown className="h-4 w-4 text-yellow-500" />}
                                 </div>
                                 <p className="text-xs leading-none text-muted-foreground">
-                                    Fotografia John Smith
+                                    {user?.user_metadata.companyName || "Fotógrafo"}
                                 </p>
                             </div>
                         </DropdownMenuLabel>

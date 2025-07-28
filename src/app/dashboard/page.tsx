@@ -1,17 +1,13 @@
 import { AlbumCard } from '@/components/album-card';
 import { Button } from '@/components/ui/button';
 import { CreateAlbumDialog } from '@/components/create-album-dialog';
-import { PlusCircle } from 'lucide-react';
+import { PlusCircle, GalleryVertical } from 'lucide-react';
 import { ProfileCompletionDialog } from '@/components/profile-completion-dialog';
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 
-const mockAlbums = [
-  { id: '1', name: 'Casamento na Toscana', photoCount: 125, status: 'Aguardando Seleção', client: 'Os Silva', createdAt: '2024-07-28T00:00:00', maxPhotos: 210 },
-  { id: '2', name: 'Retratos Corporativos Q2', photoCount: 50, status: 'Seleção Completa', client: 'Innovate Corp', createdAt: '2024-07-25T00:00:00', maxPhotos: 120 },
-  { id: '3', name: 'Sessão Newborn - Baby Leo', photoCount: 80, status: 'Expirado', client: 'Maria da Silva', createdAt: '2024-06-15T00:00:00', maxPhotos: 120 },
-  { id: '4', name: 'Fotos de Família no Outono', photoCount: 200, status: 'Aguardando Seleção', client: 'A Família Williams', createdAt: '2024-07-29T00:00:00', maxPhotos: 210 },
-];
+// Mock de dados removido para exibir um estado real
+const mockAlbums: any[] = [];
 
 
 export default async function DashboardPage() {
@@ -41,12 +37,22 @@ export default async function DashboardPage() {
           </Button>
         </CreateAlbumDialog>
       </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {mockAlbums.map((album) => (
-          <AlbumCard key={album.id} album={album} />
-        ))}
-      </div>
+        
+      {mockAlbums.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {mockAlbums.map((album) => (
+            <AlbumCard key={album.id} album={album} />
+            ))}
+        </div>
+        ) : (
+        <div className="flex flex-col items-center justify-center h-64 text-center border-2 border-dashed rounded-lg">
+            <GalleryVertical className="h-12 w-12 text-muted-foreground mb-4" />
+            <h2 className="text-xl font-semibold">Nenhum álbum criado ainda</h2>
+            <p className="text-muted-foreground mt-2 max-w-sm">
+               Clique em "Criar Álbum" para começar a organizar seu primeiro projeto e compartilhá-lo com seu cliente.
+            </p>
+        </div>
+      )}
       
       {!isProfileComplete && (
         <ProfileCompletionDialog user={user} />
