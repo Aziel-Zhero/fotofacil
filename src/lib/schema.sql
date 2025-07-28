@@ -1,11 +1,6 @@
-
--- 1. Primeiro, remova o gatilho que depende da função
+-- Limpa o estado anterior (caso esteja recriando)
 DROP TRIGGER IF EXISTS on_auth_user_created_photographer ON auth.users;
-
--- 2. Agora, remova a função, pois nada mais depende dela
 DROP FUNCTION IF EXISTS public.handle_new_photographer();
-
--- 3. Em seguida, limpe as tabelas e tipos
 DROP TABLE IF EXISTS public.clients CASCADE;
 DROP TABLE IF EXISTS public.photographers CASCADE;
 DROP TYPE IF EXISTS public.user_role;
@@ -47,11 +42,10 @@ CREATE POLICY "Photographer can access only own profile"
   USING (auth.uid() = user_id)
   WITH CHECK (auth.uid() = user_id);
   
-CREATE POLICY "Allow insert for service_role" 
-  ON public.photographers 
-  FOR INSERT 
-  TO service_role 
-  WITH CHECK (true);
+CREATE POLICY "Allow authenticated inserts for service_role" ON "public"."photographers"
+AS PERMISSIVE FOR INSERT
+TO service_role
+WITH CHECK (true);
 
 -- Políticas de segurança para clientes
 CREATE POLICY "Photographers can view their clients"
@@ -66,21 +60,23 @@ CREATE POLICY "Photographers can add their clients"
 
 -- Função para criar fotógrafo automaticamente ao registrar no Supabase Auth
 CREATE OR REPLACE FUNCTION public.handle_new_photographer()
-RETURNS TRIGGER 
-LANGUAGE plpgsql 
-SECURITY DEFINER 
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER
 SET search_path = public
 AS $$
 BEGIN
-  INSERT INTO public.photographers (user_id, full_name, email, username, company_name, phone)
-  VALUES (
-    NEW.id,
-    NEW.raw_user_meta_data ->> 'fullName',
-    NEW.email,
-    NEW.raw_user_meta_data ->> 'username',
-    NEW.raw_user_meta_data ->> 'companyName',
-    NEW.raw_user_meta_data ->> 'phone'
-  );
+  IF (NEW.raw_user_meta_data ->> 'role') = 'photographer' THEN
+    INSERT INTO public.photographers (user_id, full_name, email, username, company_name, phone)
+    VALUES (
+      NEW.id,
+      NEW.raw_user_meta_data ->> 'fullName',
+      NEW.email,
+      NEW.raw_user_meta_data ->> 'username',
+      NEW.raw_user_meta_data ->> 'companyName',
+      NEW.raw_user_meta_data ->> 'phone'
+    );
+  END IF;
   RETURN NEW;
 END;
 $$;
