@@ -49,7 +49,7 @@ export function ClientRegisterForm() {
     setIsSubmitting(true);
     const formData = new FormData();
     
-    // Add client-specific default values for the unified signup action
+    // Adiciona valores padrão para o cliente para a ação de cadastro unificada
     const username = values.email.split('@')[0].replace(/[^a-zA-Z0-9]/g, '') + Math.floor(Math.random() * 1000);
     formData.append('username', username);
     formData.append('companyName', 'Cliente');
