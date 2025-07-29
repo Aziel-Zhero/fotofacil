@@ -8,25 +8,48 @@ import { CheckCircle, Camera, Users, FileKey2, BrainCircuit, Tags, Search } from
 import { MasonryGallery } from '@/components/masonry-gallery';
 import CardSwap, { Card as SwapCard } from '@/components/card-swap';
 import DarkVeil from '@/components/dark-veil';
+import { useState, useEffect } from 'react';
+import { cn } from '@/lib/utils';
 
-const LandingHeader = () => (
-  <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-black/30 backdrop-blur-lg">
-    <div className="container flex h-14 max-w-screen-2xl items-center justify-between">
-      <Link href="/" className="flex items-center gap-2">
-        <Camera className="h-6 w-6 text-primary" />
-        <span className="font-headline text-xl font-bold text-foreground">FotoFácil</span>
-      </Link>
-      <nav className="flex items-center gap-2 sm:gap-4">
-        <Button variant="ghost" asChild>
-          <Link href="/login">Login</Link>
-        </Button>
-        <Button asChild>
-          <Link href="/register">Criar Conta</Link>
-        </Button>
-      </nav>
-    </div>
-  </header>
-);
+const LandingHeader = () => {
+    const [scrolled, setScrolled] = useState(false);
+
+    useEffect(() => {
+        const handleScroll = () => {
+            const isScrolled = window.scrollY > 20;
+            if (isScrolled !== scrolled) {
+                setScrolled(isScrolled);
+            }
+        };
+
+        document.addEventListener('scroll', handleScroll);
+        return () => {
+            document.removeEventListener('scroll', handleScroll);
+        };
+    }, [scrolled]);
+
+    return (
+        <header className={cn(
+            "sticky top-0 z-50 w-full transition-colors duration-300",
+            scrolled ? "border-b border-white/10 bg-black/30 backdrop-blur-lg" : "bg-transparent"
+        )}>
+            <div className="container flex h-14 max-w-screen-2xl items-center justify-between">
+            <Link href="/" className="flex items-center gap-2">
+                <Camera className="h-6 w-6 text-primary" />
+                <span className="font-headline text-xl font-bold text-foreground">FotoFácil</span>
+            </Link>
+            <nav className="flex items-center gap-2 sm:gap-4">
+                <Button variant="outline" asChild>
+                    <Link href="/login">Login</Link>
+                </Button>
+                <Button asChild>
+                    <Link href="/register">Criar Conta</Link>
+                </Button>
+            </nav>
+            </div>
+        </header>
+    );
+};
 
 const LandingFooter = () => (
   <footer className="border-t border-white/10 bg-black/20">
