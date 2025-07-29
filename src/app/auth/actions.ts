@@ -13,6 +13,7 @@ const signupSchema = z.object({
   username: z.string().min(3, 'O nome de usuário deve ter pelo menos 3 caracteres.'),
   companyName: z.string().min(1, 'Nome da empresa é obrigatório.'),
   phone: z.string().min(1, 'Telefone é obrigatório.'),
+  role: z.enum(['photographer', 'client'], { required_error: 'Função é obrigatória.' }),
 });
 
 export async function signup(formData: FormData) {
@@ -30,14 +31,14 @@ export async function signup(formData: FormData) {
     return { error: errorMessages.trim() };
   }
 
-  const { email, password, fullName, username, companyName, phone } = parsed.data;
+  const { email, password, fullName, username, companyName, phone, role } = parsed.data;
 
   const { error } = await supabase.auth.signUp({
     email,
     password,
     options: {
       data: {
-        role: 'photographer',
+        role,
         fullName,
         username,
         companyName,
@@ -57,7 +58,11 @@ export async function signup(formData: FormData) {
     return { error: `Erro no cadastro: ${error.message}` };
   }
 
-  return redirect('/login?message=Cadastro realizado com sucesso! Verifique seu email para confirmar sua conta.');
+  const message = role === 'client' 
+    ? 'Cadastro de cliente realizado com sucesso! Verifique seu email para confirmar.'
+    : 'Cadastro realizado com sucesso! Verifique seu email para confirmar sua conta.';
+
+  return redirect(`/login?message=${encodeURIComponent(message)}`);
 }
 
 

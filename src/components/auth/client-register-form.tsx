@@ -53,6 +53,8 @@ export function ClientRegisterForm() {
     const username = values.email.split('@')[0].replace(/[^a-zA-Z0-9]/g, '') + Math.floor(Math.random() * 1000);
     formData.append('username', username);
     formData.append('companyName', 'Cliente');
+    formData.append('role', 'client');
+
 
     Object.entries(values).forEach(([key, value]) => {
       formData.append(key, value);

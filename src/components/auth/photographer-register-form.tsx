@@ -55,6 +55,7 @@ export function PhotographerRegisterForm() {
     Object.entries(values).forEach(([key, value]) => {
       formData.append(key, value);
     });
+    formData.append('role', 'photographer');
     
     const result = await signup(formData);
 
