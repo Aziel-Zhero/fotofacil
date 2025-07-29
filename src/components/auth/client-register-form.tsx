@@ -21,7 +21,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import PhoneInput from 'react-phone-number-input';
 import 'react-phone-number-input/style.css';
-import { clientSignup } from '@/app/auth/client-signup-action';
+import { signup } from '@/app/auth/actions';
 
 
 const formSchema = z.object({
@@ -48,11 +48,17 @@ export function ClientRegisterForm() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true);
     const formData = new FormData();
+    
+    // Add client-specific default values for the unified signup action
+    const username = values.email.split('@')[0].replace(/[^a-zA-Z0-9]/g, '') + Math.floor(Math.random() * 1000);
+    formData.append('username', username);
+    formData.append('companyName', 'Cliente');
+
     Object.entries(values).forEach(([key, value]) => {
       formData.append(key, value);
     });
     
-    const result = await clientSignup(formData);
+    const result = await signup(formData);
 
     if (result?.error) {
       toast({
