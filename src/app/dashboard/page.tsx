@@ -49,6 +49,7 @@ export default async function DashboardPage() {
     status: album.status,
     client: await getClientName(album.client_id),
     createdAt: album.created_at,
+    clientUserId: album.client_user_id
   })) || []);
   
   const isProfileComplete = user.user_metadata?.companyName;

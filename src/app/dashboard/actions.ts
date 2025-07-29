@@ -87,3 +87,45 @@ export async function createAlbum(formData: FormData) {
   revalidatePath('/dashboard');
   return { success: true };
 }
+
+const linkClientSchema = z.object({
+    albumId: z.string().uuid(),
+    clientUserId: z.string().uuid('ID de usuário do cliente inválido.'),
+});
+
+
+export async function linkClientToAlbum(formData: FormData) {
+    const supabase = createClient();
+    const data = Object.fromEntries(formData.entries());
+
+    const parsed = linkClientSchema.safeParse(data);
+
+    if (!parsed.success) {
+        return { error: parsed.error.issues.map(i => i.message).join('\n') };
+    }
+
+    const { albumId, clientUserId } = parsed.data;
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+        return { error: 'Usuário não autenticado.' };
+    }
+
+    // Opcional: Verificar se o clientUserId existe na tabela auth.users com o role 'client'
+    // Esta verificação pode ser complexa sem acesso direto à tabela auth.users.
+    // Uma alternativa é confiar que o fotógrafo inseriu o ID correto.
+
+    const { error } = await supabase
+        .from('albums')
+        .update({ client_user_id: clientUserId, status: 'Aguardando Seleção' })
+        .eq('id', albumId)
+        .eq('photographer_id', user.id);
+
+    if (error) {
+        console.error('Erro ao vincular cliente ao álbum:', error);
+        return { error: `Não foi possível vincular o cliente: ${error.message}` };
+    }
+
+    revalidatePath('/dashboard');
+    return { success: true };
+}

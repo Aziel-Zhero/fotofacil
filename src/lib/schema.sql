@@ -1,213 +1,197 @@
--- Apaga todos os objetos antigos e novos para garantir um ambiente limpo.
--- Remove os gatilhos primeiro para evitar erros de dependência.
-DROP TRIGGER IF EXISTS on_auth_user_created_photographer ON auth.users;
+-- 1. Limpeza Inicial (ordem de dependência reversa)
+-- Remove gatilhos, funções e depois tabelas para evitar erros de dependência.
+
+-- Remove o gatilho da tabela auth.users se existir
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 
--- Remove as funções.
-DROP FUNCTION IF EXISTS public.handle_new_photographer();
-DROP FUNCTION IF EXISTS public.handle_new_user();
+-- Remove a função se existir
+DROP FUNCTION IF EXISTS public.handle_new_user;
 
--- Remove as tabelas, usando CASCADE para lidar com quaisquer dependências restantes.
-DROP TABLE IF EXISTS public.photographers CASCADE;
-DROP TABLE IF EXISTS public.clients CASCADE;
-DROP TABLE IF EXISTS public.albums CASCADE;
-DROP TABLE IF EXISTS public.photos CASCADE;
-DROP TABLE IF EXISTS public.album_access_logs CASCADE;
-DROP TABLE IF EXISTS public.photo_selections CASCADE;
-DROP TABLE IF EXISTS public.photographer_notifications CASCADE;
+-- Remove tabelas na ordem de dependência (de quem tem chave estrangeira para quem é referenciada)
+DROP TABLE IF EXISTS public.photo_selections;
+DROP TABLE IF EXISTS public.album_access_logs;
+DROP TABLE IF EXISTS public.photos;
+DROP TABLE IF EXISTS public.albums;
+DROP TABLE IF EXISTS public.clients;
+DROP TABLE IF EXISTS public.photographer_notifications;
+DROP TABLE IF EXISTS public.photographers;
 
--- Remove o tipo customizado.
-DROP TYPE IF EXISTS public.user_role;
-
--- Recriação da Estrutura
-
--- 1. Cria o tipo ENUM para papéis de usuário.
-CREATE TYPE public.user_role AS ENUM ('photographer', 'client');
-
--- 2. Cria a tabela de fotógrafos.
--- A coluna de email foi removida para evitar conflito de UNIQUE com auth.users.
+-- 2. Criação da Tabela de Fotógrafos
 CREATE TABLE public.photographers (
-    id uuid NOT NULL PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-    username text UNIQUE,
-    full_name text,
-    company_name text,
-    phone text
+    id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+    full_name TEXT,
+    username TEXT UNIQUE,
+    company_name TEXT,
+    phone TEXT,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 3. Cria a tabela de clientes, associada a um fotógrafo.
+-- 3. Criação da Tabela de Clientes
+-- Um cliente está sempre associado a um fotógrafo.
 CREATE TABLE public.clients (
-    id uuid NOT NULL PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-    photographer_id uuid REFERENCES public.photographers(id) ON DELETE SET NULL,
-    full_name text,
-    phone text,
-    email text UNIQUE
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    photographer_id UUID NOT NULL REFERENCES public.photographers(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    email TEXT,
+    phone TEXT,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 4. Cria a tabela de álbuns, associada a um fotógrafo e um cliente.
+-- 4. Criação da Tabela de Álbuns
+-- Um álbum pertence a um fotógrafo e a um cliente.
 CREATE TABLE public.albums (
-    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-    photographer_id uuid NOT NULL REFERENCES public.photographers(id) ON DELETE CASCADE,
-    client_id uuid REFERENCES public.clients(id) ON DELETE SET NULL,
-    name text NOT NULL,
-    access_key text UNIQUE,
-    password text,
-    expiration_date timestamptz,
-    max_selections integer,
-    extra_photo_cost numeric(10, 2),
-    created_at timestamptz DEFAULT now(),
-    updated_at timestamptz
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    photographer_id UUID NOT NULL REFERENCES public.photographers(id) ON DELETE CASCADE,
+    client_id UUID NOT NULL REFERENCES public.clients(id) ON DELETE CASCADE,
+    client_user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL, -- ID do cliente na auth.users
+    name TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'Pendente de Vínculo',
+    selection_limit INTEGER NOT NULL DEFAULT 0,
+    courtesy_photos INTEGER DEFAULT 0,
+    extra_photo_cost NUMERIC(10, 2) DEFAULT 0.00,
+    access_password TEXT,
+    pix_key TEXT,
+    expires_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 5. Cria a tabela de fotos, associada a um álbum.
+-- 5. Criação da Tabela de Fotos
+-- Uma foto pertence a um álbum.
 CREATE TABLE public.photos (
-    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-    album_id uuid NOT NULL REFERENCES public.albums(id) ON DELETE CASCADE,
-    url text NOT NULL,
-    tags text[],
-    order_index integer,
-    created_at timestamptz DEFAULT now()
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    album_id UUID NOT NULL REFERENCES public.albums(id) ON DELETE CASCADE,
+    url TEXT NOT NULL,
+    tags TEXT[],
+    filename TEXT,
+    uploaded_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 6. Cria a tabela para logs de acesso ao álbum.
-CREATE TABLE public.album_access_logs (
-    id bigserial PRIMARY KEY,
-    album_id uuid NOT NULL REFERENCES public.albums(id) ON DELETE CASCADE,
-    client_id uuid REFERENCES public.clients(id) ON DELETE SET NULL,
-    ip_address inet,
-    user_agent text,
-    accessed_at timestamptz DEFAULT now()
-);
-
--- 7. Cria a tabela para seleções de fotos do cliente.
+-- 6. Criação da Tabela de Seleção de Fotos pelo Cliente
 CREATE TABLE public.photo_selections (
-    id bigserial PRIMARY KEY,
-    album_id uuid NOT NULL REFERENCES public.albums(id) ON DELETE CASCADE,
-    photo_id uuid NOT NULL REFERENCES public.photos(id) ON DELETE CASCADE,
-    client_id uuid NOT NULL REFERENCES public.clients(id) ON DELETE CASCADE,
-    is_extra boolean DEFAULT false,
-    created_at timestamptz DEFAULT now(),
-    UNIQUE(album_id, photo_id, client_id)
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    album_id UUID NOT NULL REFERENCES public.albums(id) ON DELETE CASCADE,
+    photo_id UUID NOT NULL REFERENCES public.photos(id) ON DELETE CASCADE,
+    client_id UUID NOT NULL REFERENCES public.clients(id) ON DELETE CASCADE,
+    selected_at TIMESTAMPTZ DEFAULT NOW(),
+    is_extra BOOLEAN DEFAULT FALSE,
+    UNIQUE (album_id, photo_id, client_id)
 );
 
--- 8. Cria a tabela de notificações para fotógrafos.
+-- 7. Criação da Tabela de Notificações para Fotógrafos
 CREATE TABLE public.photographer_notifications (
-    id bigserial PRIMARY KEY,
-    photographer_id uuid NOT NULL REFERENCES public.photographers(id) ON DELETE CASCADE,
-    message text NOT NULL,
-    is_read boolean DEFAULT false,
-    link text,
-    created_at timestamptz DEFAULT now()
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    photographer_id UUID NOT NULL REFERENCES public.photographers(id) ON DELETE CASCADE,
+    message TEXT NOT NULL,
+    is_read BOOLEAN DEFAULT FALSE,
+    type TEXT, -- 'selection_complete', 'extra_payment', etc.
+    related_album_id UUID REFERENCES public.albums(id),
+    created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- 8. Criação da Tabela de Logs de Acesso ao Álbum
+CREATE TABLE public.album_access_logs (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    album_id UUID NOT NULL REFERENCES public.albums(id) ON DELETE CASCADE,
+    client_ip TEXT,
+    accessed_at TIMESTAMPTZ DEFAULT NOW(),
+    user_agent TEXT
+);
 
--- Lógica de Criação de Usuário
-
--- Cria a função para manipular a criação de novos usuários (fotógrafos ou clientes).
+-- 9. Função para Inserir Novo Usuário (Fotógrafo ou Cliente)
+-- Esta função é chamada por um gatilho quando um novo usuário é criado no Supabase Auth.
 CREATE OR REPLACE FUNCTION public.handle_new_user()
-RETURNS TRIGGER
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path = public
-AS $$
+RETURNS TRIGGER AS $$
 BEGIN
-  -- Verifica o papel do usuário a partir dos metadados
-  IF (new.raw_user_meta_data->>'role' = 'photographer') THEN
-    -- Se for fotógrafo, insere na tabela 'photographers'
-    INSERT INTO public.photographers (id, username, full_name, company_name, phone)
-    VALUES (
-      new.id,
-      new.raw_user_meta_data->>'username',
-      new.raw_user_meta_data->>'fullName',
-      new.raw_user_meta_data->>'companyName',
-      new.raw_user_meta_data->>'phone'
-    );
-  ELSIF (new.raw_user_meta_data->>'role' = 'client') THEN
-    -- Se for cliente, insere na tabela 'clients'
-    INSERT INTO public.clients (id, photographer_id, full_name, phone, email)
-    VALUES (
-      new.id,
-      (new.raw_user_meta_data->>'photographerId')::uuid, -- Assume que o ID do fotógrafo é passado nos metadados
-      new.raw_user_meta_data->>'fullName',
-      new.raw_user_meta_data->>'phone',
-      new.email
-    );
-  END IF;
-  RETURN new;
+    -- Verifica o 'role' definido nos metadados do usuário durante o cadastro
+    IF new.raw_user_meta_data->>'role' = 'photographer' THEN
+        INSERT INTO public.photographers (id, full_name, username, company_name, phone)
+        VALUES (
+            new.id,
+            new.raw_user_meta_data->>'fullName',
+            new.raw_user_meta_data->>'username',
+            new.raw_user_meta_data->>'companyName',
+            new.raw_user_meta_data->>'phone'
+        );
+    -- Se não for fotógrafo, pode ser um cliente, mas a tabela `clients` agora é gerenciada pelo fotógrafo.
+    -- O vínculo do cliente ao álbum será feito através do `client_user_id`.
+    END IF;
+    RETURN new;
 END;
-$$;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Cria o gatilho que chama a função 'handle_new_user' após cada novo registro em 'auth.users'.
+
+-- 10. Gatilho (Trigger) para Chamar a Função
+-- Este gatilho é acionado após a criação de um novo usuário na tabela auth.users.
 CREATE TRIGGER on_auth_user_created
-  AFTER INSERT ON auth.users
-  FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+    AFTER INSERT ON auth.users
+    FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 
+-- 11. Habilitar RLS e Definir Políticas de Acesso
+-- A segurança em nível de linha (RLS) garante que os usuários só possam acessar seus próprios dados.
 
--- Políticas de Segurança (RLS)
-
--- Habilitar RLS em todas as tabelas
+-- Tabela photographers
 ALTER TABLE public.photographers ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Photographer can access only own profile"
+    ON public.photographers FOR ALL
+    USING (auth.uid() = id)
+    WITH CHECK (auth.uid() = id);
+
+CREATE POLICY "Allow service_role to insert"
+    ON public.photographers FOR INSERT
+    TO service_role
+    WITH CHECK (true);
+
+-- Tabela clients
 ALTER TABLE public.clients ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Photographers can view their clients"
+    ON public.clients FOR SELECT
+    USING (auth.uid() = photographer_id);
+CREATE POLICY "Photographers can add their clients"
+    ON public.clients FOR INSERT
+    WITH CHECK (auth.uid() = photographer_id);
+CREATE POLICY "Photographers can update their own clients"
+    ON public.clients FOR UPDATE
+    USING (auth.uid() = photographer_id);
+CREATE POLICY "Photographers can delete their own clients"
+    ON public.clients FOR DELETE
+    USING (auth.uid() = photographer_id);
+
+
+-- Tabela albums
 ALTER TABLE public.albums ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Fotógrafos podem gerenciar seus próprios álbuns."
+    ON public.albums FOR ALL
+    USING (auth.uid() = photographer_id)
+    WITH CHECK (auth.uid() = photographer_id);
+
+-- Tabela photos
 ALTER TABLE public.photos ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.album_access_logs ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Fotógrafos podem gerenciar fotos de seus próprios álbuns."
+    ON public.photos FOR ALL
+    USING ((SELECT photographer_id FROM public.albums WHERE id = album_id) = auth.uid());
+
+-- Tabela photo_selections
 ALTER TABLE public.photo_selections ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Fotógrafos podem ver as seleções de seus clientes."
+    ON public.photo_selections FOR SELECT
+    USING ((SELECT photographer_id FROM public.albums WHERE id = album_id) = auth.uid());
+
+-- Tabela photographer_notifications
 ALTER TABLE public.photographer_notifications ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Fotógrafos podem ver suas próprias notificações."
+    ON public.photographer_notifications FOR ALL
+    USING (auth.uid() = photographer_id);
 
--- Políticas para a tabela 'photographers'
-CREATE POLICY "Photographer can access only own profile" ON public.photographers
-  FOR ALL
-  USING (auth.uid() = id);
+-- Tabela album_access_logs
+ALTER TABLE public.album_access_logs ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Fotógrafos podem ver os logs de acesso de seus álbuns."
+    ON public.album_access_logs FOR SELECT
+    USING ((SELECT photographer_id FROM public.albums WHERE id = album_id) = auth.uid());
 
--- Políticas para a tabela 'clients'
-CREATE POLICY "Photographers can view their clients" ON public.clients
-  FOR SELECT
-  USING (photographer_id = auth.uid());
-  
-CREATE POLICY "Photographers can add their clients" ON public.clients
-  FOR INSERT
-  WITH CHECK (photographer_id = auth.uid());
-
-CREATE POLICY "Photographers can update their own clients" ON public.clients
-  FOR UPDATE
-  USING (photographer_id = auth.uid());
-
-CREATE POLICY "Photographers can delete their own clients" ON public.clients
-  FOR DELETE
-  USING (photographer_id = auth.uid());
-
--- Políticas para a tabela 'albums'
-CREATE POLICY "Fotógrafos podem gerenciar seus próprios álbuns." ON public.albums
-  FOR ALL
-  USING (photographer_id = auth.uid());
-
--- Políticas para a tabela 'photos'
-CREATE POLICY "Fotógrafos podem gerenciar fotos de seus próprios álbuns." ON public.photos
-  FOR ALL
-  USING (
-    (
-      SELECT photographer_id FROM public.albums WHERE id = album_id
-    ) = auth.uid()
-  );
-
--- Políticas para a tabela 'album_access_logs'
-CREATE POLICY "Fotógrafos podem ver os logs de acesso de seus álbuns." ON public.album_access_logs
-  FOR SELECT
-  USING (
-    (
-      SELECT photographer_id FROM public.albums WHERE id = album_id
-    ) = auth.uid()
-  );
-
--- Políticas para a tabela 'photo_selections'
-CREATE POLICY "Fotógrafos podem ver as seleções de seus clientes." ON public.photo_selections
-  FOR SELECT
-  USING (
-    (
-      SELECT photographer_id FROM public.albums WHERE id = album_id
-    ) = auth.uid()
-  );
-
--- Políticas para a tabela 'photographer_notifications'
-CREATE POLICY "Fotógrafos podem ver suas próprias notificações." ON public.photographer_notifications
-  FOR ALL
-  USING (photographer_id = auth.uid());
+-- Definição final para garantir que o role 'anon' (usuário não logado) não possa fazer nada por padrão
+-- e que o 'service_role' (usado por gatilhos e funções de servidor) tenha acesso total.
+-- Essas são boas práticas, mas as políticas de RLS acima já são a principal camada de segurança.
+-- Acesso para anon e authenticated roles é negado por padrão quando RLS está habilitado sem políticas permissivas.
