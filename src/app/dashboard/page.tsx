@@ -29,10 +29,14 @@ export default async function DashboardPage() {
     return <div>Error loading albums.</div>;
   }
   
+  // A função agora busca na tabela unificada 'profiles'
   const getClientName = async (clientUserId: string | null) => {
     if (!clientUserId) return 'Cliente não vinculado';
     const { data, error } = await supabase.from('profiles').select('full_name').eq('id', clientUserId).single();
-    if (error) return 'Cliente não encontrado';
+    if (error) {
+      console.error("Error fetching client name:", error);
+      return 'Cliente não encontrado';
+    }
     return data.full_name;
   };
 
@@ -53,7 +57,7 @@ export default async function DashboardPage() {
     clientUserId: album.client_user_id
   })) || []);
   
-  const isProfileComplete = user.user_metadata?.companyName;
+  const isProfileComplete = user.user_metadata?.companyName && user.user_metadata?.companyName !== 'N/A';
 
   return (
     <div className="container mx-auto py-8">

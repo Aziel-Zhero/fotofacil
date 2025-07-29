@@ -38,36 +38,20 @@ export async function createAlbum(formData: FormData) {
 
   const { name, clientName, expirationDate, password, maxPhotos, extraPhotoCost, giftPhotos, clientUserId } = parsed.data;
 
-  // 1. Verificar se o clientUserId existe na tabela auth.users.
-  //    Como não podemos consultar auth.users diretamente por razões de segurança,
-  //    uma abordagem é tentar buscar um perfil público ou qualquer outra tabela
-  //    que tenha o user_id como chave estrangeira.
-  //    Por enquanto, vamos confiar que o ID é válido se a inserção não falhar
-  //    com erro de chave estrangeira, assumindo que a RLS está configurada corretamente.
-  //    Uma validação mais robusta poderia ser feita com uma função no DB.
-
-
-  // 2. Inserir o cliente (ou encontrar um existente)
-  let { data: client, error: clientError } = await supabase
+  // 1. Verificar se o clientUserId existe na tabela de perfis
+  const { data: clientProfile, error: clientError } = await supabase
     .from('profiles')
     .select('id')
-    .eq('full_name', clientName)
-    .eq('role', 'client')
+    .eq('id', clientUserId)
+    .eq('role', 'client') // Garante que o ID pertence a um cliente
     .single();
 
-  if (clientError && clientError.code !== 'PGRST116') { // PGRST116: no rows found
-      console.error('Erro ao buscar cliente:', clientError);
-      return { error: 'Erro ao verificar cliente existente.' };
+  if (clientError || !clientProfile) {
+      console.error('Erro ao buscar perfil do cliente:', clientError);
+      return { error: 'O ID fornecido não pertence a um cliente válido. Verifique se o cliente está cadastrado e se o ID está correto.' };
   }
   
-  if (!client) {
-      // Se o cliente não existe, não devemos criá-lo aqui,
-      // ele deve ser criado através do fluxo de cadastro.
-      // Apenas usamos o clientUserId fornecido.
-      // O `clientName` do formulário é mais para referência do fotógrafo.
-  }
-
-  // 3. Inserir o álbum
+  // 2. Inserir o álbum
   const { error: albumError } = await supabase.from('albums').insert({
     photographer_id: user.id,
     client_user_id: clientUserId, // Associar o ID do usuário cliente
@@ -90,46 +74,4 @@ export async function createAlbum(formData: FormData) {
 
   revalidatePath('/dashboard');
   return { success: true };
-}
-
-const linkClientSchema = z.object({
-    albumId: z.string().uuid(),
-    clientUserId: z.string().uuid('ID de usuário do cliente inválido.'),
-});
-
-
-export async function linkClientToAlbum(formData: FormData) {
-    const supabase = createClient();
-    const data = Object.fromEntries(formData.entries());
-
-    const parsed = linkClientSchema.safeParse(data);
-
-    if (!parsed.success) {
-        return { error: parsed.error.issues.map(i => i.message).join('\n') };
-    }
-
-    const { albumId, clientUserId } = parsed.data;
-    const { data: { user } } = await supabase.auth.getUser();
-
-    if (!user) {
-        return { error: 'Usuário não autenticado.' };
-    }
-
-    // Opcional: Verificar se o clientUserId existe na tabela auth.users com o role 'client'
-    // Esta verificação pode ser complexa sem acesso direto à tabela auth.users.
-    // Uma alternativa é confiar que o fotógrafo inseriu o ID correto.
-
-    const { error } = await supabase
-        .from('albums')
-        .update({ client_user_id: clientUserId, status: 'Aguardando Seleção' })
-        .eq('id', albumId)
-        .eq('photographer_id', user.id);
-
-    if (error) {
-        console.error('Erro ao vincular cliente ao álbum:', error);
-        return { error: `Não foi possível vincular o cliente: ${error.message}` };
-    }
-
-    revalidatePath('/dashboard');
-    return { success: true };
 }
