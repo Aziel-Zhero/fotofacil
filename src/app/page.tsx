@@ -20,10 +20,7 @@ const LandingHeader = () => (
         <Button variant="ghost" asChild>
           <Link href="/login">Login</Link>
         </Button>
-        <Button variant="outline" asChild>
-          <Link href="/gallery">Acessar como Cliente</Link>
-        </Button>
-         <Button asChild>
+        <Button asChild>
           <Link href="/register">Criar Conta</Link>
         </Button>
       </nav>
@@ -114,7 +111,7 @@ export default function Home() {
       <main className="flex-1">
         {/* Seção Hero */}
         <section className="container grid lg:grid-cols-2 gap-12 items-center py-20 md:py-32">
-          <div className="flex flex-col gap-6">
+          <div className="flex flex-col gap-6 order-2 lg:order-1">
             <h1 className="font-headline text-4xl md:text-6xl font-bold tracking-tighter">
               Compartilhe Sua Visão, <br />
               <span className="text-primary">Sem Complicação.</span>
@@ -131,7 +128,7 @@ export default function Home() {
               </Button>
             </div>
           </div>
-          <div className="relative h-64 min-h-[300px] md:min-h-[400px]">
+          <div className="relative h-64 min-h-[300px] md:min-h-[400px] order-1 lg:order-2">
              <Image
                 src="https://placehold.co/600x400.png"
                 alt="Portfólio de fotógrafo"
