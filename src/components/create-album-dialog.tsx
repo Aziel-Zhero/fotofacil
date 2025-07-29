@@ -112,7 +112,7 @@ export function CreateAlbumDialog({ children }: { children: React.ReactNode }) {
       <DialogTrigger asChild>
         {children}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle className="font-headline text-textDark">Criar Novo Álbum</DialogTitle>
           <DialogDescription>
@@ -120,13 +120,16 @@ export function CreateAlbumDialog({ children }: { children: React.ReactNode }) {
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
-                <FormField name="name" control={form.control} render={({ field }) => (
-                    <FormItem><FormLabel>Nome do Álbum</FormLabel><FormControl><Input placeholder="ex: Casamento na Toscana" {...field} /></FormControl><FormMessage /></FormItem>
-                )} />
-                <FormField name="clientName" control={form.control} render={({ field }) => (
-                    <FormItem><FormLabel>Nome do Cliente/Família</FormLabel><FormControl><Input placeholder="ex: Os Silva" {...field} /></FormControl><FormMessage /></FormItem>
-                )} />
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 py-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField name="name" control={form.control} render={({ field }) => (
+                        <FormItem><FormLabel>Nome do Álbum</FormLabel><FormControl><Input placeholder="ex: Casamento na Toscana" {...field} /></FormControl><FormMessage /></FormItem>
+                    )} />
+                    <FormField name="clientName" control={form.control} render={({ field }) => (
+                        <FormItem><FormLabel>Nome do Cliente/Família</FormLabel><FormControl><Input placeholder="ex: Os Silva" {...field} /></FormControl><FormMessage /></FormItem>
+                    )} />
+                </div>
+
                  <FormField name="clientUserId" control={form.control} render={({ field }) => (
                     <FormItem>
                         <FormLabel>ID de Usuário do Cliente</FormLabel>
@@ -139,38 +142,45 @@ export function CreateAlbumDialog({ children }: { children: React.ReactNode }) {
                          <FormMessage />
                     </FormItem>
                 )} />
-                <FormField name="password" control={form.control} render={({ field }) => (
-                    <FormItem>
-                        <FormLabel>Senha de Acesso (Opcional)</FormLabel>
-                        <div className="flex gap-2">
-                             <FormControl>
-                                <Input type="text" placeholder="Gere ou digite uma senha" {...field} />
-                             </FormControl>
-                             <Button type="button" variant="outline" size="icon" onClick={handleGeneratePassword}>
-                                <RefreshCw className="h-4 w-4"/>
-                                <span className="sr-only">Gerar Senha</span>
-                             </Button>
-                             <Button type="button" variant="outline" size="icon" onClick={copyPasswordToClipboard} disabled={!field.value}>
-                                <Copy className="h-4 w-4"/>
-                                <span className="sr-only">Copiar Senha</span>
-                             </Button>
-                        </div>
-                        <FormMessage />
-                    </FormItem>
-                )} />
-                <FormField name="expirationDate" control={form.control} render={({ field }) => (
-                    <FormItem><FormLabel>Data de Expiração (Opcional)</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem>
-                )} />
-                <FormField name="maxPhotos" control={form.control} render={({ field }) => (
-                    <FormItem><FormLabel>Máx. de Seleções de Fotos</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>
-                )} />
-                 <FormField name="extraPhotoCost" control={form.control} render={({ field }) => (
-                    <FormItem><FormLabel>Preço por Foto Extra (R$)</FormLabel><FormControl><Input type="number" placeholder="ex: 8.50" {...field} /></FormControl><FormMessage /></FormItem>
-                )} />
-                <FormField name="giftPhotos" control={form.control} render={({ field }) => (
-                    <FormItem><FormLabel>Fotos de Cortesia (Surpresa)</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>
-                )} />
-                 <div className="text-xs text-muted-foreground bg-secondary/50 p-3 rounded-md flex gap-2 items-start">
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField name="password" control={form.control} render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Senha de Acesso (Opcional)</FormLabel>
+                            <div className="flex gap-2">
+                                <FormControl>
+                                    <Input type="text" placeholder="Gere ou digite uma senha" {...field} />
+                                </FormControl>
+                                <Button type="button" variant="outline" size="icon" onClick={handleGeneratePassword}>
+                                    <RefreshCw className="h-4 w-4"/>
+                                    <span className="sr-only">Gerar Senha</span>
+                                </Button>
+                                <Button type="button" variant="outline" size="icon" onClick={copyPasswordToClipboard} disabled={!field.value}>
+                                    <Copy className="h-4 w-4"/>
+                                    <span className="sr-only">Copiar Senha</span>
+                                </Button>
+                            </div>
+                            <FormMessage />
+                        </FormItem>
+                    )} />
+                     <FormField name="expirationDate" control={form.control} render={({ field }) => (
+                        <FormItem><FormLabel>Data de Expiração (Opcional)</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem>
+                    )} />
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <FormField name="maxPhotos" control={form.control} render={({ field }) => (
+                        <FormItem><FormLabel>Máx. de Seleções</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>
+                    )} />
+                    <FormField name="extraPhotoCost" control={form.control} render={({ field }) => (
+                        <FormItem><FormLabel>Preço por Foto Extra (R$)</FormLabel><FormControl><Input type="number" placeholder="ex: 8.50" {...field} /></FormControl><FormMessage /></FormItem>
+                    )} />
+                    <FormField name="giftPhotos" control={form.control} render={({ field }) => (
+                        <FormItem><FormLabel>Fotos de Cortesia</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>
+                    )} />
+                </div>
+                 
+                 <div className="text-xs text-muted-foreground bg-secondary/30 p-3 rounded-md flex gap-2 items-start border border-border">
                     <Info className="h-4 w-4 flex-shrink-0 mt-0.5" />
                     <span>O cliente precisa ter uma conta na plataforma. O ID pode ser encontrado na página de perfil do cliente.</span>
                 </div>
