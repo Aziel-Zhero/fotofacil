@@ -13,6 +13,7 @@ export async function GET(request: Request) {
     const supabase = createClient()
     const { error } = await supabase.auth.exchangeCodeForSession(code)
     if (!error) {
+       // A lógica de redirecionamento para o dashboard lida com a verificação de role.
        return NextResponse.redirect(`${origin}/dashboard`)
     }
   }
