@@ -50,6 +50,7 @@ export function ClientRegisterForm() {
     const formData = new FormData();
     
     // Adiciona valores padrão para o cliente para a ação de cadastro unificada
+    // Isso é crucial para satisfazer o trigger do banco de dados que espera esses campos.
     const username = values.email.split('@')[0].replace(/[^a-zA-Z0-9]/g, '') + Math.floor(Math.random() * 1000);
     formData.append('username', username);
     formData.append('companyName', 'Cliente'); // Valor padrão para satisfazer o schema
