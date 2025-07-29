@@ -24,6 +24,7 @@ import PhoneInput from 'react-phone-number-input';
 import 'react-phone-number-input/style.css'
 
 
+// Este schema agora é específico para o fotógrafo e garante que todos os campos sejam enviados
 const formSchema = z.object({
   fullName: z.string().min(1, 'Nome completo é obrigatório'),
   email: z.string().email('Endereço de email inválido'),
@@ -55,6 +56,7 @@ export function PhotographerRegisterForm() {
     Object.entries(values).forEach(([key, value]) => {
       formData.append(key, value);
     });
+    // Adiciona o 'role' para que a ação unificada saiba como proceder
     formData.append('role', 'photographer');
     
     const result = await signup(formData);
@@ -66,6 +68,7 @@ export function PhotographerRegisterForm() {
         variant: "destructive",
       });
     }
+    // O redirecionamento é tratado pela server action
     setIsSubmitting(false);
   }
 

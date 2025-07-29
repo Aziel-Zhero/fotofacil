@@ -6,12 +6,14 @@ import { z } from 'zod';
 import { redirect } from 'next/navigation';
 import { headers } from 'next/headers';
 
+// Schema agora acomoda ambos os roles. Username e companyName são opcionais aqui,
+// mas a lógica de negócio garantirá sua presença quando necessário.
 const signupSchema = z.object({
   email: z.string().email('Email inválido.'),
   password: z.string().min(8, 'A senha deve ter pelo menos 8 caracteres.'),
   fullName: z.string().min(1, 'Nome completo é obrigatório.'),
-  username: z.string().min(3, 'O nome de usuário deve ter pelo menos 3 caracteres.'),
-  companyName: z.string().min(1, 'Nome da empresa é obrigatório.'),
+  username: z.string().optional(),
+  companyName: z.string().optional(),
   phone: z.string().min(1, 'Telefone é obrigatório.'),
   role: z.enum(['photographer', 'client'], { required_error: 'Função é obrigatória.' }),
 });
@@ -31,7 +33,23 @@ export async function signup(formData: FormData) {
     return { error: errorMessages.trim() };
   }
 
-  const { email, password, fullName, username, companyName, phone, role } = parsed.data;
+  let { email, password, fullName, username, companyName, phone, role } = parsed.data;
+
+  // Lógica de negócio para garantir os dados necessários para o trigger do DB.
+  if (role === 'client') {
+    // Para clientes, geramos um username e usamos um companyName padrão.
+    username = email.split('@')[0].replace(/[^a-zA-Z0-9]/g, '') + Math.floor(Math.random() * 1000);
+    companyName = 'Cliente';
+  } else if (role === 'photographer') {
+    // Para fotógrafos, validamos se os campos foram fornecidos.
+    if (!username || username.length < 3) {
+      return { error: "O nome de usuário deve ter pelo menos 3 caracteres." };
+    }
+    if (!companyName || companyName.length < 1) {
+      return { error: "Nome da empresa é obrigatório." };
+    }
+  }
+
 
   const { error } = await supabase.auth.signUp({
     email,
@@ -55,7 +73,8 @@ export async function signup(formData: FormData) {
     if (error.message.includes('duplicate key value violates unique constraint "profiles_username_key"')) {
         return { error: "Este nome de usuário já está em uso. Por favor, escolha outro." };
     }
-    return { error: `Erro no cadastro: ${error.message}` };
+    console.error("Supabase signup error:", error.message);
+    return { error: "Erro no banco de dados ao salvar novo usuário. Verifique os logs." };
   }
 
   const message = role === 'client' 
