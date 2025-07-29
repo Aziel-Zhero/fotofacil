@@ -1,3 +1,4 @@
+
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
@@ -48,10 +49,10 @@ export async function createAlbum(formData: FormData) {
 
   // 2. Inserir o cliente (ou encontrar um existente)
   let { data: client, error: clientError } = await supabase
-    .from('clients')
+    .from('profiles')
     .select('id')
-    .eq('name', clientName)
-    .eq('photographer_id', user.id)
+    .eq('full_name', clientName)
+    .eq('role', 'client')
     .single();
 
   if (clientError && clientError.code !== 'PGRST116') { // PGRST116: no rows found
@@ -60,26 +61,15 @@ export async function createAlbum(formData: FormData) {
   }
   
   if (!client) {
-      const { data: newClient, error: newClientError } = await supabase
-          .from('clients')
-          .insert({
-              photographer_id: user.id,
-              name: clientName,
-          })
-          .select('id')
-          .single();
-
-      if (newClientError) {
-          console.error('Erro ao criar cliente:', newClientError);
-          return { error: 'Erro ao criar novo cliente.' };
-      }
-      client = newClient;
+      // Se o cliente não existe, não devemos criá-lo aqui,
+      // ele deve ser criado através do fluxo de cadastro.
+      // Apenas usamos o clientUserId fornecido.
+      // O `clientName` do formulário é mais para referência do fotógrafo.
   }
 
   // 3. Inserir o álbum
   const { error: albumError } = await supabase.from('albums').insert({
     photographer_id: user.id,
-    client_id: client.id,
     client_user_id: clientUserId, // Associar o ID do usuário cliente
     name,
     status: 'Aguardando Seleção', // Status já começa pronto para o cliente

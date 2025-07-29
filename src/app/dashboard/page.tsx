@@ -29,10 +29,11 @@ export default async function DashboardPage() {
     return <div>Error loading albums.</div>;
   }
   
-  const getClientName = async (clientId: string) => {
-    const { data, error } = await supabase.from('clients').select('name').eq('id', clientId).single();
+  const getClientName = async (clientUserId: string | null) => {
+    if (!clientUserId) return 'Cliente não vinculado';
+    const { data, error } = await supabase.from('profiles').select('full_name').eq('id', clientUserId).single();
     if (error) return 'Cliente não encontrado';
-    return data.name;
+    return data.full_name;
   };
 
   const getPhotoCount = async (albumId: string) => {
@@ -47,7 +48,7 @@ export default async function DashboardPage() {
     photoCount: await getPhotoCount(album.id),
     maxPhotos: album.selection_limit,
     status: album.status,
-    client: await getClientName(album.client_id),
+    client: await getClientName(album.client_user_id),
     createdAt: album.created_at,
     clientUserId: album.client_user_id
   })) || []);
