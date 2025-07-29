@@ -82,7 +82,7 @@ export async function login(formData: FormData) {
 
     const { email, password } = parsed.data;
 
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data: { user }, error } = await supabase.auth.signInWithPassword({
         email,
         password,
     });
@@ -94,5 +94,20 @@ export async function login(formData: FormData) {
         return { error: "Credenciais inválidas. Por favor, tente novamente." };
     }
 
-    return redirect('/dashboard');
+    if (!user) {
+         return { error: "Usuário não encontrado após o login." };
+    }
+    
+    // Verifica a role do usuário e redireciona
+    const userRole = user.user_metadata?.role;
+
+    if (userRole === 'photographer') {
+        return redirect('/dashboard');
+    } else if (userRole === 'client') {
+        return redirect('/gallery');
+    } else {
+        // Fallback: se não tiver role, desloga e manda pro login com erro
+        await supabase.auth.signOut();
+        return redirect('/login?error=Função de usuário não definida. Contate o suporte.');
+    }
 }
