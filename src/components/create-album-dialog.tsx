@@ -39,7 +39,9 @@ const formSchema = z.object({
 });
 
 function generateSecurePassword() {
-    return Math.random().toString(36).substring(2, 12);
+    const array = new Uint32Array(2);
+    crypto.getRandomValues(array);
+    return array.join('').substring(0, 10);
 }
 
 export function CreateAlbumDialog({ children }: { children: React.ReactNode }) {
