@@ -40,7 +40,7 @@ const LandingHeader = () => {
             </Link>
             <nav className="flex items-center gap-2 sm:gap-4">
                 <Button variant="ghost" asChild>
-                    <Link href="/login">Login Cliente</Link>
+                    <Link href="/gallery">Login Cliente</Link>
                 </Button>
                 <Button variant="outline" asChild>
                     <Link href="/login">Login Fotógrafo</Link>
