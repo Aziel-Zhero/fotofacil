@@ -50,6 +50,9 @@ export async function clientSignup(formData: FormData) {
     if (error.message.includes("User already registered")) {
         return { error: "Este email já está cadastrado. Tente fazer login." };
     }
+    if (error.message.includes('duplicate key value violates unique constraint "clients_username_key"')) {
+        return { error: "Este nome de usuário já está em uso. Por favor, escolha outro." };
+    }
     return { error: `Erro no cadastro: ${error.message}` };
   }
 
