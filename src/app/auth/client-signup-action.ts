@@ -13,7 +13,6 @@ const signupSchema = z.object({
   fullName: z.string().min(1, 'Nome completo é obrigatório.'),
   username: z.string().min(3, 'O nome de usuário deve ter pelo menos 3 caracteres.'),
   phone: z.string().min(1, 'Telefone é obrigatório.'),
-  photographerId: z.string().uuid('ID do fotógrafo inválido.'),
 });
 
 export async function clientSignup(formData: FormData) {
@@ -31,7 +30,7 @@ export async function clientSignup(formData: FormData) {
     return { error: errorMessages.trim() };
   }
 
-  const { email, password, fullName, username, phone, photographerId } = parsed.data;
+  const { email, password, fullName, username, phone } = parsed.data;
 
   const { error } = await supabase.auth.signUp({
     email,
@@ -42,7 +41,6 @@ export async function clientSignup(formData: FormData) {
         fullName,
         username,
         phone,
-        photographerId,
       },
       emailRedirectTo: `${origin}/auth/callback`,
     },

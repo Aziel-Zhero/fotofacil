@@ -54,10 +54,6 @@ export function ClientRegisterForm() {
       formData.append(key, value);
     });
     
-    // Mock photographerId - em um app real, isso viria de algum lugar
-    // (ex: link de convite, seleção no formulário, etc.)
-    formData.append('photographerId', 'mock-photographer-id-12345');
-
     const result = await clientSignup(formData);
 
     if (result?.error) {
