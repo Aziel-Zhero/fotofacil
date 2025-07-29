@@ -27,7 +27,6 @@ import { clientSignup } from '@/app/auth/client-signup-action';
 const formSchema = z.object({
   fullName: z.string().min(1, 'Nome completo é obrigatório'),
   email: z.string().email('Endereço de email inválido'),
-  username: z.string().min(3, 'O nome de usuário deve ter pelo menos 3 caracteres'),
   password: z.string().min(8, 'A senha deve ter pelo menos 8 caracteres'),
   phone: z.string().min(10, 'Telefone inválido'),
 });
@@ -41,7 +40,6 @@ export function ClientRegisterForm() {
         defaultValues: {
             fullName: '',
             email: '',
-            username: '',
             password: '',
             phone: '',
         },
@@ -96,9 +94,6 @@ export function ClientRegisterForm() {
               </FormItem>
             )}
            />
-          <FormField name="username" control={form.control} render={({ field }) => (
-            <FormItem><FormLabel>Nome de Usuário</FormLabel><FormControl><Input placeholder="maria_silva" {...field} /></FormControl><FormMessage /></FormItem>
-          )} />
           <FormField name="password" control={form.control} render={({ field }) => (
             <FormItem><FormLabel>Senha</FormLabel><FormControl><Input type="password" placeholder="••••••••" {...field} /></FormControl><FormMessage /></FormItem>
           )} />

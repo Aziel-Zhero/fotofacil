@@ -11,7 +11,6 @@ const signupSchema = z.object({
   email: z.string().email('Email inválido.'),
   password: z.string().min(8, 'A senha deve ter pelo menos 8 caracteres.'),
   fullName: z.string().min(1, 'Nome completo é obrigatório.'),
-  username: z.string().min(3, 'O nome de usuário deve ter pelo menos 3 caracteres.'),
   phone: z.string().min(1, 'Telefone é obrigatório.'),
 });
 
@@ -30,7 +29,7 @@ export async function clientSignup(formData: FormData) {
     return { error: errorMessages.trim() };
   }
 
-  const { email, password, fullName, username, phone } = parsed.data;
+  const { email, password, fullName, phone } = parsed.data;
 
   const { error } = await supabase.auth.signUp({
     email,
@@ -39,7 +38,6 @@ export async function clientSignup(formData: FormData) {
       data: {
         role: 'client',
         fullName,
-        username,
         phone,
       },
       emailRedirectTo: `${origin}/auth/callback`,
@@ -49,9 +47,6 @@ export async function clientSignup(formData: FormData) {
   if (error) {
     if (error.message.includes("User already registered")) {
         return { error: "Este email já está cadastrado. Tente fazer login." };
-    }
-    if (error.message.includes('duplicate key value violates unique constraint "clients_username_key"')) {
-        return { error: "Este nome de usuário já está em uso. Por favor, escolha outro." };
     }
     return { error: `Erro no cadastro: ${error.message}` };
   }
