@@ -38,12 +38,12 @@ export async function createAlbum(formData: FormData) {
 
   const { name, clientName, expirationDate, password, maxPhotos, extraPhotoCost, giftPhotos, clientUserId } = parsed.data;
 
-  // 1. Verificar se o clientUserId existe na tabela de perfis
+  // 1. Verificar se o clientUserId existe na nova tabela 'profiles' e tem a role 'client'
   const { data: clientProfile, error: clientError } = await supabase
     .from('profiles')
     .select('id')
     .eq('id', clientUserId)
-    .eq('role', 'client') // Garante que o ID pertence a um cliente
+    .eq('role', 'client') 
     .single();
 
   if (clientError || !clientProfile) {
@@ -54,9 +54,9 @@ export async function createAlbum(formData: FormData) {
   // 2. Inserir o álbum
   const { error: albumError } = await supabase.from('albums').insert({
     photographer_id: user.id,
-    client_user_id: clientUserId, // Associar o ID do usuário cliente
+    client_user_id: clientUserId,
     name,
-    status: 'Aguardando Seleção', // Status já começa pronto para o cliente
+    status: 'Aguardando Seleção',
     selection_limit: maxPhotos,
     extra_photo_cost: extraPhotoCost,
     courtesy_photos: giftPhotos,
