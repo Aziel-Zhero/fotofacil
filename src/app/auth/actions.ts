@@ -81,7 +81,8 @@ export async function signup(formData: FormData) {
     ? 'Cadastro de cliente realizado com sucesso! Verifique seu email para confirmar.'
     : 'Cadastro realizado com sucesso! Verifique seu email para confirmar sua conta.';
 
-  return redirect(`/login?message=${encodeURIComponent(message)}`);
+  // A função redirect() lança uma exceção, então deve ser chamada fora do retorno.
+  redirect(`/login?message=${encodeURIComponent(message)}`);
 }
 
 
@@ -126,12 +127,12 @@ export async function login(formData: FormData) {
     const userRole = user.user_metadata?.role;
 
     if (userRole === 'photographer') {
-        return redirect('/dashboard');
+        redirect('/dashboard');
     } else if (userRole === 'client') {
-        return redirect('/gallery');
+        redirect('/gallery');
     } else {
         // Fallback: se não tiver role, desloga e manda pro login com erro
         await supabase.auth.signOut();
-        return redirect('/login?error=Função de usuário não definida. Contate o suporte.');
+        redirect('/login?error=Função de usuário não definida. Contate o suporte.');
     }
 }

@@ -17,18 +17,22 @@ import {
 } from '@/components/ui/form';
 import { CardContent, CardFooter } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Loader2 } from 'lucide-react';
 import { login } from '@/app/auth/actions';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 const formSchema = z.object({
   email: z.string().email({ message: 'Email inválido.' }),
   password: z.string().min(1, { message: 'Senha é obrigatória.' }),
 });
 
-export function LoginForm() {
+export function LoginForm({ message, error }: { message?: string, error?: string }) {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formError, setFormError] = useState<string | null>(error || null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(message || null);
+
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -40,6 +44,9 @@ export function LoginForm() {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true);
+    setFormError(null);
+    setSuccessMessage(null);
+
     const formData = new FormData();
     Object.entries(values).forEach(([key, value]) => {
       formData.append(key, value);
@@ -48,12 +55,9 @@ export function LoginForm() {
     const result = await login(formData);
 
     if (result?.error) {
-        toast({
-            title: "Erro no Login",
-            description: result.error,
-            variant: "destructive",
-        });
+        setFormError(result.error);
     }
+    // O redirecionamento em caso de sucesso é feito pela server action
     setIsSubmitting(false);
   }
 
@@ -61,6 +65,16 @@ export function LoginForm() {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)}>
         <CardContent className="space-y-4">
+            {successMessage && (
+                <Alert variant="default" className="bg-green-100 border-green-300 text-green-800">
+                    <AlertDescription>{successMessage}</AlertDescription>
+                </Alert>
+            )}
+            {formError && (
+                 <Alert variant="destructive">
+                    <AlertDescription>{formError}</AlertDescription>
+                </Alert>
+            )}
           <FormField
             control={form.control}
             name="email"
