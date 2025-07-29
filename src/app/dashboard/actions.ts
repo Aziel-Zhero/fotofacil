@@ -12,6 +12,7 @@ const createAlbumSchema = z.object({
   maxPhotos: z.coerce.number().min(1, 'Defina um número máximo de fotos.'),
   extraPhotoCost: z.coerce.number().min(0, 'O valor deve ser zero ou maior.').optional(),
   giftPhotos: z.coerce.number().min(0, 'O valor deve ser zero ou maior.').optional(),
+  clientUserId: z.string().uuid('ID de usuário do cliente inválido e obrigatório.'),
 });
 
 export async function createAlbum(formData: FormData) {
@@ -34,9 +35,18 @@ export async function createAlbum(formData: FormData) {
     return { error: 'Usuário não autenticado.' };
   }
 
-  const { name, clientName, expirationDate, password, maxPhotos, extraPhotoCost, giftPhotos } = parsed.data;
+  const { name, clientName, expirationDate, password, maxPhotos, extraPhotoCost, giftPhotos, clientUserId } = parsed.data;
 
-  // 1. Inserir o cliente (ou encontrar um existente)
+  // 1. Verificar se o clientUserId existe na tabela auth.users.
+  //    Como não podemos consultar auth.users diretamente por razões de segurança,
+  //    uma abordagem é tentar buscar um perfil público ou qualquer outra tabela
+  //    que tenha o user_id como chave estrangeira.
+  //    Por enquanto, vamos confiar que o ID é válido se a inserção não falhar
+  //    com erro de chave estrangeira, assumindo que a RLS está configurada corretamente.
+  //    Uma validação mais robusta poderia ser feita com uma função no DB.
+
+
+  // 2. Inserir o cliente (ou encontrar um existente)
   let { data: client, error: clientError } = await supabase
     .from('clients')
     .select('id')
@@ -66,12 +76,13 @@ export async function createAlbum(formData: FormData) {
       client = newClient;
   }
 
-  // 2. Inserir o álbum
+  // 3. Inserir o álbum
   const { error: albumError } = await supabase.from('albums').insert({
     photographer_id: user.id,
     client_id: client.id,
+    client_user_id: clientUserId, // Associar o ID do usuário cliente
     name,
-    status: 'Aguardando Seleção',
+    status: 'Aguardando Seleção', // Status já começa pronto para o cliente
     selection_limit: maxPhotos,
     extra_photo_cost: extraPhotoCost,
     courtesy_photos: giftPhotos,
@@ -81,6 +92,9 @@ export async function createAlbum(formData: FormData) {
 
    if (albumError) {
     console.error('Erro ao criar álbum:', albumError);
+    if (albumError.message.includes('foreign key constraint')) {
+        return { error: 'O ID do cliente fornecido não é válido. Verifique se o cliente está cadastrado.' };
+    }
     return { error: `Erro ao criar álbum: ${albumError.message}` };
   }
 

@@ -24,7 +24,7 @@ import {
     FormLabel,
     FormMessage,
   } from '@/components/ui/form';
-import { Copy, Loader2, RefreshCw } from 'lucide-react';
+import { Copy, Info, Loader2, RefreshCw, UserSearch } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { createAlbum } from '../app/dashboard/actions';
 
@@ -33,6 +33,7 @@ const formSchema = z.object({
   clientName: z.string().min(1, "O nome do cliente é obrigatório."),
   expirationDate: z.string().optional(),
   password: z.string().optional(),
+  clientUserId: z.string().uuid("O ID do cliente é obrigatório e deve ser um ID válido."),
   maxPhotos: z.coerce.number().min(1, "Por favor, defina um número máximo de fotos."),
   extraPhotoCost: z.coerce.number().min(0, "O valor deve ser zero ou maior.").optional(),
   giftPhotos: z.coerce.number().min(0, "O valor deve ser zero ou maior.").optional(),
@@ -55,6 +56,7 @@ export function CreateAlbumDialog({ children }: { children: React.ReactNode }) {
             clientName: "",
             expirationDate: "",
             password: "",
+            clientUserId: "",
             maxPhotos: 50,
             extraPhotoCost: 0,
             giftPhotos: 0,
@@ -97,7 +99,7 @@ export function CreateAlbumDialog({ children }: { children: React.ReactNode }) {
       } else {
         toast({
           title: "Álbum Criado com Sucesso!",
-          description: `O álbum "${values.name}" foi criado.`,
+          description: `O álbum "${values.name}" foi criado e vinculado ao cliente.`,
         });
         setOpen(false);
         form.reset();
@@ -110,11 +112,11 @@ export function CreateAlbumDialog({ children }: { children: React.ReactNode }) {
       <DialogTrigger asChild>
         {children}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="font-headline text-textDark">Criar Novo Álbum</DialogTitle>
           <DialogDescription>
-            Preencha os detalhes abaixo para criar um novo álbum para seu cliente.
+            Preencha os detalhes para criar e vincular um novo álbum para seu cliente.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -125,15 +127,24 @@ export function CreateAlbumDialog({ children }: { children: React.ReactNode }) {
                 <FormField name="clientName" control={form.control} render={({ field }) => (
                     <FormItem><FormLabel>Nome do Cliente/Família</FormLabel><FormControl><Input placeholder="ex: Os Silva" {...field} /></FormControl><FormMessage /></FormItem>
                 )} />
-                <FormField name="expirationDate" control={form.control} render={({ field }) => (
-                    <FormItem><FormLabel>Data de Expiração (Opcional)</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem>
+                 <FormField name="clientUserId" control={form.control} render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>ID de Usuário do Cliente</FormLabel>
+                        <div className="relative">
+                            <UserSearch className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                            <FormControl>
+                                <Input placeholder="Cole o ID do cliente aqui" {...field} className="pl-10"/>
+                            </FormControl>
+                        </div>
+                         <FormMessage />
+                    </FormItem>
                 )} />
                 <FormField name="password" control={form.control} render={({ field }) => (
                     <FormItem>
-                        <FormLabel>Senha de Acesso</FormLabel>
+                        <FormLabel>Senha de Acesso (Opcional)</FormLabel>
                         <div className="flex gap-2">
                              <FormControl>
-                                <Input type="text" placeholder="Gere uma senha" {...field} readOnly className="bg-muted/50"/>
+                                <Input type="text" placeholder="Gere ou digite uma senha" {...field} />
                              </FormControl>
                              <Button type="button" variant="outline" size="icon" onClick={handleGeneratePassword}>
                                 <RefreshCw className="h-4 w-4"/>
@@ -147,6 +158,9 @@ export function CreateAlbumDialog({ children }: { children: React.ReactNode }) {
                         <FormMessage />
                     </FormItem>
                 )} />
+                <FormField name="expirationDate" control={form.control} render={({ field }) => (
+                    <FormItem><FormLabel>Data de Expiração (Opcional)</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem>
+                )} />
                 <FormField name="maxPhotos" control={form.control} render={({ field }) => (
                     <FormItem><FormLabel>Máx. de Seleções de Fotos</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>
                 )} />
@@ -156,10 +170,14 @@ export function CreateAlbumDialog({ children }: { children: React.ReactNode }) {
                 <FormField name="giftPhotos" control={form.control} render={({ field }) => (
                     <FormItem><FormLabel>Fotos de Cortesia (Surpresa)</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>
                 )} />
+                 <div className="text-xs text-muted-foreground bg-secondary/50 p-3 rounded-md flex gap-2 items-start">
+                    <Info className="h-4 w-4 flex-shrink-0 mt-0.5" />
+                    <span>O cliente precisa ter uma conta na plataforma. O ID pode ser encontrado na página de perfil do cliente.</span>
+                </div>
                 <DialogFooter>
                     <Button type="submit" disabled={isSubmitting}>
                       {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                      Criar Álbum
+                      Criar e Vincular Álbum
                     </Button>
                 </DialogFooter>
             </form>
