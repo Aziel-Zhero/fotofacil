@@ -4,13 +4,12 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
-import { CheckCircle, Camera, Users, FileKey2, BrainCircuit, Tags, Search, LinkIcon } from 'lucide-react';
+import { CheckCircle, Camera, Users, FileKey2, BrainCircuit, Tags, Search } from 'lucide-react';
 import { MasonryGallery } from '@/components/masonry-gallery';
 import CardSwap, { Card as SwapCard } from '@/components/card-swap';
 import DarkVeil from '@/components/dark-veil';
 import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
-import { ClientAlbumAccess } from '@/components/client-album-access';
 
 const LandingHeader = () => {
     const [scrolled, setScrolled] = useState(false);
@@ -40,8 +39,11 @@ const LandingHeader = () => {
                 <span className="font-headline text-xl font-bold text-foreground">FotoFácil</span>
             </Link>
             <nav className="flex items-center gap-2 sm:gap-4">
+                <Button variant="ghost" asChild>
+                    <Link href="/login">Login Cliente</Link>
+                </Button>
                 <Button variant="outline" asChild>
-                    <Link href="/login">Login</Link>
+                    <Link href="/login">Login Fotógrafo</Link>
                 </Button>
                 <Button asChild>
                     <Link href="/register">Criar Conta</Link>
@@ -162,27 +164,6 @@ export default function Home() {
              />
           </div>
         </section>
-
-        {/* Client Access Section */}
-        <section id="client-access" className="py-20">
-            <div className="container max-w-2xl">
-                <GlassCard>
-                    <CardHeader className="text-center">
-                        <div className="mx-auto bg-primary/10 p-3 rounded-full w-fit">
-                            <LinkIcon className="w-8 h-8 text-primary"/>
-                        </div>
-                        <CardTitle className="font-headline mt-4">Acesse seu Álbum</CardTitle>
-                        <CardDescription>
-                            É cliente? Insira o ID do álbum fornecido pelo seu fotógrafo para ver e selecionar suas fotos.
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                       <ClientAlbumAccess />
-                    </CardContent>
-                </GlassCard>
-            </div>
-        </section>
-
 
         {/* Masonry Gallery Section */}
         <section className="py-20 md:py-32">
