@@ -39,7 +39,7 @@ export function PhotoGrid({ photos, viewMode }: PhotoGridProps) {
                                 className={cn(
                                     "rounded-md object-cover w-full",
                                     viewMode === 'grid' && "aspect-square",
-                                    "transition-transform group-hover:scale-105"
+                                    "transition-transform duration-200 group-hover:scale-105"
                                 )}
                                 data-ai-hint={photo.dataAiHint}
                                 />

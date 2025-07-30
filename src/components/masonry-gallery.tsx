@@ -94,12 +94,12 @@ interface MasonryGalleryProps {
 
 export const MasonryGallery = ({
   items,
-  ease = "power3.out",
-  duration = 0.6,
-  stagger = 0.05,
+  ease = "power2.out",
+  duration = 0.5,
+  stagger = 0.03,
   animateFrom = "bottom",
   scaleOnHover = true,
-  hoverScale = 0.95,
+  hoverScale = 1.05,
   blurToFocus = true,
   colorShiftOnHover = false,
   gap = 16,
@@ -205,8 +205,8 @@ export const MasonryGallery = ({
           opacity: 1,
           ...animationProps,
           ...(blurToFocus && { filter: "blur(0px)" }),
-          duration: 0.8,
-          ease: "power3.out",
+          duration: duration,
+          ease: ease,
           delay: index * stagger,
         });
       } else {

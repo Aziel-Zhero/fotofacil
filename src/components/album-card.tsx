@@ -5,23 +5,9 @@ import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from './ui/button';
-import { Camera, Users, Calendar, Link2, UserCheck, Loader2 } from 'lucide-react';
+import { Camera, Users, Calendar, UserCheck } from 'lucide-react';
 import { format, isValid } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
-import { Input } from './ui/input';
-import { Label } from './ui/label';
-import { useState } from 'react';
-import { linkClientToAlbum } from '@/app/dashboard/actions';
-import { useToast } from '@/hooks/use-toast';
 
 interface AlbumCardProps {
   album: {
@@ -55,7 +41,7 @@ export function AlbumCard({ album }: AlbumCardProps) {
   const creationDate = album.createdAt ? new Date(album.createdAt) : null;
 
   return (
-    <Card className="flex flex-col hover:shadow-lg transition-shadow duration-300 bg-card text-card-foreground">
+    <Card className="flex flex-col hover:shadow-lg transition-shadow duration-200 bg-card text-card-foreground">
       <CardHeader>
         <CardTitle className="font-headline truncate text-textDark">{album.name}</CardTitle>
         <CardDescription className='flex flex-wrap gap-2'>
