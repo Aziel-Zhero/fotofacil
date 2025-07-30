@@ -23,12 +23,14 @@ import PhoneInput from 'react-phone-number-input';
 import 'react-phone-number-input/style.css';
 import { signup } from '@/app/auth/actions';
 
-
+// O schema agora precisa incluir os campos que serão enviados, mesmo que ocultos.
 const formSchema = z.object({
   fullName: z.string().min(1, 'Nome completo é obrigatório'),
   email: z.string().email('Endereço de email inválido'),
   password: z.string().min(8, 'A senha deve ter pelo menos 8 caracteres'),
   phone: z.string().min(10, 'Telefone inválido'),
+  username: z.string(), // Será enviado oculto
+  companyName: z.string(), // Será enviado oculto
 });
 
 export function ClientRegisterForm() {
@@ -42,6 +44,9 @@ export function ClientRegisterForm() {
             email: '',
             password: '',
             phone: '',
+            // Valores padrão para os campos ocultos. O backend cuidará de gerar o username final.
+            username: 'default_client_username', 
+            companyName: 'N/A'
         },
     });
 
@@ -49,8 +54,7 @@ export function ClientRegisterForm() {
     setIsSubmitting(true);
     const formData = new FormData();
     
-    // Adiciona apenas os dados do formulário e o 'role'.
-    // Os campos 'username' e 'companyName' serão tratados no backend.
+    // Adiciona todos os dados do formulário, incluindo os ocultos, e o 'role'.
     Object.entries(values).forEach(([key, value]) => {
       formData.append(key, value);
     });
@@ -73,6 +77,10 @@ export function ClientRegisterForm() {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)}>
         <CardContent className="space-y-4">
+          {/* Campos ocultos para satisfazer a validação da action unificada */}
+          <input type="hidden" {...form.register('username')} />
+          <input type="hidden" {...form.register('companyName')} />
+          
           <FormField name="fullName" control={form.control} render={({ field }) => (
             <FormItem><FormLabel>Nome Completo</FormLabel><FormControl><Input placeholder="Maria da Silva" {...field} /></FormControl><FormMessage /></FormItem>
           )} />
