@@ -133,7 +133,7 @@ export async function login(formData: FormData) {
         redirect('/gallery');
     } else {
         // Fallback: se não tiver role, desloga e manda pro login com erro.
-        // Isso pode acontecer se o trigger falhar, o que não deve mais ocorrer.
+        // Isso pode acontecer se o trigger falhar.
         await supabase.auth.signOut();
         redirect('/login?error=Função de usuário não definida. Contate o suporte.');
     }
