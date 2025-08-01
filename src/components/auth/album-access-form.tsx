@@ -16,7 +16,11 @@ import {
 } from '@/components/ui/form';
 import { CardContent, CardFooter } from '@/components/ui/card';
 import { KeyRound } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
+// Este schema e formulário não são mais o fluxo principal,
+// mas podem ser mantidos para compatibilidade ou removidos.
+// O acesso agora é pelo login do cliente.
 const formSchema = z.object({
   password: z.string().min(1, { message: 'A senha é obrigatória.' }),
 });
@@ -33,20 +37,11 @@ export function AlbumAccessForm({ albumId, onSuccess }: AlbumAccessFormProps) {
       password: '',
     },
   });
+  const router = useRouter();
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    // Em uma aplicação real, você faria uma chamada para a API/Server Action
-    // para validar a senha para o albumId.
-    // Ex: const isValid = await validateAlbumPassword(albumId, values.password);
-    
-    // Mock de validação
-    if (values.password === 'senha123') {
-        // Armazena um token de sessão simples para simular o acesso
-        sessionStorage.setItem(`album_token_${albumId}`, 'true');
-        onSuccess();
-    } else {
-        form.setError('password', { message: 'Senha incorreta.' });
-    }
+    // Redireciona para a página de login, que é o novo fluxo
+    router.push('/login');
   }
 
   return (
@@ -58,7 +53,7 @@ export function AlbumAccessForm({ albumId, onSuccess }: AlbumAccessFormProps) {
             name="password"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Senha do Álbum</FormLabel>
+                <FormLabel>Senha do Álbum (obsoleto)</FormLabel>
                 <FormControl>
                   <Input type="password" placeholder="••••••••" {...field} />
                 </FormControl>
@@ -70,11 +65,10 @@ export function AlbumAccessForm({ albumId, onSuccess }: AlbumAccessFormProps) {
         <CardFooter className="flex-col gap-4">
           <Button type="submit" className="w-full">
             <KeyRound className="mr-2 h-4 w-4" />
-            Acessar Álbum
+            Ir para Login
           </Button>
         </CardFooter>
       </form>
     </Form>
   );
 }
-

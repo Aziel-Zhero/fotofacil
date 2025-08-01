@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { ArrowLeft, Grid3x3, Rows, Square, Send, ShieldAlert } from "lucide-react";
+import { Grid3x3, Rows, Square, Send, ShieldAlert, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { PhotoCarousel } from '@/components/photo-carousel';
@@ -18,10 +18,11 @@ export type ViewMode = 'grid' | 'masonry' | 'carousel';
 
 export default function ClientAlbumPage({ params }: { params: { albumId: string } }) {
   const router = useRouter();
-  const [isAuthenticated, setIsAuthenticated] = useState(false); // Simula o estado de autenticação
-  const [isLoading, setIsLoading] = useState(true);
-
-  // Mock data - em uma aplicação real, seria buscado após a validação da senha
+  
+  // A autenticação agora é gerenciada pelo middleware do Supabase.
+  // Se o usuário chegar aqui, ele tem permissão.
+  
+  // Mock data - em uma aplicação real, seria buscado do Supabase
   const albumName = "Casamento na Toscana"; 
   const photoLimit = 50;
   const [photos, setPhotos] = useState<Photo[]>(
@@ -33,15 +34,6 @@ export default function ClientAlbumPage({ params }: { params: { albumId: string 
     }))
   );
 
-  useEffect(() => {
-    // Simula a verificação de um token/sessão
-    const sessionToken = sessionStorage.getItem(`album_token_${params.albumId}`);
-    if (sessionToken === 'true') {
-        setIsAuthenticated(true);
-    }
-    setIsLoading(false);
-  }, [params.albumId]);
-  
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [selectedPhotos, setSelectedPhotos] = useState<Set<number>>(new Set());
   const [viewingPhotoIndex, setViewingPhotoIndex] = useState<number | null>(null);
@@ -116,39 +108,16 @@ export default function ClientAlbumPage({ params }: { params: { albumId: string 
     }
   }
 
-  if (isLoading) {
-    return <div className="container mx-auto py-8 text-center text-foreground">Carregando...</div>;
-  }
-
-  if (!isAuthenticated) {
-     return (
-        <div className="container flex items-center justify-center min-h-[60vh]">
-            <Card className="w-full max-w-md text-center">
-                <CardHeader>
-                     <div className="mx-auto bg-destructive/10 p-3 rounded-full w-fit">
-                        <ShieldAlert className="w-8 h-8 text-destructive"/>
-                    </div>
-                    <CardTitle className="font-headline mt-4">Acesso Negado</CardTitle>
-                    <CardDescription>
-                        Você precisa de uma senha para visualizar este álbum.
-                    </CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <Button asChild>
-                        <Link href={`/gallery/access/${params.albumId}`}>
-                            Ir para a página de acesso
-                        </Link>
-                    </Button>
-                </CardContent>
-            </Card>
-        </div>
-    );
-  }
-
   return (
     <>
         <div className="container mx-auto py-8 mb-24 md:mb-20"> {/* Margin bottom to make space for the footer */}
             <div className="mb-8">
+                <Button variant="ghost" asChild className="mb-4">
+                    <Link href="/gallery">
+                        <ArrowLeft className="mr-2 h-4 w-4" />
+                        Voltar para Meus Álbuns
+                    </Link>
+                </Button>
                 <h1 className="text-3xl font-bold font-headline text-foreground/90">Álbum: {albumName}</h1>
                 <p className="text-muted-foreground">
                     Visualize as {photos.length} fotos e faça sua seleção. Você pode escolher até {photoLimit} fotos.

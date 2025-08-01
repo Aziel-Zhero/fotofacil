@@ -9,8 +9,8 @@ export default function LoginPage({
 }) {
   return (
     <AuthLayout
-      title="Bem-vindo(a) de Volta!"
-      description="Insira suas credenciais para acessar sua conta."
+      title="Acesse sua Conta"
+      description="Insira suas credenciais para acessar sua conta de fotógrafo ou cliente."
     >
       <LoginForm message={searchParams.message} error={searchParams.error}/>
     </AuthLayout>

@@ -1,13 +1,19 @@
+
 import AuthLayout from '@/components/layouts/auth-layout';
-import { ClientRegisterForm } from '@/components/auth/client-register-form';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 
 export default function ClientRegisterPage() {
   return (
     <AuthLayout
-      title="Crie Sua Conta de Cliente"
-      description="Cadastre-se para ver e selecionar suas fotos."
+      title="Acesso de Cliente"
+      description="Seu acesso é criado pelo seu fotógrafo. Por favor, utilize os dados de login que ele forneceu."
     >
-      <ClientRegisterForm />
+      <div className="p-6 text-center">
+        <Button asChild className="w-full">
+          <Link href="/login">Ir para a Tela de Login</Link>
+        </Button>
+      </div>
     </AuthLayout>
   );
 }

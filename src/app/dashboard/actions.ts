@@ -5,16 +5,31 @@ import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 
+// Gera uma senha segura aleatória
+function generateSecurePassword() {
+    const length = 10;
+    const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%&";
+    let retVal = "";
+    const crypto = require('crypto');
+    for (let i = 0, n = charset.length; i < length; ++i) {
+        retVal += charset.charAt(Math.floor(crypto.randomBytes(1)[0] / 256 * n));
+    }
+    return retVal;
+}
+
 const createAlbumSchema = z.object({
-  name: z.string().min(1, 'O nome do álbum é obrigatório.'),
-  clientName: z.string().min(1, 'O nome do cliente é obrigatório.'),
+  albumName: z.string().min(1, 'O nome do álbum é obrigatório.'),
+  // Dados do cliente para criar a conta
+  clientFullName: z.string().min(1, 'O nome do cliente é obrigatório.'),
+  clientEmail: z.string().email('O e-mail do cliente é inválido.'),
+  clientPhone: z.string().optional(),
+  
   expirationDate: z.string().optional(),
-  password: z.string().optional(),
   maxPhotos: z.coerce.number().min(1, 'Defina um número máximo de fotos.'),
   extraPhotoCost: z.coerce.number().min(0, 'O valor deve ser zero ou maior.').optional(),
   giftPhotos: z.coerce.number().min(0, 'O valor deve ser zero ou maior.').optional(),
-  clientUserId: z.string().uuid('ID de usuário do cliente inválido e obrigatório.'),
 });
+
 
 export async function createAlbum(formData: FormData) {
   const supabase = createClient();
@@ -29,49 +44,86 @@ export async function createAlbum(formData: FormData) {
     });
     return { error: errorMessages.trim() };
   }
+  
+  const { 
+    albumName, 
+    clientFullName, 
+    clientEmail, 
+    clientPhone, 
+    expirationDate, 
+    maxPhotos, 
+    extraPhotoCost, 
+    giftPhotos 
+  } = parsed.data;
+  
+  const { data: { user: photographerUser } } = await supabase.auth.getUser();
 
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if (!user) {
-    return { error: 'Usuário não autenticado.' };
+  if (!photographerUser) {
+    return { error: 'Fotógrafo não autenticado.' };
   }
 
-  const { name, clientName, expirationDate, password, maxPhotos, extraPhotoCost, giftPhotos, clientUserId } = parsed.data;
+  // Admin client para poder criar usuários
+  const supabaseAdmin = createClient(true);
+  
+  let clientUserId: string;
+  let clientGeneratedPassword: string | null = null;
 
-  // 1. Verificar se o clientUserId existe na nova tabela 'profiles' e tem a role 'client'
-  const { data: clientProfile, error: clientError } = await supabase
+  // 1. Verificar se o cliente já existe na tabela de perfis
+  const { data: existingProfile, error: profileError } = await supabase
     .from('profiles')
     .select('id')
-    .eq('id', clientUserId)
-    .eq('role', 'client') 
+    .eq('email', clientEmail)
     .single();
 
-  if (clientError || !clientProfile) {
-      console.error('Erro ao buscar perfil do cliente:', clientError);
-      return { error: 'O ID fornecido não pertence a um cliente válido. Verifique se o cliente está cadastrado e se o ID está correto.' };
+  if (existingProfile) {
+    clientUserId = existingProfile.id;
+  } else {
+    // 2. Se o cliente não existe, cria um novo usuário no Auth
+    clientGeneratedPassword = generateSecurePassword();
+    const username = clientEmail.split('@')[0].replace(/[^a-zA-Z0-9]/g, '') + Math.floor(Math.random() * 10000);
+
+    const { data: newClientUser, error: creationError } = await supabaseAdmin.auth.admin.createUser({
+        email: clientEmail,
+        password: clientGeneratedPassword,
+        email_confirm: true, // O cliente não precisa confirmar o e-mail
+        user_metadata: {
+            role: 'client',
+            fullName: clientFullName,
+            phone: clientPhone,
+            username: username, // Gerado para cumprir o schema do gatilho
+            companyName: 'N/A'  // Padrão para cumprir o schema do gatilho
+        }
+    });
+
+    if (creationError) {
+        console.error("Erro ao criar cliente:", creationError);
+        return { error: `Erro ao criar o cliente: ${creationError.message}` };
+    }
+    clientUserId = newClientUser.user.id;
   }
-  
-  // 2. Inserir o álbum
+
+  // 3. Inserir o novo álbum
   const { error: albumError } = await supabase.from('albums').insert({
-    photographer_id: user.id,
+    photographer_id: photographerUser.id,
     client_user_id: clientUserId,
-    name,
+    name: albumName,
     status: 'Aguardando Seleção',
     selection_limit: maxPhotos,
     extra_photo_cost: extraPhotoCost,
     courtesy_photos: giftPhotos,
-    access_password: password || null,
     expires_at: expirationDate ? new Date(expirationDate).toISOString() : null,
   });
 
    if (albumError) {
     console.error('Erro ao criar álbum:', albumError);
-    if (albumError.message.includes('foreign key constraint')) {
-        return { error: 'O ID do cliente fornecido não é válido. Verifique se o cliente está cadastrado.' };
-    }
     return { error: `Erro ao criar álbum: ${albumError.message}` };
   }
 
   revalidatePath('/dashboard');
-  return { success: true };
+  return { 
+    success: true,
+    message: `Álbum "${albumName}" criado!`,
+    // Retorna os dados do cliente se um novo foi criado
+    newClientData: clientGeneratedPassword ? { email: clientEmail, password: clientGeneratedPassword } : null
+  };
 }

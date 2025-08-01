@@ -3,14 +3,44 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { GalleryVertical } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { createClient } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
 
-// Mock data, em um app real, isso viria do banco de dados após o login
-const mockClientAlbums = [
-    { id: '1', name: 'Casamento na Toscana', status: 'Aguardando Seleção' },
-    { id: '4', name: 'Aniversário Julia 5 anos', status: 'Aguardando Seleção' },
-];
+export default async function ClientGalleryPage() {
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
 
-export default function ClientGalleryPage() {
+    if (!user) {
+        return redirect('/login?error=Você precisa fazer login para ver seus álbuns.');
+    }
+
+    if (user.user_metadata.role !== 'client') {
+        return redirect('/dashboard');
+    }
+
+    const { data: albums, error } = await supabase
+        .from('albums')
+        .select(`
+            id,
+            name,
+            status,
+            profiles (full_name)
+        `)
+        .eq('client_user_id', user.id);
+
+    if (error) {
+        console.error("Erro ao buscar álbuns do cliente:", error);
+        return (
+             <div className="text-center py-16">
+                <h2 className="text-xl font-semibold text-destructive">Erro ao carregar seus álbuns</h2>
+                <p className="text-muted-foreground mt-2">
+                    Não foi possível buscar seus dados. Por favor, tente novamente mais tarde.
+                </p>
+             </div>
+        )
+    }
+
+
     return (
         <div className="container">
              <div className="mb-8 mt-8">
@@ -18,13 +48,13 @@ export default function ClientGalleryPage() {
                 <p className="text-stone-300/80">Aqui estão os álbuns que seu fotógrafo compartilhou com você. Clique para selecionar suas fotos.</p>
             </div>
 
-            {mockClientAlbums.length > 0 ? (
+            {albums && albums.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {mockClientAlbums.map(album => (
+                    {albums.map(album => (
                         <Card key={album.id} className="hover:shadow-lg transition-shadow">
                             <CardHeader>
                                 <CardTitle className="font-headline">{album.name}</CardTitle>
-                                <CardDescription>{album.status}</CardDescription>
+                                <CardDescription>Status: {album.status}</CardDescription>
                             </CardHeader>
                             <CardContent>
                                <Button asChild className="w-full">

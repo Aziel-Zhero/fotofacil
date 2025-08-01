@@ -1,13 +1,14 @@
+
 import AuthLayout from '@/components/layouts/auth-layout';
-import RoleSelector from '@/components/auth/role-selector';
+import { PhotographerRegisterForm } from '@/components/auth/photographer-register-form';
 
 export default function RegisterPage() {
   return (
     <AuthLayout
-      title="Junte-se ao FotoFácil"
-      description="Primeiro, diga-nos quem você é. Isso nos ajudará a personalizar sua experiência."
+      title="Crie Sua Conta de Fotógrafo"
+      description="Comece a organizar e compartilhar seu trabalho hoje. O acesso para seus clientes será criado por você ao gerar um novo álbum."
     >
-      <RoleSelector />
+      <PhotographerRegisterForm />
     </AuthLayout>
   );
 }

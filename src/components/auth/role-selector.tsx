@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from 'next/link';
@@ -14,16 +15,16 @@ export default function RoleSelector() {
             <CardContent className="flex flex-col items-center justify-center gap-4">
               <Camera className="h-12 w-12 text-primary" />
               <h3 className="font-headline text-xl font-semibold">Sou Fotógrafo(a)</h3>
-              <p className="text-muted-foreground text-sm">Crie álbuns, compartilhe com clientes e gerencie seu trabalho.</p>
+              <p className="text-muted-foreground text-sm">Crie álbuns, gerencie seus clientes e otimize seu trabalho.</p>
             </CardContent>
           </Card>
         </Link>
-        <Link href="/register/client" className="block">
+        <Link href="/login" className="block">
           <Card className="text-center p-8 h-full hover:bg-primary/5 hover:border-primary transition-all">
             <CardContent className="flex flex-col items-center justify-center gap-4">
               <User className="h-12 w-12 text-primary" />
               <h3 className="font-headline text-xl font-semibold">Sou Cliente</h3>
-              <p className="text-muted-foreground text-sm">Veja álbuns compartilhados e selecione suas fotos favoritas.</p>
+              <p className="text-muted-foreground text-sm">Acesse os álbuns compartilhados com você.</p>
             </CardContent>
           </Card>
         </Link>
