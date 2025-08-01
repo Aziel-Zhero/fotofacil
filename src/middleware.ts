@@ -1,5 +1,10 @@
+
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+
+// A configuração de variáveis de ambiente não é necessária aqui,
+// pois o Next.js as disponibiliza no ambiente Edge.
+// O erro anterior era devido à falta de valores no arquivo .env
 
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({
@@ -8,9 +13,21 @@ export async function middleware(request: NextRequest) {
     },
   })
 
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+
+  if (!supabaseUrl || !supabaseKey) {
+    // Isso pode acontecer se as variáveis de ambiente não estiverem definidas corretamente.
+    // Retornamos uma resposta de erro para depuração.
+    return new NextResponse(
+      "Supabase URL and Key are required. Check your .env file and project settings.",
+      { status: 500 }
+    );
+  }
+
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    supabaseUrl,
+    supabaseKey,
     {
       cookies: {
         get(name: string) {
@@ -62,7 +79,7 @@ export async function middleware(request: NextRequest) {
   // Define routes that are accessible only when logged out
   const guestRoutes = ['/login', '/register', '/register/photographer', '/register/client'];
   // Define protected routes that require authentication
-  const protectedRoutes = ['/dashboard'];
+  const protectedRoutes = ['/dashboard', '/gallery'];
 
   if (!user && protectedRoutes.some(route => pathname.startsWith(route))) {
     // If no user is logged in and they are trying to access a protected route,
@@ -70,10 +87,17 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
-  if (user && guestRoutes.includes(pathname)) {
+  if (user && guestRoutes.some(route => pathname.startsWith(route))) {
     // If a user is logged in and they are trying to access a guest route,
-    // redirect them to the dashboard.
-    return NextResponse.redirect(new URL('/dashboard', request.url))
+    // redirect them to their respective dashboard.
+    const userRole = user.user_metadata?.role;
+    if (userRole === 'photographer') {
+      return NextResponse.redirect(new URL('/dashboard', request.url));
+    } else if (userRole === 'client') {
+      return NextResponse.redirect(new URL('/gallery', request.url));
+    }
+    // Fallback if role is not defined
+    return NextResponse.redirect(new URL('/', request.url));
   }
 
   return response
@@ -88,6 +112,6 @@ export const config = {
      * - favicon.ico (favicon file)
      * Feel free to modify this pattern to include more paths.
      */
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico).*)',
   ],
 }

@@ -1,6 +1,9 @@
 
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { cookies } from 'next/headers'
+import { config } from 'dotenv';
+
+config(); // Carrega as variáveis de ambiente
 
 export function createClient(isAdmin = false) {
   const cookieStore = cookies()
@@ -9,6 +12,10 @@ export function createClient(isAdmin = false) {
   const supabaseKey = isAdmin 
     ? process.env.SUPABASE_SERVICE_ROLE_KEY! 
     : process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+
+  if (!supabaseUrl || !supabaseKey) {
+    throw new Error('Supabase URL and key must be provided.');
+  }
 
   return createServerClient(
     supabaseUrl,
@@ -39,12 +46,4 @@ export function createClient(isAdmin = false) {
       },
       // Se for admin, desativa a RLS.
       // CUIDADO: Usar apenas em Server Actions onde o acesso é controlado.
-      ...(isAdmin && {
-        auth: {
-          autoRefreshToken: false,
-          persistSession: false
-        }
-      })
-    }
-  )
-}
+      ...(isAdmin
