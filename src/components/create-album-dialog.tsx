@@ -7,6 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Dialog,
   DialogContent,
@@ -25,11 +26,12 @@ import {
     FormLabel,
     FormMessage,
   } from '@/components/ui/form';
-import { Copy, Info, Loader2, UserPlus, Mail, Phone, CheckCircle } from 'lucide-react';
+import { Copy, Info, Loader2, UserPlus, CheckCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { createAlbum } from '../app/dashboard/actions';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
 
+// Schema alinhado com a nova lógica da Server Action
 const formSchema = z.object({
   albumName: z.string().min(1, "O nome do álbum é obrigatório."),
   clientFullName: z.string().min(1, "O nome completo do cliente é obrigatório."),
@@ -45,6 +47,7 @@ const formSchema = z.object({
 export function CreateAlbumDialog({ children }: { children: React.ReactNode }) {
     const [open, setOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    // Estado para guardar os dados do novo cliente para exibição
     const [newClientData, setNewClientData] = useState<{email: string, password: string} | null>(null);
 
     const { toast } = useToast();
@@ -66,13 +69,13 @@ export function CreateAlbumDialog({ children }: { children: React.ReactNode }) {
         navigator.clipboard.writeText(text);
         toast({
             title: "Copiado!",
-            description: "As informações de acesso do cliente foram copiadas.",
+            description: "As informações de acesso do cliente foram copiadas para a área de transferência.",
         })
     }
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
       setIsSubmitting(true);
-      setNewClientData(null);
+      setNewClientData(null); // Limpa dados antigos antes de submeter
 
       const formData = new FormData();
       Object.entries(values).forEach(([key, value]) => {
@@ -94,9 +97,11 @@ export function CreateAlbumDialog({ children }: { children: React.ReactNode }) {
           title: "Sucesso!",
           description: result.message,
         });
+        // Se um novo cliente foi criado, exibe os dados para o fotógrafo
         if(result.newClientData) {
             setNewClientData(result.newClientData);
         } else {
+            // Se o cliente já existia, apenas fecha o diálogo
             form.reset();
             setOpen(false);
         }
@@ -104,10 +109,13 @@ export function CreateAlbumDialog({ children }: { children: React.ReactNode }) {
       setIsSubmitting(false);
     }
 
+    // Função para fechar o diálogo e resetar os estados
     const handleClose = () => {
         setOpen(false);
-        setNewClientData(null);
-        form.reset();
+        setTimeout(() => {
+          setNewClientData(null);
+          form.reset();
+        }, 300); // Delay para permitir a animação de fechamento
     }
 
   return (
@@ -116,13 +124,15 @@ export function CreateAlbumDialog({ children }: { children: React.ReactNode }) {
         {children}
       </DialogTrigger>
       <DialogContent className="sm:max-w-2xl" onInteractOutside={(e) => {
-          // Previne o fechamento se o processo estiver em andamento
+          // Previne o fechamento do modal durante o envio
           if(isSubmitting) e.preventDefault();
       }}>
         <DialogHeader>
-          <DialogTitle className="font-headline text-textDark">Criar Novo Álbum</DialogTitle>
+          <DialogTitle className="font-headline text-textDark">
+            {newClientData ? "Acesso do Cliente Gerado" : "Criar Novo Álbum"}
+          </DialogTitle>
           <DialogDescription>
-            {newClientData ? "Cliente criado! Compartilhe os dados de acesso." : "Preencha os detalhes para criar um álbum e um acesso para seu cliente."}
+            {newClientData ? "Compartilhe os dados de acesso com seu cliente." : "Preencha os detalhes para criar um álbum e um acesso para seu cliente."}
           </DialogDescription>
         </DialogHeader>
         
@@ -211,6 +221,7 @@ export function CreateAlbumDialog({ children }: { children: React.ReactNode }) {
                 </form>
             </Form>
         )}
+        {/* Footer para fechar o diálogo após a criação do cliente */}
         <DialogFooter className={newClientData ? '' : 'hidden'}>
             <DialogClose asChild>
                 <Button type="button" variant="secondary" onClick={handleClose}>

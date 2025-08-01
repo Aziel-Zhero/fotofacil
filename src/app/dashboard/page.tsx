@@ -19,7 +19,7 @@ export default async function DashboardPage() {
   // Fetch albums first
   const { data: albums, error: albumsError } = await supabase
     .from('albums')
-    .select('*')
+    .select('*, client_user_id(full_name)') // Sub-query para buscar o nome do cliente
     .eq('photographer_id', user.id)
     .order('created_at', { ascending: false });
 
@@ -29,32 +29,25 @@ export default async function DashboardPage() {
     return <div>Error loading albums.</div>;
   }
   
-  // A função agora busca na tabela unificada 'profiles'
-  const getClientName = async (clientUserId: string | null) => {
-    if (!clientUserId) return 'Cliente não vinculado';
-    const { data, error } = await supabase.from('profiles').select('full_name').eq('id', clientUserId).single();
-    if (error) {
-      console.error("Error fetching client name:", error);
-      return 'Cliente não encontrado';
-    }
-    return data.full_name;
-  };
-
+  // Função para contar as fotos por álbum
   const getPhotoCount = async (albumId: string) => {
     const { count, error } = await supabase.from('photos').select('*', { count: 'exact', head: true }).eq('album_id', albumId);
     if (error) return 0;
     return count;
   }
 
-  const formattedAlbums = await Promise.all(albums?.map(async (album) => ({
+  // Formata os álbuns com a contagem de fotos
+  const formattedAlbums = await Promise.all(albums?.map(async (album: any) => ({
     id: album.id,
     name: album.name,
     photoCount: await getPhotoCount(album.id),
     maxPhotos: album.selection_limit,
     status: album.status,
-    client: await getClientName(album.client_user_id),
+    // O nome do cliente agora vem da sub-query.
+    // O 'any' é usado aqui porque o tipo gerado pelo Supabase pode ser complexo.
+    client: album.client_user_id?.full_name || 'Cliente não vinculado',
     createdAt: album.created_at,
-    clientUserId: album.client_user_id
+    clientUserId: album.client_user_id?.id || null, // Acesso ao ID do perfil do cliente
   })) || []);
   
   const isProfileComplete = user.user_metadata?.companyName && user.user_metadata?.companyName !== 'N/A';
