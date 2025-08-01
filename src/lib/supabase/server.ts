@@ -47,3 +47,13 @@ export function createClient(isAdmin = false) {
       // Se for admin, desativa a RLS.
       // CUIDADO: Usar apenas em Server Actions onde o acesso é controlado.
       ...(isAdmin
+        ? {
+            auth: {
+              autoRefreshToken: false,
+              persistSession: false,
+            },
+          }
+        : {}),
+    }
+  )
+}
