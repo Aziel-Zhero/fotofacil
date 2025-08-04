@@ -4,15 +4,6 @@
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts"
 import { ChartConfig, ChartContainer, ChartTooltipContent } from "./ui/chart"
 
-const chartData = [
-  { month: "Fev", photos: 186 },
-  { month: "Mar", photos: 305 },
-  { month: "Abr", photos: 237 },
-  { month: "Mai", photos: 73 },
-  { month: "Jun", photos: 209 },
-  { month: "Jul", photos: 214 },
-]
-
 const chartConfig = {
   photos: {
     label: "Fotos",
@@ -20,11 +11,15 @@ const chartConfig = {
   },
 } satisfies ChartConfig
 
-export function MonthlyUsageChart() {
+interface MonthlyUsageChartProps {
+    data: { month: string; photos: number }[];
+}
+
+export function MonthlyUsageChart({ data }: MonthlyUsageChartProps) {
   return (
     <ChartContainer config={chartConfig} className="h-[150px] w-full">
         <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={chartData} margin={{ top: 20, right: 10, left: -20, bottom: 0 }}>
+            <BarChart data={data} margin={{ top: 20, right: 10, left: -20, bottom: 0 }}>
                 <XAxis
                     dataKey="month"
                     stroke="#888888"

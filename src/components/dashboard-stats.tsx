@@ -6,6 +6,9 @@ import { MonthlyUsageChart } from "./monthly-usage-chart";
 import { Button } from "./ui/button";
 import Link from "next/link";
 import { Progress } from "./ui/progress";
+import { getMonthlyPhotoUsage } from "@/app/dashboard/actions";
+import { useEffect, useState } from "react";
+import { Skeleton } from "./ui/skeleton";
 
 interface DashboardStatsProps {
     totalAlbums: number;
@@ -14,9 +17,31 @@ interface DashboardStatsProps {
     photoLimit: number;
 }
 
+interface MonthlyData {
+    month: string;
+    photos: number;
+}
+
 export function DashboardStats({ totalAlbums, totalPhotos, planName, photoLimit }: DashboardStatsProps) {
     const usagePercentage = photoLimit > 0 ? (totalPhotos / photoLimit) * 100 : 0;
     const renewsOn = "25 de Janeiro, 2025"; // Mock data
+    const [monthlyData, setMonthlyData] = useState<MonthlyData[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        async function fetchData() {
+            setIsLoading(true);
+            const { data, error } = await getMonthlyPhotoUsage();
+            if (data) {
+                setMonthlyData(data);
+            }
+            if (error) {
+                console.error(error);
+            }
+            setIsLoading(false);
+        }
+        fetchData();
+    }, []);
 
     return (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
@@ -47,7 +72,18 @@ export function DashboardStats({ totalAlbums, totalPhotos, planName, photoLimit 
                     <BarChart className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                   <MonthlyUsageChart />
+                   {isLoading ? (
+                        <div className="h-[150px] w-full flex items-end gap-2">
+                            <Skeleton className="h-full w-1/6" />
+                            <Skeleton className="h-2/3 w-1/6" />
+                            <Skeleton className="h-4/5 w-1/6" />
+                            <Skeleton className="h-1/3 w-1/6" />
+                            <Skeleton className="h-3/4 w-1/6" />
+                            <Skeleton className="h-full w-1/6" />
+                        </div>
+                   ) : (
+                        <MonthlyUsageChart data={monthlyData} />
+                   )}
                 </CardContent>
             </Card>
             <Card className="lg:col-span-4">

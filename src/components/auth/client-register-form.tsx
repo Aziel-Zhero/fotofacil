@@ -23,8 +23,7 @@ import PhoneInput from 'react-phone-number-input';
 import 'react-phone-number-input/style.css';
 import { signup } from '@/app/auth/actions';
 
-// O formulário do cliente só precisa se preocupar com os campos que o usuário preenche.
-// O backend cuidará do resto (username, companyName).
+// O formulário do cliente agora é completo e se cadastra sozinho.
 const formSchema = z.object({
   fullName: z.string().min(1, 'Nome completo é obrigatório'),
   email: z.string().email('Endereço de email inválido'),
@@ -55,6 +54,10 @@ export function ClientRegisterForm() {
       formData.append(key, value);
     });
     formData.append('role', 'client');
+    // Para o gatilho funcionar, precisamos fornecer todos os campos.
+    // Como o cliente não tem empresa/username no cadastro, usamos valores padrão.
+    formData.append('username', values.email.split('@')[0] + Date.now());
+    formData.append('companyName', 'N/A');
     
     const result = await signup(formData);
 
