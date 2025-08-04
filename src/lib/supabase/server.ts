@@ -1,9 +1,10 @@
 
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { cookies } from 'next/headers'
+import { config } from 'dotenv';
 
-// A chamada dotenv.config() não é mais necessária aqui,
-// pois o Next.js carrega automaticamente as variáveis de ambiente.
+// Garante que as variáveis de ambiente sejam carregadas antes de qualquer outra coisa.
+config();
 
 export function createClient(isAdmin = false) {
   const cookieStore = cookies()
