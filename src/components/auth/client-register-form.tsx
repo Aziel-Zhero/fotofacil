@@ -1,7 +1,6 @@
 
 "use client";
 
-import Link from 'next/link';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -109,11 +108,8 @@ export function ClientRegisterForm() {
         <CardFooter className="flex-col gap-4">
           <Button type="submit" className="w-full" disabled={isSubmitting}>
              {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Criar Conta
+            Criar Conta de Cliente
           </Button>
-          <div className="text-sm text-muted-foreground">
-            Já tem uma conta? <Link href="/login" className="underline">Login</Link>
-          </div>
         </CardFooter>
       </form>
     </Form>

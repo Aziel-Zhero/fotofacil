@@ -15,7 +15,6 @@ export default function RegisterClientPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {/* Reutilizamos o formulário de cadastro de cliente, pois ele já tem a lógica correta */}
           <ClientRegisterForm />
         </CardContent>
       </Card>
