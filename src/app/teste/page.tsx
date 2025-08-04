@@ -26,7 +26,7 @@ export default async function TestePage() {
                 <TableCaption>Lista de todos os usuários registrados no banco de dados.</TableCaption>
                 <TableHeader>
                     <TableRow>
-                        <TableHead>ID</TableHead>
+                        <TableHead className="w-[250px]">ID</TableHead>
                         <TableHead>Email</TableHead>
                         <TableHead>Nome Completo</TableHead>
                         <TableHead>Username</TableHead>
@@ -50,7 +50,9 @@ export default async function TestePage() {
                         ))
                     ) : (
                         <TableRow>
-                            <TableCell colSpan={7} className="text-center">Nenhum perfil encontrado.</TableCell>
+                            <TableCell colSpan={7} className="h-24 text-center">
+                                Nenhum perfil encontrado. A tabela está vazia.
+                            </TableCell>
                         </TableRow>
                     )}
                 </TableBody>
