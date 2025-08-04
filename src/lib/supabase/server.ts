@@ -1,9 +1,9 @@
 
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { cookies } from 'next/headers'
-import { config } from 'dotenv';
 
-config(); // Carrega as variáveis de ambiente
+// A chamada dotenv.config() não é mais necessária aqui,
+// pois o Next.js carrega automaticamente as variáveis de ambiente.
 
 export function createClient(isAdmin = false) {
   const cookieStore = cookies()
@@ -29,18 +29,18 @@ export function createClient(isAdmin = false) {
           try {
             cookieStore.set({ name, value, ...options })
           } catch (error) {
-            // The `set` method was called from a Server Component.
-            // This can be ignored if you have middleware refreshing
-            // user sessions.
+            // O método `set` foi chamado de um Server Component.
+            // Isso pode ser ignorado se você tiver um middleware atualizando
+            // as sessões do usuário.
           }
         },
         remove(name: string, options: CookieOptions) {
           try {
             cookieStore.set({ name, value: '', ...options })
           } catch (error) {
-            // The `delete` method was called from a Server Component.
-            // This can be ignored if you have middleware refreshing
-            // user sessions.
+            // O método `delete` foi chamado de um Server Component.
+            // Isso pode ser ignorado se você tiver um middleware atualizando
+            // as sessões do usuário.
           }
         },
       },
