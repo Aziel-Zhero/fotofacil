@@ -37,7 +37,7 @@ export default async function TestePage() {
                 </TableHeader>
                 <TableBody>
                     {profiles && profiles.length > 0 ? (
-                        profiles.map((profile) => (
+                        profiles.map((profile: any) => (
                             <TableRow key={profile.id}>
                                 <TableCell className="font-medium truncate max-w-xs">{profile.id}</TableCell>
                                 <TableCell>{profile.email}</TableCell>
@@ -58,4 +58,3 @@ export default async function TestePage() {
         </div>
     )
 }
-
