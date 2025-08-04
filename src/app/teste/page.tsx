@@ -14,7 +14,9 @@ import { AlertCircle, CheckCircle } from 'lucide-react';
   
 
 export default async function TestePage() {
-    const supabase = createClient();
+    // Usando o modo admin para garantir que a consulta não seja bloqueada por RLS.
+    const supabase = createClient(true);
+    
     // A tentativa de fazer um select já serve como um teste de conexão.
     const { data: profiles, error } = await supabase.from('profiles').select('*');
 
@@ -39,7 +41,7 @@ export default async function TestePage() {
                         Verificação de Conexão com o Banco
                     </CardTitle>
                     <CardDescription>
-                        Este painel verifica se a aplicação consegue se comunicar com o banco de dados Supabase.
+                        Este painel verifica se a aplicação consegue se comunicar com o banco de dados Supabase com privilégios de administrador (service_role).
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
