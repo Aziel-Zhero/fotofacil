@@ -48,6 +48,9 @@ const LandingHeader = () => {
                 <Button asChild>
                     <Link href="/register">Criar Conta de Fotógrafo</Link>
                 </Button>
+                 <Button variant="secondary" asChild>
+                    <Link href="/teste">Teste</Link>
+                </Button>
             </nav>
             </div>
         </header>
