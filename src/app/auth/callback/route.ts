@@ -1,24 +1,27 @@
 
 import { createClient } from '@/lib/supabase/server'
-import { NextResponse } from 'next/server'
-import { headers } from 'next/headers'
+import { NextResponse, type NextRequest } from 'next/server'
 
-export async function GET(request: Request) {
-  // The `/auth/callback` route is required for the server-side auth flow implemented
-  // by the `@supabase/ssr` package. It exchanges an auth code for the user's session.
+export async function GET(request: NextRequest) {
   const requestUrl = new URL(request.url)
   const code = requestUrl.searchParams.get('code')
   const origin = requestUrl.origin
 
   if (code) {
     const supabase = createClient()
-    const { error } = await supabase.auth.exchangeCodeForSession(code)
-    if (!error) {
-       // A lógica de redirecionamento para o dashboard lida com a verificação de role.
-       return NextResponse.redirect(`${origin}/dashboard`)
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code)
+
+    if (!error && data.user) {
+      // Lógica de redirecionamento baseada na função (role) do usuário
+      const userRole = data.user.user_metadata?.role;
+      if (userRole === 'photographer') {
+        return NextResponse.redirect(`${origin}/dashboard`);
+      } else if (userRole === 'client') {
+        return NextResponse.redirect(`${origin}/gallery`);
+      }
     }
   }
 
-  // URL to redirect to after sign in process completes
-  return NextResponse.redirect(`${origin}/login?error=Não foi possível autenticar o usuário.`)
+  // Se houver erro ou o código for inválido, redireciona para a página de login com erro.
+  return NextResponse.redirect(`${origin}/login?error=Não foi possível autenticar. Por favor, tente novamente.`);
 }
