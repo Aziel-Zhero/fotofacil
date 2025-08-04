@@ -7,11 +7,9 @@ import { z } from 'zod';
 
 // Gera uma senha segura aleatória para o novo cliente
 function generateSecurePassword() {
-    const length = 10;
+    const length = 12;
     const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%&";
     let retVal = "";
-    // A API 'crypto' está disponível globalmente em ambientes Edge/Node.js recentes.
-    // Não é necessário um 'require'.
     const array = new Uint8Array(length);
     crypto.getRandomValues(array);
     for (let i = 0; i < length; i++) {
@@ -23,11 +21,9 @@ function generateSecurePassword() {
 // Schema atualizado para refletir o novo formulário
 const createAlbumSchema = z.object({
   albumName: z.string().min(1, 'O nome do álbum é obrigatório.'),
-  // Dados do cliente para criar a conta
   clientFullName: z.string().min(1, 'O nome do cliente é obrigatório.'),
   clientEmail: z.string().email('O e-mail do cliente é inválido.'),
   clientPhone: z.string().optional(),
-  
   expirationDate: z.string().optional(),
   maxPhotos: z.coerce.number().min(1, 'Defina um número máximo de fotos.'),
   extraPhotoCost: z.coerce.number().min(0, 'O valor deve ser zero ou maior.').optional(),
@@ -69,33 +65,40 @@ export async function createAlbum(formData: FormData) {
   // Admin client para poder criar usuários sem que eles precisem confirmar e-mail.
   const supabaseAdmin = createClient(true);
   
-  let clientUserId: string;
+  let clientUserId: string | null = null;
   let clientGeneratedPassword: string | null = null;
 
   // 1. Verificar se o cliente já existe na tabela de perfis pelo e-mail
   const { data: existingProfile, error: profileError } = await supabase
     .from('profiles')
-    .select('id')
+    .select('id, role')
     .eq('email', clientEmail)
     .single();
 
+  if (profileError && profileError.code !== 'PGRST116') { // PGRST116 = no rows returned
+    console.error("Erro ao verificar perfil existente:", profileError);
+    return { error: 'Erro ao verificar cliente existente.' };
+  }
+
   if (existingProfile) {
-    // Cliente já existe, apenas pega o ID.
+    // Cliente já existe. Verifica se não é um fotógrafo.
+    if (existingProfile.role === 'photographer') {
+        return { error: 'Este e-mail já pertence a uma conta de fotógrafo. Por favor, use um e-mail diferente para o cliente.' };
+    }
     clientUserId = existingProfile.id;
   } else {
     // 2. Se o cliente não existe, cria um novo usuário no Auth.
     clientGeneratedPassword = generateSecurePassword();
     const username = clientEmail.split('@')[0].replace(/[^a-zA-Z0-9]/g, '') + Math.floor(Math.random() * 10000);
 
-    const { data: newClientUser, error: creationError } = await supabaseAdmin.auth.admin.createUser({
+    const { data: newClientAuth, error: creationError } = await supabaseAdmin.auth.admin.createUser({
         email: clientEmail,
         password: clientGeneratedPassword,
-        email_confirm: true, // O cliente não precisa confirmar o e-mail neste fluxo.
+        email_confirm: true,
         user_metadata: {
             role: 'client',
             fullName: clientFullName,
             phone: clientPhone || '',
-            // O gatilho precisa destes campos, mesmo que não sejam usados pelo cliente.
             username: username,
             companyName: 'N/A'
         }
@@ -104,11 +107,16 @@ export async function createAlbum(formData: FormData) {
     if (creationError) {
         console.error("Erro ao criar cliente:", creationError);
         if (creationError.message.includes('User already exists')) {
-            return { error: 'Um usuário com este e-mail já existe. Se ele for um cliente, o álbum será associado a ele. Se for um fotógrafo, use outro e-mail.' };
+             return { error: 'Um usuário com este e-mail já existe no sistema de autenticação, mas não em perfis. Contate o suporte.' };
         }
         return { error: `Erro ao criar o usuário do cliente: ${creationError.message}` };
     }
-    clientUserId = newClientUser.user.id;
+    clientUserId = newClientAuth.user.id;
+  }
+
+  // Garante que temos um ID de cliente antes de prosseguir
+  if (!clientUserId) {
+    return { error: 'Não foi possível obter o ID do cliente para criar o álbum.' };
   }
 
   // 3. Inserir o novo álbum, agora com o ID do cliente garantido.
@@ -126,7 +134,7 @@ export async function createAlbum(formData: FormData) {
    if (albumError) {
     console.error('Erro ao criar álbum:', albumError);
     // Tenta remover o usuário recém-criado se a criação do álbum falhar
-    if(clientGeneratedPassword && clientUserId) {
+    if (clientGeneratedPassword && clientUserId) {
         await supabaseAdmin.auth.admin.deleteUser(clientUserId);
     }
     return { error: `Erro ao criar álbum: ${albumError.message}` };
