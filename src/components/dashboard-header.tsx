@@ -2,7 +2,7 @@
 "use client"
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, User, Settings, LogOut, Aperture, Crown, HelpCircle, Star, FolderArchive, BarChart, Bell } from 'lucide-react';
+import { Home, User, Settings, LogOut, Aperture, Crown, HelpCircle, Star, FolderArchive, BarChart, Bell, UserPlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -27,6 +27,7 @@ const navItems = [
 
 const profileNavItems = [
     { href: '/dashboard/profile', label: 'Perfil', icon: User },
+    { href: '/dashboard/register-client', label: 'Cadastrar Cliente', icon: UserPlus },
     { href: '/dashboard/settings', label: 'Configurações', icon: Settings },
     { href: '/dashboard/help', label: 'Ajuda', icon: HelpCircle },
 ]
