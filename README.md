@@ -1,18 +1,32 @@
-# FotoFácil
 
-FotoFácil é uma plataforma moderna e inteligente projetada para otimizar o fluxo de trabalho de fotógrafos profissionais. A aplicação permite organizar, compartilhar e gerenciar a seleção de fotos com clientes de forma segura, elegante e eficiente.
+# FotoFácil: Plataforma Inteligente para Fotógrafos
+
+FotoFácil é uma plataforma moderna e completa, projetada para otimizar e profissionalizar o fluxo de trabalho de fotógrafos. A aplicação permite organizar álbuns, gerenciar clientes, automatizar tarefas com IA e, futuramente, gerenciar assinaturas e faturamento de forma integrada.
 
 ## ✨ Principais Funcionalidades
 
-- **Gerenciamento de Álbuns**: Crie álbuns personalizados com capas, datas de validade e proteção por senha.
-- **Seleção de Fotos pelo Cliente**: Interface intuitiva para que os clientes visualizem e selecionem suas fotos favoritas.
-- **Segurança com Supabase**: Autenticação e políticas de acesso (Row-Level Security) para garantir que cada fotógrafo e cliente acesse apenas os dados permitidos.
-- **Marcação por Inteligência Artificial**: Utilize o Genkit do Google para gerar tags automáticas para as imagens no momento do upload, facilitando a busca e organização.
-- **Personalização de Temas**: O painel do fotógrafo inclui temas (claro, escuro, azul) para personalizar a experiência visual.
+### Para Fotógrafos
+- **Gestão de Clientes**: Cadastro e gerenciamento de clientes diretamente do painel.
+- **Gerenciamento de Álbuns**: Crie álbuns personalizados, vincule-os a clientes específicos, defina limites de seleção, preços por foto extra e datas de validade.
+- **Upload Inteligente**: Faça upload de múltiplas fotos com pré-visualização.
+- **Marcação por IA (Genkit)**: Tags automáticas são geradas no momento do upload, facilitando a busca e organização das imagens.
+- **Painel de Controle (Admin)**: Uma visão de administrador para gerenciar usuários e atribuir assinaturas.
+- **Personalização**: Temas visuais (claro, escuro, azul) para personalizar a experiência do painel.
+
+### Para Clientes
+- **Cadastro Seguro**: Clientes se cadastram e confirmam suas contas via e-mail.
+- **Galeria Privada**: Acesso aos álbuns compartilhados pelo fotógrafo.
+- **Seleção de Fotos Intuitiva**: Interface moderna para visualizar e selecionar as fotos favoritas para edição.
+- **Download de Álbuns Finais**: Acesso a uma área para baixar as fotos editadas e finalizadas.
+- **Notificações**: Alertas sobre novos álbuns, status de seleção e álbuns prontos para download.
+
+### Funcionalidades Planejadas
+- **Sistema de Assinaturas**: Planos de assinatura para fotógrafos e clientes com diferentes níveis de acesso e recursos.
+- **Faturamento e Notas Fiscais**: Geração de faturas para assinaturas e compras avulsas (fotos extras), com emissão de notas fiscais.
 
 ## 🚀 Tecnologia Utilizada
 
-- **Framework**: [Next.js](https://nextjs.org/) (com App Router)
+- **Framework**: [Next.js](https://nextjs.org/) (com App Router e Server Actions)
 - **Linguagem**: TypeScript
 - **Backend e Banco de Dados**: [Supabase](https://supabase.io/)
 - **Estilização**: [Tailwind CSS](https://tailwindcss.com/)
@@ -20,20 +34,20 @@ FotoFácil é uma plataforma moderna e inteligente projetada para otimizar o flu
 - **Inteligência Artificial**: [Genkit (Google AI)](https://firebase.google.com/docs/genkit)
 - **Formulários**: React Hook Form com Zod para validação.
 
-##  architecture-note Arquitetura de Autenticação
+## 🏛️ Arquitetura do Banco de Dados
 
-Para garantir a integridade dos dados, o sistema utiliza um **gatilho (trigger) no Supabase** que cria automaticamente um registro em uma tabela de perfis (`profiles`) sempre que um novo usuário é adicionado à tabela de autenticação (`auth.users`).
+A arquitetura foi projetada para ser escalável e segura, com entidades bem definidas.
 
-**Ponto Crítico de Implementação:**
+- **`auth.users`**: Tabela central de autenticação do Supabase. Contém as credenciais de login de todos os usuários.
+- **`photographers` e `clients`**: Tabelas de perfis separadas. Contêm informações específicas de cada tipo de usuário. Esta abordagem substituiu a tabela `profiles` unificada para maior clareza e separação de responsabilidades.
+- **`subscriptions`**: Define os diferentes planos que podem ser oferecidos (ex: "Essencial Mensal", "Estúdio Anual").
+- **`photographer_subscriptions` e `client_subscriptions`**: Tabelas de junção que vinculam os usuários aos seus respectivos planos de assinatura.
+- **`albums`, `photos`, `album_selections`**: O núcleo do fluxo de trabalho. Um fotógrafo cria um `album` para um cliente, faz o upload das `photos`, e o cliente registra suas escolhas em `album_selections`.
+- **`notifications`, `album_downloads`, `invoices`**: Tabelas que suportam o fluxo completo, desde a comunicação com o usuário até a entrega final e o faturamento.
 
-O cadastro de novos usuários, tanto para **Fotógrafos** quanto para **Clientes**, foi unificado em uma única Server Action (`src/app/auth/actions.ts`). Isso foi feito para resolver um erro recorrente de "database error". O erro ocorria porque a ação de cadastro do cliente não fornecia todos os metadados exigidos pelo gatilho do banco de dados (como `username` e `companyName`).
+### Gatilho de Criação de Perfil (Trigger)
 
-A solução implementada foi:
-1.  **Ação de Cadastro Unificada**: Ambas as rotas de cadastro (`/register/photographer` e `/register/client`) agora utilizam a mesma função `signup`.
-2.  **Validação com Zod**: Um único schema de validação (`signupSchema`) garante que todos os campos necessários sejam fornecidos.
-3.  **Dados Padrão para Clientes**: No formulário de cadastro de cliente (`src/components/auth/client-register-form.tsx`), os campos que não são relevantes para o cliente (como `username` e `companyName`) são preenchidos com valores padrão e enviados de forma oculta para o backend.
-
-Essa abordagem garante que o gatilho do banco de dados sempre receba os dados esperados, evitando falhas na criação do usuário e garantindo consistência no sistema.
+Para garantir a consistência dos dados, um **gatilho (trigger)** no Supabase (`on_auth_user_created`) é acionado sempre que um novo usuário é criado na tabela `auth.users`. Este gatilho lê os metadados (`raw_user_meta_data`) fornecidos durante o cadastro, identifica a `role` ('photographer' ou 'client') e insere os dados na tabela de perfil correspondente (`public.photographers` ou `public.clients`). Isso automatiza a criação de perfis e mantém a autenticação e os dados do perfil sincronizados.
 
 ## ⚙️ Primeiros Passos
 
@@ -50,17 +64,23 @@ Para rodar este projeto localmente, siga estes passos:
     npm install
     ```
 
-3.  **Configure as variáveis de ambiente:**
+3.  **Configure o Banco de Dados:**
+    - Acesse o painel do seu projeto Supabase.
+    - Vá para o **SQL Editor**.
+    - Copie e execute o script SQL mais recente fornecido para limpar e recriar toda a estrutura de tabelas, funções e políticas de segurança.
+
+4.  **Configure as variáveis de ambiente:**
     - Crie um arquivo `.env.local` na raiz do projeto.
-    - Adicione suas chaves do Supabase, que você pode encontrar no painel do seu projeto Supabase:
+    - Adicione suas chaves do Supabase:
       ```
       NEXT_PUBLIC_SUPABASE_URL=SUA_URL_SUPABASE
       NEXT_PUBLIC_SUPABASE_ANON_KEY=SUA_CHAVE_ANON_SUPABASE
+      SUPABASE_SERVICE_ROLE_KEY=SUA_CHAVE_SERVICE_ROLE_SUPABASE
       ```
 
-4.  **Execute o servidor de desenvolvimento:**
+5.  **Execute o servidor de desenvolvimento:**
     ```bash
     npm run dev
     ```
 
-Abra [http://localhost:3000](http://localhost:3000) no seu navegador para ver a aplicação.
+Abra [http://localhost:9002](http://localhost:9002) no seu navegador para ver a aplicação.
