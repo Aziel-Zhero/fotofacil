@@ -55,7 +55,8 @@ export function ClientRegisterForm() {
     formData.append('role', 'client');
     // Para o gatilho funcionar, precisamos fornecer todos os campos.
     // Como o cliente não tem empresa/username no cadastro, usamos valores padrão.
-    formData.append('username', values.email.split('@')[0] + Date.now());
+    // O gatilho do banco vai ignorar campos que não existem na tabela `clients`
+    formData.append('username', 'N/A');
     formData.append('companyName', 'N/A');
     
     const result = await signup(formData);
@@ -66,8 +67,14 @@ export function ClientRegisterForm() {
         description: result.error,
         variant: "destructive",
       });
+    } else {
+       toast({
+        title: "Cliente Cadastrado!",
+        description: `Um e-mail de confirmação foi enviado para ${values.email}.`,
+      });
+      form.reset();
     }
-    // O redirecionamento em caso de sucesso é feito pela server action
+    
     setIsSubmitting(false);
   }
 
@@ -103,14 +110,14 @@ export function ClientRegisterForm() {
                 )}
               />
               <FormField name="password" control={form.control} render={({ field }) => (
-                <FormItem><FormLabel>Senha</FormLabel><FormControl><Input type="password" placeholder="••••••••" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>Senha Provisória</FormLabel><FormControl><Input type="password" placeholder="••••••••" {...field} /></FormControl><FormMessage /></FormItem>
               )} />
            </div>
         </CardContent>
         <CardFooter className="flex-col gap-4">
           <Button type="submit" className="w-full" disabled={isSubmitting}>
              {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Criar Conta de Cliente
+            Cadastrar Cliente
           </Button>
         </CardFooter>
       </form>

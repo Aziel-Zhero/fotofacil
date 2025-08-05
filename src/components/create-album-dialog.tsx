@@ -28,12 +28,12 @@ import { Info, Loader2, UserPlus, DollarSign } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { createAlbum, getClientsForPhotographer } from '../app/dashboard/actions';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { Alert, AlertDescription, AlertTitle } from './ui/alert';
+import Link from 'next/link';
 
-// Schema atualizado
+// Schema atualizado para refletir o novo formulário
 const formSchema = z.object({
   albumName: z.string().min(1, "O nome do álbum é obrigatório."),
-  clientUserId: z.string().uuid("Por favor, selecione um cliente."),
+  clientUserId: z.string({ required_error: "Por favor, selecione um cliente."}).uuid("Por favor, selecione um cliente."),
   expirationDate: z.string().optional(),
   maxPhotos: z.coerce.number().min(1, "Por favor, defina um número máximo de fotos."),
   extraPhotoCost: z.coerce.number().min(0, "O valor deve ser zero ou maior.").optional(),
@@ -70,7 +70,6 @@ export function CreateAlbumDialog({ children }: { children: React.ReactNode }) {
         },
     });
 
-    // Observa o valor do custo por foto extra
     const extraPhotoCost = form.watch('extraPhotoCost');
 
     useEffect(() => {
@@ -159,7 +158,7 @@ export function CreateAlbumDialog({ children }: { children: React.ReactNode }) {
                                             {client.full_name} ({client.email})
                                         </SelectItem>
                                     )) : (
-                                        <div className="p-4 text-sm text-muted-foreground">Nenhum cliente encontrado.</div>
+                                        <div className="p-4 text-sm text-muted-foreground">Nenhum cliente cadastrado.</div>
                                     )}
                                 </SelectContent>
                             </Select>
@@ -197,7 +196,7 @@ export function CreateAlbumDialog({ children }: { children: React.ReactNode }) {
                  
                  <div className="text-xs text-muted-foreground bg-secondary/30 p-3 rounded-md flex gap-2 items-start border border-border">
                     <Info className="h-4 w-4 flex-shrink-0 mt-0.5" />
-                    <span>Se o cliente que você precisa não aparece na lista, peça para ele se cadastrar na plataforma primeiro.</span>
+                    <span>Se o cliente não aparece na lista, você pode cadastrá-lo na página <Link href="/dashboard/register-client" className='underline font-semibold'>Cadastrar Cliente</Link>.</span>
                 </div>
                 <DialogFooter>
                     <Button type="submit" disabled={isSubmitting}>

@@ -5,12 +5,10 @@ import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 
-// Schema para refletir o novo formulário de criação de álbum.
-// Agora recebe o ID do cliente em vez de criar um novo.
 const createAlbumSchema = z.object({
   albumName: z.string().min(1, 'O nome do álbum é obrigatório.'),
   clientUserId: z.string().uuid('Selecione um cliente válido.'),
-  pixKey: z.string().optional(), // Chave PIX é opcional
+  pixKey: z.string().optional(),
   expirationDate: z.string().optional(),
   maxPhotos: z.coerce.number().min(1, 'Defina um número máximo de fotos.'),
   extraPhotoCost: z.coerce.number().min(0, 'O valor deve ser zero ou maior.').optional(),
@@ -47,18 +45,29 @@ export async function createAlbum(formData: FormData) {
   if (!photographerUser) {
     return { error: 'Fotógrafo não autenticado.' };
   }
+
+  // Verificar se o cliente selecionado realmente existe.
+  const { data: clientData, error: clientError } = await supabase
+    .from('clients')
+    .select('id')
+    .eq('id', clientUserId)
+    .single();
+
+  if (clientError || !clientData) {
+      return { error: `O cliente selecionado não foi encontrado no sistema. ${clientError?.message || ''}` };
+  }
   
   // Inserir o novo álbum.
   const { error: albumError } = await supabase.from('albums').insert({
     photographer_id: photographerUser.id,
-    client_user_id: clientUserId,
+    client_id: clientUserId, // <- Usando o clientUserId validado
     name: albumName,
     status: 'Aguardando Seleção',
     selection_limit: maxPhotos,
     extra_photo_cost: extraPhotoCost,
     courtesy_photos: giftPhotos,
     expires_at: expirationDate ? new Date(expirationDate).toISOString() : null,
-    pix_key: pixKey,
+    // A chave PIX agora vem do photographer.pix_key
   });
 
    if (albumError) {
@@ -84,14 +93,10 @@ export async function getClientsForPhotographer() {
         return { error: 'Usuário não autenticado' };
     }
     
-    // Precisamos de uma forma de vincular clientes a fotógrafos.
-    // Uma abordagem é buscar todos os clientes que já estão em álbuns deste fotógrafo.
-    // Uma abordagem melhor seria ter uma tabela de relacionamento, mas para simplificar,
-    // vamos buscar todos os perfis com a role 'client'.
+    // Agora busca na tabela correta `clients`
     const { data: clients, error } = await supabase
-        .from('profiles')
-        .select('id, full_name, email')
-        .eq('role', 'client');
+        .from('clients')
+        .select('id, full_name, email');
 
     if (error) {
         console.error("Erro ao buscar clientes:", error);
@@ -114,8 +119,8 @@ export async function getMonthlyPhotoUsage() {
     const sixMonthsAgo = new Date();
     sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
 
-    // RPC (Remote Procedure Call) para buscar os dados.
-    // Isso requer uma função no banco de dados.
+    // Esta função RPC precisa existir no seu banco de dados.
+    // O SQL para criá-la foi fornecido anteriormente.
     const { data, error } = await supabase.rpc('get_monthly_photo_usage', {
         p_photographer_id: user.id,
         p_start_date: sixMonthsAgo.toISOString()
@@ -135,4 +140,3 @@ export async function getMonthlyPhotoUsage() {
 
     return { data: formattedData };
 }
-
