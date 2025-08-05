@@ -39,14 +39,11 @@ const LandingHeader = () => {
                 <span className="font-headline text-xl font-bold text-foreground">FotoFácil</span>
             </Link>
             <nav className="flex items-center gap-2 sm:gap-4">
-                <Button variant="ghost" asChild>
+                <Button asChild>
                     <Link href="/login">Login</Link>
                 </Button>
                 <Button asChild>
                     <Link href="/register">Criar Conta de Fotógrafo</Link>
-                </Button>
-                <Button variant="secondary" asChild>
-                    <Link href="/register/client">Cadastro de Cliente</Link>
                 </Button>
                  <Button variant="outline" asChild>
                     <Link href="/teste">Página de Teste</Link>
