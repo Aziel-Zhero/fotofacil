@@ -19,7 +19,7 @@ export default async function DashboardPage() {
   // Fetch albums first
   const { data: albums, error: albumsError } = await supabase
     .from('albums')
-    .select('*, client_user_id(full_name)') // Sub-query para buscar o nome do cliente
+    .select('*, client_id(full_name)') // Correção: de client_user_id para client_id e referenciando a tabela certa
     .eq('photographer_id', user.id)
     .order('created_at', { ascending: false });
 
@@ -43,11 +43,10 @@ export default async function DashboardPage() {
     photoCount: await getPhotoCount(album.id),
     maxPhotos: album.selection_limit,
     status: album.status,
-    // O nome do cliente agora vem da sub-query.
-    // O 'any' é usado aqui porque o tipo gerado pelo Supabase pode ser complexo.
-    client: album.client_user_id?.full_name || 'Cliente não vinculado',
+    // Correção: o objeto agora é `clients` em minúsculo, conforme o Supabase retorna
+    client: album.clients?.full_name || 'Cliente não vinculado',
     createdAt: album.created_at,
-    clientUserId: album.client_user_id?.id || null, // Acesso ao ID do perfil do cliente
+    clientUserId: album.client_id || null, 
   })) || []);
   
   const isProfileComplete = user.user_metadata?.companyName && user.user_metadata?.companyName !== 'N/A';
