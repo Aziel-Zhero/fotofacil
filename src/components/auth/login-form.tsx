@@ -97,6 +97,11 @@ export function LoginForm({ message, error }: { message?: string, error?: string
                 <FormControl>
                   <Input type="password" placeholder="••••••••" {...field} />
                 </FormControl>
+                <div className="text-right">
+                    <Link href="/forgot-password" passHref>
+                        <Button variant="link" className="text-xs p-0 h-auto">Esqueceu a senha?</Button>
+                    </Link>
+                </div>
                 <FormMessage />
               </FormItem>
             )}

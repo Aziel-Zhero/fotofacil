@@ -39,7 +39,7 @@ export async function signup(formData: FormData) {
   // Isso garante que o objeto raw_user_meta_data sempre terá os campos que o gatilho espera.
   if (role === 'client') {
     // Para clientes, geramos um username único e usamos um companyName padrão.
-    // Isso é necessário porque a tabela 'profiles' tem uma restrição UNIQUE no username.
+    // Isso é necessário porque a tabela 'photographers' tem uma restrição UNIQUE no username.
     username = email.split('@')[0].replace(/[^a-zA-Z0-9]/g, '') + Math.floor(Math.random() * 10000);
     companyName = 'N/A'; // Define um padrão para não ser nulo
   } else if (role === 'photographer') {
@@ -72,8 +72,8 @@ export async function signup(formData: FormData) {
     if (error.message.includes("User already registered")) {
         return { error: "Este email já está cadastrado. Tente fazer login." };
     }
-    // Este erro agora deve ser pego pela validação no `profiles`
-    if (error.message.includes('duplicate key value violates unique constraint "profiles_username_key"')) {
+    // Este erro agora deve ser pego pela validação no `photographers` ou `clients`
+    if (error.message.includes('duplicate key value violates unique constraint "photographers_username_key"')) {
         return { error: "Este nome de usuário já está em uso. Por favor, escolha outro." };
     }
     console.error("Supabase signup error:", error);
@@ -137,4 +137,33 @@ export async function login(formData: FormData) {
         await supabase.auth.signOut();
         redirect('/login?error=Função de usuário não definida. Contate o suporte.');
     }
+}
+
+const forgotPasswordSchema = z.object({
+  email: z.string().email({ message: 'Email inválido.' }),
+});
+
+export async function forgotPassword(formData: FormData) {
+    const supabase = createClient();
+    const data = Object.fromEntries(formData.entries());
+
+    const parsed = forgotPasswordSchema.safeParse(data);
+
+    if (!parsed.success) {
+        return { error: 'Email inválido.' };
+    }
+    
+    const { email } = parsed.data;
+    const origin = headers().get('origin');
+
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${origin}/reset-password`,
+    });
+
+    if (error) {
+        console.error('Forgot Password Error:', error);
+        return { error: "Não foi possível enviar o link de redefinição de senha. Tente novamente." };
+    }
+
+    return { message: 'Se um usuário com este email existir, um link de redefinição de senha foi enviado.' };
 }

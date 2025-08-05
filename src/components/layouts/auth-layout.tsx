@@ -17,7 +17,7 @@ export default function AuthLayout({ children, title, description }: AuthLayoutP
                 <span className="font-headline text-xl font-bold">FotoFácil</span>
             </Link>
         </div>
-      <Card className="w-full max-w-md shadow-xl bg-card">
+      <Card className="w-full max-w-md md:max-w-2xl shadow-xl bg-card">
         <CardHeader className="text-center">
           <CardTitle className="font-headline text-2xl tracking-tight">{title}</CardTitle>
           <CardDescription>{description}</CardDescription>
