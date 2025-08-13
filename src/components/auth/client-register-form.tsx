@@ -20,13 +20,13 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import PhoneInput from 'react-phone-number-input';
 import 'react-phone-number-input/style.css';
-import { signup } from '@/app/auth/actions'; // Usando a ação unificada
+import { signup } from '@/app/auth/actions';
 
-// Schema para o fotógrafo cadastrar um cliente
+// Schema para o fotógrafo cadastrar um cliente.
+// O campo de senha foi removido, pois será gerado no servidor.
 const formSchema = z.object({
   fullName: z.string().min(1, 'Nome completo é obrigatório'),
   email: z.string().email('Endereço de email inválido'),
-  password: z.string().min(8, 'A senha deve ter pelo menos 8 caracteres'),
   phone: z.string().min(10, 'Telefone inválido'),
 });
 
@@ -39,7 +39,6 @@ export function ClientRegisterForm() {
         defaultValues: {
             fullName: '',
             email: '',
-            password: '',
             phone: '',
         },
     });
@@ -77,7 +76,7 @@ export function ClientRegisterForm() {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)}>
         <CardContent className="space-y-4">
-           <div className="grid grid-cols-1 gap-4">
+           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField name="fullName" control={form.control} render={({ field }) => (
                 <FormItem><FormLabel>Nome Completo do Cliente</FormLabel><FormControl><Input placeholder="Maria da Silva" {...field} /></FormControl><FormMessage /></FormItem>
               )} />
@@ -88,7 +87,7 @@ export function ClientRegisterForm() {
                 name="phone"
                 control={form.control}
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem className="md:col-span-2">
                     <FormLabel>Telefone</FormLabel>
                     <FormControl>
                       <PhoneInput
@@ -104,9 +103,6 @@ export function ClientRegisterForm() {
                   </FormItem>
                 )}
               />
-              <FormField name="password" control={form.control} render={({ field }) => (
-                <FormItem><FormLabel>Senha Provisória</FormLabel><FormControl><Input type="password" placeholder="••••••••" /></FormControl><FormMessage /></FormItem>
-              )} />
            </div>
         </CardContent>
         <CardFooter className="flex-col gap-4">
