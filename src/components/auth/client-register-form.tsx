@@ -17,21 +17,22 @@ import {
 import { CardContent, CardFooter } from '@/components/ui/card';
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Eye, EyeOff, Sparkles } from 'lucide-react';
 import PhoneInput from 'react-phone-number-input';
 import 'react-phone-number-input/style.css';
 import { signup } from '@/app/auth/actions';
 
-// Schema para o fotógrafo cadastrar um cliente.
-// O campo de senha foi removido, pois será gerado no servidor.
+// Schema para o fotógrafo cadastrar um cliente, agora com senha.
 const formSchema = z.object({
   fullName: z.string().min(1, 'Nome completo é obrigatório'),
   email: z.string().email('Endereço de email inválido'),
   phone: z.string().min(10, 'Telefone inválido'),
+  password: z.string().min(8, 'A senha deve ter pelo menos 8 caracteres'),
 });
 
 export function ClientRegisterForm() {
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
     const { toast } = useToast();
 
     const form = useForm<z.infer<typeof formSchema>>({
@@ -40,8 +41,14 @@ export function ClientRegisterForm() {
             fullName: '',
             email: '',
             phone: '',
+            password: '',
         },
     });
+
+  const generatePassword = () => {
+    const newPassword = Math.random().toString(36).slice(-12);
+    form.setValue('password', newPassword, { shouldValidate: true });
+  }
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true);
@@ -87,7 +94,7 @@ export function ClientRegisterForm() {
                 name="phone"
                 control={form.control}
                 render={({ field }) => (
-                  <FormItem className="md:col-span-2">
+                  <FormItem>
                     <FormLabel>Telefone</FormLabel>
                     <FormControl>
                       <PhoneInput
@@ -103,6 +110,27 @@ export function ClientRegisterForm() {
                   </FormItem>
                 )}
               />
+              <FormField name="password" control={form.control} render={({ field }) => (
+                <FormItem>
+                    <FormLabel>Senha para o Cliente</FormLabel>
+                    <div className="relative">
+                        <FormControl>
+                            <Input type={showPassword ? "text" : "password"} placeholder="••••••••" {...field} />
+                        </FormControl>
+                        <div className="absolute inset-y-0 right-0 pr-3 flex items-center gap-2">
+                            <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={generatePassword}>
+                                <Sparkles className="h-4 w-4" aria-hidden="true" />
+                                <span className="sr-only">Gerar Senha</span>
+                            </Button>
+                            <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => setShowPassword(!showPassword)}>
+                                {showPassword ? <EyeOff className="h-4 w-4" aria-hidden="true" /> : <Eye className="h-4 w-4" aria-hidden="true" />}
+                                <span className="sr-only">Mostrar Senha</span>
+                            </Button>
+                        </div>
+                    </div>
+                    <FormMessage />
+                </FormItem>
+              )} />
            </div>
         </CardContent>
         <CardFooter className="flex-col gap-4">

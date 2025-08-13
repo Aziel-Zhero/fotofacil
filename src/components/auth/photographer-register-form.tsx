@@ -19,7 +19,7 @@ import { CardContent, CardFooter } from '@/components/ui/card';
 import { signup } from '@/app/auth/actions';
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Eye, EyeOff, Sparkles } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import PhoneInput from 'react-phone-number-input';
 import 'react-phone-number-input/style.css'
 
@@ -36,7 +36,6 @@ const formSchema = z.object({
 
 export function PhotographerRegisterForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
   const { toast } = useToast();
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -50,11 +49,6 @@ export function PhotographerRegisterForm() {
       phone: '',
     },
   });
-
-  const generatePassword = () => {
-    const newPassword = Math.random().toString(36).slice(-12);
-    form.setValue('password', newPassword, { shouldValidate: true });
-  }
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true);
@@ -117,19 +111,9 @@ export function PhotographerRegisterForm() {
               <FormField name="password" control={form.control} render={({ field }) => (
                 <FormItem className="md:col-span-2">
                     <FormLabel>Senha</FormLabel>
-                    <div className="relative">
-                        <FormControl>
-                            <Input type={showPassword ? "text" : "password"} placeholder="••••••••" {...field} />
-                        </FormControl>
-                        <div className="absolute inset-y-0 right-0 pr-3 flex items-center gap-2">
-                            <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={generatePassword}>
-                                <Sparkles className="h-4 w-4" aria-hidden="true" />
-                            </Button>
-                            <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => setShowPassword(!showPassword)}>
-                                {showPassword ? <EyeOff className="h-4 w-4" aria-hidden="true" /> : <Eye className="h-4 w-4" aria-hidden="true" />}
-                            </Button>
-                        </div>
-                    </div>
+                    <FormControl>
+                        <Input type="password" placeholder="••••••••" {...field} />
+                    </FormControl>
                     <FormMessage />
                 </FormItem>
               )} />

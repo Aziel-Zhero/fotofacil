@@ -10,8 +10,8 @@ import { headers } from 'next/headers';
 // mas a lógica abaixo garante que eles existam quando necessário.
 const signupSchema = z.object({
   email: z.string().email('Email inválido.'),
-  // A senha é opcional no schema geral, mas obrigatória para fotógrafos
-  password: z.string().min(8, 'A senha deve ter pelo menos 8 caracteres.').optional(),
+  // A senha agora é sempre obrigatória no schema
+  password: z.string().min(8, 'A senha deve ter pelo menos 8 caracteres.'),
   fullName: z.string().min(1, 'Nome completo é obrigatório.'),
   username: z.string().optional(),
   companyName: z.string().optional(),
@@ -40,18 +40,12 @@ export async function signup(formData: FormData) {
   // Isso garante que o objeto raw_user_meta_data sempre terá os campos que o gatilho espera.
   if (role === 'client') {
     // Para clientes, geramos um username único e usamos um companyName padrão.
-    // Isso é necessário porque a tabela 'photographers' tem uma restrição UNIQUE no username.
+    // Isso é necessário porque a tabela 'photographers' tem uma restrição UNIQUE no username,
+    // e a tabela de perfil de cliente não tem username.
     username = email.split('@')[0].replace(/[^a-zA-Z0-9]/g, '') + Math.floor(Math.random() * 10000);
     companyName = 'N/A'; // Define um padrão para não ser nulo
-    
-    // Gera uma senha segura e aleatória para o cliente, que ele trocará no primeiro acesso.
-    password = Math.random().toString(36).slice(-12);
-
   } else if (role === 'photographer') {
     // Para fotógrafos, validamos se os campos foram fornecidos.
-     if (!password) {
-      return { error: "A senha é obrigatória para fotógrafos." };
-    }
     if (!username || username.length < 3) {
       return { error: "O nome de usuário deve ter pelo menos 3 caracteres." };
     }
@@ -93,7 +87,7 @@ export async function signup(formData: FormData) {
       return { success: true };
   }
 
-  // Se foi um cadastro de um novo usuário (fotógrafo ou cliente por conta própria), redirecionamos.
+  // Se foi um cadastro de um novo usuário (fotógrafo por conta própria), redirecionamos.
   redirect(`/login?message=Cadastro realizado com sucesso! Verifique seu email para confirmar sua conta.`);
 }
 
