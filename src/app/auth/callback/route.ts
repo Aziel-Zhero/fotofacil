@@ -12,13 +12,8 @@ export async function GET(request: NextRequest) {
     const { data, error } = await supabase.auth.exchangeCodeForSession(code)
 
     if (!error && data.user) {
-      // Lógica de redirecionamento baseada na função (role) do usuário
-      const userRole = data.user.user_metadata?.role;
-      if (userRole === 'photographer') {
-        return NextResponse.redirect(`${origin}/dashboard`);
-      } else if (userRole === 'client') {
-        return NextResponse.redirect(`${origin}/gallery`);
-      }
+      // Como apenas fotógrafos se cadastram, redireciona sempre para o dashboard
+      return NextResponse.redirect(`${origin}/dashboard`);
     }
   }
 

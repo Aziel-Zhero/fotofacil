@@ -5,6 +5,58 @@ import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 
+const createClientSchema = z.object({
+  fullName: z.string().min(1, 'Nome completo é obrigatório.'),
+  email: z.string().email('Email inválido.'),
+  phone: z.string().min(1, 'Telefone é obrigatório.'),
+});
+
+export async function createClientByUser(formData: FormData) {
+    const supabase = createClient();
+    
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+        return { error: 'Fotógrafo não autenticado. Faça login novamente.' };
+    }
+
+    const data = Object.fromEntries(formData.entries());
+    const parsed = createClientSchema.safeParse(data);
+
+    if (!parsed.success) {
+        let errorMessages = '';
+        parsed.error.issues.forEach(issue => {
+            errorMessages += issue.message + '\n';
+        });
+        return { error: errorMessages.trim() };
+    }
+
+    const { fullName, email, phone } = parsed.data;
+
+    // Insere o cliente na tabela 'clients', associando-o ao fotógrafo logado.
+    const { data: newClient, error } = await supabase
+        .from('clients')
+        .insert({
+            photographer_id: user.id,
+            full_name: fullName,
+            email: email,
+            phone: phone,
+        })
+        .select()
+        .single();
+
+    if (error) {
+        if (error.code === '23505') { // Código de violação de constraint unique
+            return { error: 'Um cliente com este email já existe.' };
+        }
+        console.error("Error creating client:", error);
+        return { error: `Não foi possível criar o cliente: ${error.message}` };
+    }
+    
+    revalidatePath('/dashboard/register-client');
+    return { success: true, message: `Cliente "${fullName}" criado com sucesso!` };
+}
+
+
 const createAlbumSchema = z.object({
   albumName: z.string().min(1, 'O nome do álbum é obrigatório.'),
   clientUserId: z.string().uuid('Selecione um cliente válido.'),
@@ -32,7 +84,7 @@ export async function createAlbum(formData: FormData) {
   
   const { 
     albumName, 
-    clientUserId,
+    clientUserId, // Este é o ID da tabela 'clients'
     pixKey,
     expirationDate, 
     maxPhotos, 
@@ -46,28 +98,28 @@ export async function createAlbum(formData: FormData) {
     return { error: 'Fotógrafo não autenticado.' };
   }
 
-  // Verificar se o cliente selecionado realmente existe.
+  // Verificar se o cliente selecionado realmente existe e pertence a este fotógrafo.
   const { data: clientData, error: clientError } = await supabase
     .from('clients')
     .select('id')
     .eq('id', clientUserId)
+    .eq('photographer_id', photographerUser.id) // Garante segurança
     .single();
 
   if (clientError || !clientData) {
-      return { error: `O cliente selecionado não foi encontrado no sistema. ${clientError?.message || ''}` };
+      return { error: `O cliente selecionado não foi encontrado ou não pertence a você.` };
   }
   
   // Inserir o novo álbum.
   const { error: albumError } = await supabase.from('albums').insert({
     photographer_id: photographerUser.id,
-    client_id: clientUserId, // <- Usando o clientUserId validado
+    client_id: clientUserId,
     name: albumName,
     status: 'Aguardando Seleção',
     selection_limit: maxPhotos,
     extra_photo_cost: extraPhotoCost,
     courtesy_photos: giftPhotos,
     expires_at: expirationDate ? new Date(expirationDate).toISOString() : null,
-    // A chave PIX agora vem do photographer.pix_key
   });
 
    if (albumError) {
@@ -93,10 +145,11 @@ export async function getClientsForPhotographer() {
         return { error: 'Usuário não autenticado' };
     }
     
-    // Agora busca na tabela correta `clients`
+    // Busca na tabela 'clients' os clientes que pertencem ao fotógrafo logado.
     const { data: clients, error } = await supabase
         .from('clients')
-        .select('id, full_name, email');
+        .select('id, full_name, email')
+        .eq('photographer_id', user.id);
 
     if (error) {
         console.error("Erro ao buscar clientes:", error);
@@ -119,8 +172,6 @@ export async function getMonthlyPhotoUsage() {
     const sixMonthsAgo = new Date();
     sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
 
-    // Esta função RPC precisa existir no seu banco de dados.
-    // O SQL para criá-la foi fornecido anteriormente.
     const { data, error } = await supabase.rpc('get_monthly_photo_usage', {
         p_photographer_id: user.id,
         p_start_date: sixMonthsAgo.toISOString()

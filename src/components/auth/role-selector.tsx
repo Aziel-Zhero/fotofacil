@@ -24,16 +24,15 @@ export default function RoleSelector() {
             <CardContent className="flex flex-col items-center justify-center gap-4">
               <User className="h-12 w-12 text-primary" />
               <h3 className="font-headline text-xl font-semibold">Sou Cliente</h3>
-              <p className="text-muted-foreground text-sm">Acesse os álbuns compartilhados com você.</p>
+              <p className="text-muted-foreground text-sm">Acesse os álbuns compartilhados com você através do link seguro.</p>
             </CardContent>
           </Card>
         </Link>
       </div>
       <div className="mt-6 text-center text-sm">
-        Já tem uma conta?{' '}
         <Button variant="link" asChild className="p-0 h-auto">
             <Link href="/login">
-             Login
+             Já é um fotógrafo? Faça login
             </Link>
         </Button>
       </div>

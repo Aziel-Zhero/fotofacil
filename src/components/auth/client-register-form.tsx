@@ -17,22 +17,21 @@ import {
 import { CardContent, CardFooter } from '@/components/ui/card';
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Eye, EyeOff, Sparkles } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import PhoneInput from 'react-phone-number-input';
 import 'react-phone-number-input/style.css';
-import { signup } from '@/app/auth/actions';
+import { createClientByUser } from '@/app/dashboard/actions';
 
-// Schema para o fotógrafo cadastrar um cliente, agora com senha.
+// Schema agora simplificado, pois a criação é feita pelo fotógrafo logado.
+// Não precisa de senha, pois o cliente não tem login.
 const formSchema = z.object({
   fullName: z.string().min(1, 'Nome completo é obrigatório'),
   email: z.string().email('Endereço de email inválido'),
   phone: z.string().min(10, 'Telefone inválido'),
-  password: z.string().min(8, 'A senha deve ter pelo menos 8 caracteres'),
 });
 
 export function ClientRegisterForm() {
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [showPassword, setShowPassword] = useState(false);
     const { toast } = useToast();
 
     const form = useForm<z.infer<typeof formSchema>>({
@@ -41,14 +40,8 @@ export function ClientRegisterForm() {
             fullName: '',
             email: '',
             phone: '',
-            password: '',
         },
     });
-
-  const generatePassword = () => {
-    const newPassword = Math.random().toString(36).slice(-12);
-    form.setValue('password', newPassword, { shouldValidate: true });
-  }
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true);
@@ -57,10 +50,9 @@ export function ClientRegisterForm() {
     Object.entries(values).forEach(([key, value]) => {
       formData.append(key, value);
     });
-    // Adiciona o 'role' para que a ação unificada saiba como proceder
-    formData.append('role', 'client');
     
-    const result = await signup(formData);
+    // Chama a nova ação dedicada para criar cliente.
+    const result = await createClientByUser(formData);
 
     if (result?.error) {
       toast({
@@ -71,7 +63,7 @@ export function ClientRegisterForm() {
     } else if (result?.success) {
        toast({
         title: "Cliente Cadastrado!",
-        description: `A conta para ${values.email} foi criada com sucesso. O cliente receberá um email para confirmação.`,
+        description: result.message,
       });
       form.reset();
     }
@@ -83,7 +75,7 @@ export function ClientRegisterForm() {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)}>
         <CardContent className="space-y-4">
-           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+           <div className="grid grid-cols-1 gap-4">
               <FormField name="fullName" control={form.control} render={({ field }) => (
                 <FormItem><FormLabel>Nome Completo do Cliente</FormLabel><FormControl><Input placeholder="Maria da Silva" {...field} /></FormControl><FormMessage /></FormItem>
               )} />
@@ -110,27 +102,6 @@ export function ClientRegisterForm() {
                   </FormItem>
                 )}
               />
-              <FormField name="password" control={form.control} render={({ field }) => (
-                <FormItem>
-                    <FormLabel>Senha para o Cliente</FormLabel>
-                    <div className="relative">
-                        <FormControl>
-                            <Input type={showPassword ? "text" : "password"} placeholder="••••••••" {...field} />
-                        </FormControl>
-                        <div className="absolute inset-y-0 right-0 pr-3 flex items-center gap-2">
-                            <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={generatePassword}>
-                                <Sparkles className="h-4 w-4" aria-hidden="true" />
-                                <span className="sr-only">Gerar Senha</span>
-                            </Button>
-                            <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => setShowPassword(!showPassword)}>
-                                {showPassword ? <EyeOff className="h-4 w-4" aria-hidden="true" /> : <Eye className="h-4 w-4" aria-hidden="true" />}
-                                <span className="sr-only">Mostrar Senha</span>
-                            </Button>
-                        </div>
-                    </div>
-                    <FormMessage />
-                </FormItem>
-              )} />
            </div>
         </CardContent>
         <CardFooter className="flex-col gap-4">

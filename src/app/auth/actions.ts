@@ -6,17 +6,14 @@ import { z } from 'zod';
 import { redirect } from 'next/navigation';
 import { headers } from 'next/headers';
 
-// Unificado e flexível. O username e companyName são opcionais no schema,
-// mas a lógica abaixo garante que eles existam quando necessário.
+// Schema agora EXCLUSIVO para fotógrafos.
 const signupSchema = z.object({
   email: z.string().email('Email inválido.'),
-  // A senha agora é sempre obrigatória no schema
   password: z.string().min(8, 'A senha deve ter pelo menos 8 caracteres.'),
   fullName: z.string().min(1, 'Nome completo é obrigatório.'),
-  username: z.string().optional(),
-  companyName: z.string().optional(),
-  phone: z.string().min(1, 'Telefone é obrigatório.'),
-  role: z.enum(['photographer', 'client'], { required_error: 'Função é obrigatória.' }),
+  username: z.string().min(3, 'O nome de usuário deve ter pelo menos 3 caracteres'),
+  companyName: z.string().min(1, 'Nome da empresa é obrigatório.'),
+  phone: z.string().min(10, 'Telefone inválido'),
 });
 
 export async function signup(formData: FormData) {
@@ -34,32 +31,15 @@ export async function signup(formData: FormData) {
     return { error: errorMessages.trim() };
   }
 
-  let { email, password, fullName, username, companyName, phone, role } = parsed.data;
-
-  // Lógica de negócio para garantir os dados necessários para o trigger do DB.
-  // Isso garante que o objeto raw_user_meta_data sempre terá os campos que o gatilho espera.
-  if (role === 'client') {
-    // Para clientes, geramos um username único e usamos um companyName padrão.
-    // Isso é necessário porque a tabela 'photographers' tem uma restrição UNIQUE no username,
-    // e a tabela de perfil de cliente não tem username.
-    username = email.split('@')[0].replace(/[^a-zA-Z0-9]/g, '') + Math.floor(Math.random() * 10000);
-    companyName = 'N/A'; // Define um padrão para não ser nulo
-  } else if (role === 'photographer') {
-    // Para fotógrafos, validamos se os campos foram fornecidos.
-    if (!username || username.length < 3) {
-      return { error: "O nome de usuário deve ter pelo menos 3 caracteres." };
-    }
-    if (!companyName || companyName.length < 1) {
-      return { error: "Nome da empresa é obrigatório." };
-    }
-  }
+  const { email, password, fullName, username, companyName, phone } = parsed.data;
 
   const { error } = await supabase.auth.signUp({
     email,
-    password: password!,
+    password,
     options: {
       data: {
-        role,
+        // A role agora é fixa, pois esta ação é apenas para fotógrafos
+        role: 'photographer', 
         fullName,
         username,
         companyName,
@@ -79,15 +59,7 @@ export async function signup(formData: FormData) {
     console.error("Supabase signup error:", error);
     return { error: "Ocorreu um erro no servidor ao criar o usuário. Por favor, tente novamente." };
   }
-
-  // Se o cadastro foi feito por um fotógrafo logado (criando um cliente), 
-  // não redirecionamos, apenas retornamos sucesso.
-  const { data: { user: loggedInUser } } = await supabase.auth.getUser();
-  if (loggedInUser && role === 'client') {
-      return { success: true };
-  }
-
-  // Se foi um cadastro de um novo usuário (fotógrafo por conta própria), redirecionamos.
+  
   redirect(`/login?message=Cadastro realizado com sucesso! Verifique seu email para confirmar sua conta.`);
 }
 
@@ -128,34 +100,30 @@ export async function login(formData: FormData) {
          return { error: "Usuário não encontrado após o login." };
     }
     
-    // A role agora está nos metadados do usuário e será usada para redirecionar.
     const userRole = user.user_metadata?.role;
 
-    // Busca o perfil para ter certeza que o trigger funcionou
-    const profileTable = userRole === 'photographer' ? 'photographers' : 'clients';
-    const { data: profile, error: profileError } = await supabase
-      .from(profileTable)
-      .select('id')
-      .eq('id', user.id)
-      .single();
-    
-    if (profileError || !profile) {
-      await supabase.auth.signOut();
-      let errorMessage = 'Não foi possível encontrar seu perfil. Contate o suporte.';
-      if (profileError) {
-        console.error("Profile fetch error:", profileError);
-        errorMessage = `Erro ao buscar perfil (${profileError.code}). Contate o suporte.`;
-      }
-       return redirect(`/login?error=${encodeURIComponent(errorMessage)}`);
-    }
-
+    // Apenas fotógrafos podem fazer login agora
     if (userRole === 'photographer') {
+        const { data: profile, error: profileError } = await supabase
+            .from('photographers')
+            .select('id')
+            .eq('id', user.id)
+            .single();
+        
+        if (profileError || !profile) {
+          await supabase.auth.signOut();
+          let errorMessage = 'Não foi possível encontrar seu perfil de fotógrafo. Contate o suporte.';
+          if (profileError) {
+            console.error("Profile fetch error:", profileError);
+            errorMessage = `Erro ao buscar perfil (${profileError.code}). Contate o suporte.`;
+          }
+           return redirect(`/login?error=${encodeURIComponent(errorMessage)}`);
+        }
         redirect('/dashboard');
-    } else if (userRole === 'client') {
-        redirect('/gallery');
     } else {
+        // Se um cliente tentar fazer login, ou role for desconhecida.
         await supabase.auth.signOut();
-        redirect('/login?error=Função de usuário não definida. Contate o suporte.');
+        redirect('/login?error=O acesso do cliente é feito através de um link seguro fornecido pelo fotógrafo.');
     }
 }
 
