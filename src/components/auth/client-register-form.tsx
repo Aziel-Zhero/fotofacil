@@ -20,9 +20,8 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import PhoneInput from 'react-phone-number-input';
 import 'react-phone-number-input/style.css';
-import { signup } from '@/app/auth/actions';
+import { createClientByPhotographer } from '@/app/auth/actions';
 
-// O formulário do cliente agora é completo e se cadastra sozinho.
 const formSchema = z.object({
   fullName: z.string().min(1, 'Nome completo é obrigatório'),
   email: z.string().email('Endereço de email inválido'),
@@ -48,29 +47,23 @@ export function ClientRegisterForm() {
     setIsSubmitting(true);
     const formData = new FormData();
     
-    // Adiciona todos os dados do formulário e o 'role'.
     Object.entries(values).forEach(([key, value]) => {
       formData.append(key, value);
     });
-    formData.append('role', 'client');
-    // Para o gatilho funcionar, precisamos fornecer todos os campos.
-    // Como o cliente não tem empresa/username no cadastro, usamos valores padrão.
-    // O gatilho do banco vai ignorar campos que não existem na tabela `clients`
-    formData.append('username', 'N/A');
-    formData.append('companyName', 'N/A');
     
-    const result = await signup(formData);
+    // Chama a nova ação dedicada para fotógrafos
+    const result = await createClientByPhotographer(formData);
 
     if (result?.error) {
       toast({
-        title: "Erro no Cadastro",
+        title: "Erro ao Cadastrar Cliente",
         description: result.error,
         variant: "destructive",
       });
-    } else {
+    } else if (result?.success) {
        toast({
         title: "Cliente Cadastrado!",
-        description: `Um e-mail de confirmação foi enviado para ${values.email}.`,
+        description: `A conta para ${values.email} foi criada com sucesso.`,
       });
       form.reset();
     }

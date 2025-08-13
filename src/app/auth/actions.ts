@@ -86,6 +86,64 @@ export async function signup(formData: FormData) {
   redirect(`/login?message=Cadastro realizado com sucesso! Verifique seu email para confirmar sua conta.`);
 }
 
+const clientRegisterSchema = z.object({
+  fullName: z.string().min(1, 'Nome completo é obrigatório.'),
+  email: z.string().email('Endereço de email inválido.'),
+  password: z.string().min(8, 'A senha deve ter pelo menos 8 caracteres.'),
+  phone: z.string().min(10, 'Telefone inválido.'),
+});
+
+
+export async function createClientByPhotographer(formData: FormData) {
+  const supabase = createClient();
+  const { data: { user: photographerUser } } = await supabase.auth.getUser();
+
+  if (!photographerUser || photographerUser.user_metadata.role !== 'photographer') {
+    return { error: 'Ação não autorizada. Apenas fotógrafos podem cadastrar clientes.' };
+  }
+
+  const data = Object.fromEntries(formData.entries());
+  const parsed = clientRegisterSchema.safeParse(data);
+
+  if (!parsed.success) {
+    let errorMessages = '';
+    parsed.error.issues.forEach(issue => {
+      errorMessages += issue.message + '\n';
+    });
+    return { error: errorMessages.trim() };
+  }
+  
+  const { fullName, email, password, phone } = parsed.data;
+  
+  // Usar o cliente admin para criar o usuário em nome do fotógrafo
+  const supabaseAdmin = createClient(true);
+
+  const { data: newUser, error } = await supabaseAdmin.auth.admin.createUser({
+    email: email,
+    password: password,
+    email_confirm: true, // O cliente não precisa confirmar, já que o fotógrafo está fazendo isso.
+    user_metadata: {
+      role: 'client',
+      fullName: fullName,
+      phone: phone,
+      // Estes campos são necessários para o trigger, mesmo que não sejam usados pelo cliente
+      username: email.split('@')[0].replace(/[^a-zA-Z0-9]/g, '') + Math.floor(Math.random() * 10000),
+      companyName: 'N/A'
+    }
+  });
+
+  if (error) {
+    if (error.message.includes("User already exists")) {
+       return { error: "Este email de cliente já está cadastrado." };
+    }
+    console.error("Admin user creation error:", error.message);
+    return { error: `Ocorreu um erro no servidor ao criar o cliente: ${error.message}` };
+  }
+
+  // Se chegou aqui, o usuário foi criado com sucesso (auth + trigger).
+  return { success: true };
+}
+
 
 const loginSchema = z.object({
     email: z.string().email({ message: 'Email inválido.' }),
