@@ -20,8 +20,9 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import PhoneInput from 'react-phone-number-input';
 import 'react-phone-number-input/style.css';
-import { createClientByPhotographer } from '@/app/auth/actions';
+import { signup } from '@/app/auth/actions'; // Usando a ação unificada
 
+// Schema para o fotógrafo cadastrar um cliente
 const formSchema = z.object({
   fullName: z.string().min(1, 'Nome completo é obrigatório'),
   email: z.string().email('Endereço de email inválido'),
@@ -50,9 +51,10 @@ export function ClientRegisterForm() {
     Object.entries(values).forEach(([key, value]) => {
       formData.append(key, value);
     });
+    // Adiciona o 'role' para que a ação unificada saiba como proceder
+    formData.append('role', 'client');
     
-    // Chama a nova ação dedicada para fotógrafos
-    const result = await createClientByPhotographer(formData);
+    const result = await signup(formData);
 
     if (result?.error) {
       toast({
@@ -63,7 +65,7 @@ export function ClientRegisterForm() {
     } else if (result?.success) {
        toast({
         title: "Cliente Cadastrado!",
-        description: `A conta para ${values.email} foi criada com sucesso.`,
+        description: `A conta para ${values.email} foi criada com sucesso. O cliente receberá um email para confirmação.`,
       });
       form.reset();
     }
@@ -77,10 +79,10 @@ export function ClientRegisterForm() {
         <CardContent className="space-y-4">
            <div className="grid grid-cols-1 gap-4">
               <FormField name="fullName" control={form.control} render={({ field }) => (
-                <FormItem><FormLabel>Nome Completo</FormLabel><FormControl><Input placeholder="Maria da Silva" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>Nome Completo do Cliente</FormLabel><FormControl><Input placeholder="Maria da Silva" {...field} /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField name="email" control={form.control} render={({ field }) => (
-                <FormItem><FormLabel>Email</FormLabel><FormControl><Input placeholder="maria.silva@example.com" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>Email do Cliente</FormLabel><FormControl><Input placeholder="maria.silva@example.com" {...field} /></FormControl><FormMessage /></FormItem>
               )} />
               <Controller
                 name="phone"
@@ -92,7 +94,7 @@ export function ClientRegisterForm() {
                       <PhoneInput
                         international
                         defaultCountry="BR"
-                        placeholder="Seu número de telefone"
+                        placeholder="Número de telefone do cliente"
                         value={field.value}
                         onChange={field.onChange}
                         className="PhoneInput"
@@ -103,7 +105,7 @@ export function ClientRegisterForm() {
                 )}
               />
               <FormField name="password" control={form.control} render={({ field }) => (
-                <FormItem><FormLabel>Senha Provisória</FormLabel><FormControl><Input type="password" placeholder="••••••••" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>Senha Provisória</FormLabel><FormControl><Input type="password" placeholder="••••••••" /></FormControl><FormMessage /></FormItem>
               )} />
            </div>
         </CardContent>
