@@ -14,6 +14,8 @@ const createClientSchema = z.object({
 export async function createClientByUser(formData: FormData) {
     const supabase = createClient();
     
+    // A chamada RPC já valida se o chamador é um fotógrafo autenticado.
+    // A linha abaixo ainda é útil para garantir que a sessão existe antes de prosseguir.
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
         return { error: 'Fotógrafo não autenticado. Faça login novamente.' };
@@ -32,31 +34,27 @@ export async function createClientByUser(formData: FormData) {
 
     const { fullName, email, phone } = parsed.data;
 
-    // A correção está aqui: Inserimos o cliente na tabela 'clients',
-    // associando-o diretamente ao ID do fotógrafo logado (user.id),
-    // que é a chave primária da tabela 'photographers' e a chave estrangeira
-    // esperada pela tabela 'clients'.
-    const { data: newClient, error } = await supabase
-        .from('clients')
-        .insert({
-            photographer_id: user.id, // Este é o ID do auth.users, que é o mesmo que photographers.id
-            full_name: fullName,
-            email: email,
-            phone: phone,
-        })
-        .select()
-        .single();
+    // **AQUI ESTÁ A MUDANÇA PRINCIPAL**
+    // Chamando a função RPC 'create_client' que você definiu no Supabase.
+    // Isso move a lógica de inserção para o banco de dados, tornando o processo mais seguro e robusto.
+    const { data: newClientId, error } = await supabase
+        .rpc('create_client', {
+            p_full_name: fullName,
+            p_email: email,
+            p_phone: phone,
+        });
 
     if (error) {
-        if (error.code === '23505') { // Código de violação de constraint unique
+        // Trata erros que podem vir da função RPC (ex: email duplicado, etc.)
+        if (error.code === '23505') { // unique_violation
             return { error: 'Um cliente com este email já existe.' };
         }
-        console.error("Error creating client:", error);
+        console.error("Error creating client via RPC:", error);
         return { error: `Não foi possível criar o cliente: ${error.message}` };
     }
     
     revalidatePath('/dashboard/register-client');
-    return { success: true, message: `Cliente "${fullName}" criado com sucesso!` };
+    return { success: true, message: `Cliente "${fullName}" criado com sucesso! ID: ${newClientId}` };
 }
 
 

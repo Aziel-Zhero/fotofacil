@@ -22,8 +22,8 @@ import PhoneInput from 'react-phone-number-input';
 import 'react-phone-number-input/style.css';
 import { createClientByUser } from '@/app/dashboard/actions';
 
-// Schema agora simplificado, pois a criação é feita pelo fotógrafo logado.
-// Não precisa de senha, pois o cliente não tem login.
+// Schema agora simplificado para refletir a criação direta na tabela 'clients'
+// sem a necessidade de criar um usuário de autenticação (auth.users).
 const formSchema = z.object({
   fullName: z.string().min(1, 'Nome completo é obrigatório'),
   email: z.string().email('Endereço de email inválido'),
@@ -51,7 +51,7 @@ export function ClientRegisterForm() {
       formData.append(key, value);
     });
     
-    // Chama a nova ação dedicada para criar cliente.
+    // Chama a ação de servidor que agora usa a função RPC `create_client`.
     const result = await createClientByUser(formData);
 
     if (result?.error) {
