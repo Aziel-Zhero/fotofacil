@@ -32,11 +32,14 @@ export async function createClientByUser(formData: FormData) {
 
     const { fullName, email, phone } = parsed.data;
 
-    // Insere o cliente na tabela 'clients', associando-o ao fotógrafo logado.
+    // A correção está aqui: Inserimos o cliente na tabela 'clients',
+    // associando-o diretamente ao ID do fotógrafo logado (user.id),
+    // que é a chave primária da tabela 'photographers' e a chave estrangeira
+    // esperada pela tabela 'clients'.
     const { data: newClient, error } = await supabase
         .from('clients')
         .insert({
-            photographer_id: user.id,
+            photographer_id: user.id, // Este é o ID do auth.users, que é o mesmo que photographers.id
             full_name: fullName,
             email: email,
             phone: phone,
