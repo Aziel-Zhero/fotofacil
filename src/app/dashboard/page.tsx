@@ -19,7 +19,7 @@ export default async function DashboardPage() {
   // Fetch albums first
   const { data: albums, error: albumsError } = await supabase
     .from('albums')
-    .select('*, client_id(full_name)') // Correção: de client_user_id para client_id e referenciando a tabela certa
+    .select('*, clients(full_name)') 
     .eq('photographer_id', user.id)
     .order('created_at', { ascending: false });
 

@@ -24,9 +24,9 @@ export default async function ClientGalleryPage() {
             id,
             name,
             status,
-            profiles (full_name)
+            photographers (full_name)
         `)
-        .eq('client_user_id', user.id);
+        .eq('client_id', user.id);
 
     if (error) {
         console.error("Erro ao buscar álbuns do cliente:", error);
@@ -50,10 +50,11 @@ export default async function ClientGalleryPage() {
 
             {albums && albums.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {albums.map(album => (
+                    {albums.map((album: any) => (
                         <Card key={album.id} className="hover:shadow-lg transition-shadow">
                             <CardHeader>
                                 <CardTitle className="font-headline">{album.name}</CardTitle>
+                                <CardDescription>Fotógrafo(a): {album.photographers?.full_name || 'N/A'}</CardDescription>
                                 <CardDescription>Status: {album.status}</CardDescription>
                             </CardHeader>
                             <CardContent>
