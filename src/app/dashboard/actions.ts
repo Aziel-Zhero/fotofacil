@@ -273,3 +273,46 @@ export async function updateClient(formData: FormData) {
     revalidatePath('/dashboard/clients');
     return { success: true, message: `Cliente "${fullName}" atualizado com sucesso!` };
 }
+
+const updateClientPasswordSchema = z.object({
+  clientId: z.string().uuid(),
+  password: z.string().min(8, 'A nova senha deve ter pelo menos 8 caracteres.'),
+});
+
+export async function updateClientPassword(formData: FormData) {
+  const supabase = createClient(true); // admin client
+  const data = Object.fromEntries(formData.entries());
+
+  const parsed = updateClientPasswordSchema.safeParse(data);
+  if (!parsed.success) {
+      return { error: 'A senha deve ter pelo menos 8 caracteres.' };
+  }
+
+  const { clientId, password } = parsed.data;
+  
+  const { data: client, error: clientError } = await supabase
+    .from('clients')
+    .select('auth_user_id')
+    .eq('id', clientId)
+    .single();
+
+  if (clientError || !client) {
+      return { error: 'Cliente não encontrado.' };
+  }
+
+  if (!client.auth_user_id) {
+    return { error: 'Este cliente ainda não ativou a conta e não pode ter a senha alterada.' };
+  }
+
+  const { error: updateUserError } = await supabase.auth.admin.updateUserById(
+    client.auth_user_id,
+    { password: password }
+  );
+
+  if (updateUserError) {
+    console.error('Error updating client password:', updateUserError);
+    return { error: `Não foi possível atualizar a senha: ${updateUserError.message}` };
+  }
+
+  return { success: true, message: 'Senha do cliente atualizada com sucesso!' };
+}
