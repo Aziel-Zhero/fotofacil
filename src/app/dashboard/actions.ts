@@ -54,6 +54,7 @@ export async function createClientByUser(formData: FormData) {
     }
     
     revalidatePath('/dashboard/register-client');
+    revalidatePath('/dashboard/clients');
     return { success: true, message: `Cliente "${fullName}" criado com sucesso! ID: ${newClientId}` };
 }
 
@@ -129,6 +130,7 @@ export async function createAlbum(formData: FormData) {
   }
 
   revalidatePath('/dashboard');
+  revalidatePath('/dashboard/clients');
   
   return { 
     success: true,
@@ -191,4 +193,30 @@ export async function getMonthlyPhotoUsage() {
     }));
 
     return { data: formattedData };
+}
+
+export async function resetClientPassword(clientId: string, clientEmail: string) {
+    const supabase = createClient(true); // Use admin client
+
+    const { data: { user }, error: userError } = await supabase.from('clients').select('auth_user_id').eq('id', clientId).single();
+    
+    if(userError || !user) {
+        return { error: "Cliente não encontrado ou não possui uma conta de autenticação."}
+    }
+    
+    if(!user.auth_user_id) {
+        // Futuramente, podemos implementar o envio de um convite para criar a conta.
+        // Por agora, informamos que não há conta para resetar.
+        return { error: "Este cliente ainda não ativou sua conta e não pode ter a senha redefinida."}
+    }
+
+    const { data, error } = await supabase.auth.admin.resetPasswordForEmail(clientEmail);
+
+    if(error) {
+        console.error("Admin reset password error:", error);
+        return { error: `Erro do servidor: ${error.message}`};
+    }
+    
+    revalidatePath('/dashboard/clients');
+    return { success: true };
 }

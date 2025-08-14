@@ -5,7 +5,7 @@ FotoFácil é uma plataforma moderna e completa, projetada para otimizar e profi
 
 ## ✨ Principais Funcionalidades
 
-### Para Fotógrafos
+### Para FotógrafosNanetail2504*Z
 - **Gestão de Clientes**: Cadastro e gerenciamento de clientes diretamente do painel.
 - **Gerenciamento de Álbuns**: Crie álbuns personalizados, vincule-os a clientes específicos, defina limites de seleção, preços por foto extra e datas de validade.
 - **Upload Inteligente**: Faça upload de múltiplas fotos com pré-visualização.

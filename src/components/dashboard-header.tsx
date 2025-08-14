@@ -2,7 +2,7 @@
 "use client"
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, User, Settings, LogOut, Aperture, Crown, HelpCircle, Star, FolderArchive, BarChart, Bell, UserPlus } from 'lucide-react';
+import { Home, User, Settings, LogOut, Aperture, Crown, HelpCircle, Star, FolderArchive, BarChart, Bell, UserPlus, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -20,6 +20,7 @@ import { type User as SupabaseUser } from "@supabase/supabase-js";
 
 const navItems = [
   { href: '/dashboard', label: 'Painel', icon: Home },
+  { href: '/dashboard/clients', label: 'Clientes', icon: Users },
   { href: '/dashboard/analysis', label: 'Análise', icon: BarChart },
   { href: '/dashboard/delivered', label: 'Entregues', icon: FolderArchive },
   { href: '/dashboard/subscription', label: 'Assinatura', icon: Star },
