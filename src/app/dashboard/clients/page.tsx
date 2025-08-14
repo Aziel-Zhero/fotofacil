@@ -4,12 +4,20 @@ import { redirect } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { MoreHorizontal } from 'lucide-react';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Button } from '@/components/ui/button';
-import { ResetPasswordButton } from '@/components/reset-password-button';
+import { ClientActions } from '@/components/client-actions';
 
-async function getClientsData(photographerId: string) {
+export type ClientData = {
+  id: string;
+  full_name: string | null;
+  email: string | null;
+  phone: string | null;
+  albums: {
+    id: string;
+    name: string | null;
+  }[];
+};
+
+async function getClientsData(photographerId: string): Promise<ClientData[]> {
   const supabase = createClient();
   const { data, error } = await supabase
     .from('clients')
@@ -89,18 +97,7 @@ export default async function ClientsPage() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" className="h-8 w-8 p-0">
-                            <span className="sr-only">Abrir menu</span>
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem>Editar Cliente</DropdownMenuItem>
-                          <ResetPasswordButton clientId={client.id} clientEmail={client.email} />
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                      <ClientActions client={client} />
                     </TableCell>
                   </TableRow>
                 ))

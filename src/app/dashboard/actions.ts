@@ -14,11 +14,19 @@ const createClientSchema = z.object({
 export async function createClientByUser(formData: FormData) {
     const supabase = createClient();
     
-    // A chamada RPC já valida se o chamador é um fotógrafo autenticado.
-    // A linha abaixo ainda é útil para garantir que a sessão existe antes de prosseguir.
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
         return { error: 'Fotógrafo não autenticado. Faça login novamente.' };
+    }
+
+    const { data: photographer, error: photographerError } = await supabase
+        .from('photographers')
+        .select('id')
+        .eq('id', user.id)
+        .single();
+    
+    if (photographerError || !photographer) {
+        return { error: 'Perfil de fotógrafo não encontrado.' };
     }
 
     const data = Object.fromEntries(formData.entries());
@@ -34,28 +42,27 @@ export async function createClientByUser(formData: FormData) {
 
     const { fullName, email, phone } = parsed.data;
 
-    // **AQUI ESTÁ A MUDANÇA PRINCIPAL**
-    // Chamando a função RPC 'create_client' que você definiu no Supabase.
-    // Isso move a lógica de inserção para o banco de dados, tornando o processo mais seguro e robusto.
-    const { data: newClientId, error } = await supabase
+    const { data: newClient, error: rpcError } = await supabase
         .rpc('create_client', {
             p_full_name: fullName,
             p_email: email,
             p_phone: phone,
         });
 
-    if (error) {
-        // Trata erros que podem vir da função RPC (ex: email duplicado, etc.)
-        if (error.code === '23505') { // unique_violation
+    if (rpcError) {
+        if (rpcError.code === 'P0001') {
+             return { error: rpcError.message };
+        }
+        if (rpcError.code === '23505') { 
             return { error: 'Um cliente com este email já existe.' };
         }
-        console.error("Error creating client via RPC:", error);
-        return { error: `Não foi possível criar o cliente: ${error.message}` };
+        console.error("Error creating client via RPC:", rpcError);
+        return { error: `Não foi possível criar o cliente: ${rpcError.message}` };
     }
     
     revalidatePath('/dashboard/register-client');
     revalidatePath('/dashboard/clients');
-    return { success: true, message: `Cliente "${fullName}" criado com sucesso! ID: ${newClientId}` };
+    return { success: true, message: `Cliente "${fullName}" criado com sucesso!` };
 }
 
 
@@ -195,28 +202,74 @@ export async function getMonthlyPhotoUsage() {
     return { data: formattedData };
 }
 
-export async function resetClientPassword(clientId: string, clientEmail: string) {
-    const supabase = createClient(true); // Use admin client
+export async function resetClientPassword(clientId: string) {
+    const supabase = createClient(true); 
 
-    const { data: { user }, error: userError } = await supabase.from('clients').select('auth_user_id').eq('id', clientId).single();
+    const { data: client, error: clientError } = await supabase.from('clients')
+        .select('auth_user_id, email')
+        .eq('id', clientId)
+        .single();
     
-    if(userError || !user) {
-        return { error: "Cliente não encontrado ou não possui uma conta de autenticação."}
+    if (clientError || !client) {
+        return { error: "Cliente não encontrado." };
     }
     
-    if(!user.auth_user_id) {
-        // Futuramente, podemos implementar o envio de um convite para criar a conta.
-        // Por agora, informamos que não há conta para resetar.
-        return { error: "Este cliente ainda não ativou sua conta e não pode ter a senha redefinida."}
+    if (!client.auth_user_id) {
+        return { error: "Este cliente ainda não ativou uma conta de login e não pode ter a senha redefinida." };
+    }
+    
+    if (!client.email) {
+        return { error: "Cliente não possui um email cadastrado para o envio da redefinição." };
     }
 
-    const { data, error } = await supabase.auth.admin.resetPasswordForEmail(clientEmail);
+    const { error } = await supabase.auth.admin.resetPasswordForEmail(client.email);
 
-    if(error) {
+    if (error) {
         console.error("Admin reset password error:", error);
-        return { error: `Erro do servidor: ${error.message}`};
+        return { error: `Erro do servidor ao redefinir a senha: ${error.message}` };
     }
     
     revalidatePath('/dashboard/clients');
-    return { success: true };
+    return { success: true, message: `Um e-mail para redefinição de senha foi enviado para ${client.email}.` };
+}
+
+const updateClientSchema = z.object({
+  clientId: z.string().uuid(),
+  fullName: z.string().min(1, 'Nome completo é obrigatório.'),
+  email: z.string().email('Email inválido.'),
+  phone: z.string().min(1, 'Telefone é obrigatório.'),
+});
+
+export async function updateClient(formData: FormData) {
+    const supabase = createClient();
+    const data = Object.fromEntries(formData.entries());
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+        return { error: 'Fotógrafo não autenticado. Faça login novamente.' };
+    }
+
+    const parsed = updateClientSchema.safeParse(data);
+    if (!parsed.success) {
+        return { error: 'Dados inválidos.' };
+    }
+
+    const { clientId, fullName, email, phone } = parsed.data;
+
+    const { error } = await supabase
+        .from('clients')
+        .update({ full_name: fullName, email, phone })
+        .eq('id', clientId)
+        .eq('photographer_id', user.id); // Security check
+
+    if (error) {
+        console.error("Error updating client:", error);
+        if (error.code === '23505') { // unique_violation on email
+            return { error: 'Este e-mail já está em uso por outro cliente.' };
+        }
+        return { error: 'Não foi possível atualizar o cliente.' };
+    }
+
+    revalidatePath('/dashboard/clients');
+    return { success: true, message: `Cliente "${fullName}" atualizado com sucesso!` };
 }
