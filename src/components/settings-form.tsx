@@ -36,19 +36,24 @@ export function SettingsForm() {
     const form = useForm<z.infer<typeof settingsSchema>>({
         resolver: zodResolver(settingsSchema),
         defaultValues: {
+            theme: 'light', // Default will be updated on mount
             instagram: "https://instagram.com/seu-perfil",
             whatsapp: "5511999998888",
         },
     });
     
-    // Efeito para sincronizar o formulário com o tema do next-themes APÓS a montagem no cliente.
-    // Isso evita o erro de hidratação.
+    // After the component mounts, we can safely access the theme
+    // and sync it with the form.
     useEffect(() => {
         setMounted(true);
-        if (theme) {
+    }, []);
+
+    // When mounted or theme changes, update the form's value.
+    useEffect(() => {
+        if (mounted && theme) {
             form.setValue('theme', theme);
         }
-    }, [theme, form]);
+    }, [mounted, theme, form]);
     
     function onSubmit(values: z.infer<typeof settingsSchema>) {
         setTheme(values.theme);
@@ -58,7 +63,7 @@ export function SettingsForm() {
         });
     }
     
-    // Não renderiza o seletor de tema até que o cliente esteja montado
+    // To prevent hydration mismatch, we only render the form content on the client.
     if (!mounted) {
         return null;
     }
