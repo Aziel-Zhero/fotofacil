@@ -36,19 +36,16 @@ export function SettingsForm() {
     const form = useForm<z.infer<typeof settingsSchema>>({
         resolver: zodResolver(settingsSchema),
         defaultValues: {
-            theme: 'light', // Default will be updated on mount
+            theme: theme || 'light',
             instagram: "https://instagram.com/seu-perfil",
             whatsapp: "5511999998888",
         },
     });
     
-    // After the component mounts, we can safely access the theme
-    // and sync it with the form.
     useEffect(() => {
         setMounted(true);
     }, []);
-
-    // When mounted or theme changes, update the form's value.
+    
     useEffect(() => {
         if (mounted && theme) {
             form.setValue('theme', theme);
@@ -63,7 +60,6 @@ export function SettingsForm() {
         });
     }
     
-    // To prevent hydration mismatch, we only render the form content on the client.
     if (!mounted) {
         return null;
     }
