@@ -18,7 +18,7 @@ import {
     FormDescription,
   } from '@/components/ui/form';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Instagram, Smartphone, Palette, Sun, Moon, Droplets } from 'lucide-react';
+import { Instagram, Smartphone, Palette, Sun, Moon, Cloud } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const settingsSchema = z.object({
@@ -98,7 +98,7 @@ export function SettingsForm() {
                                         <FormItem>
                                             <RadioGroupItem value="blue" id="blue" className="sr-only" />
                                             <FormLabel htmlFor="blue" className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground [&:has([data-state=checked])]:border-primary cursor-pointer">
-                                                <Droplets className="mb-3 h-6 w-6" />
+                                                <Cloud className="mb-3 h-6 w-6" />
                                                 Azul
                                             </FormLabel>
                                         </FormItem>

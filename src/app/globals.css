@@ -65,34 +65,34 @@
     --ring: 215 20% 65%;
   }
 
-  .theme-blue {
-    --background: 175 50% 95%; /* Ice Blue (#e0f2f1) */
-    --foreground: 175 100% 13%; /* Dark Teal (#004d40) */
+ .theme-blue {
+    --background: 210 40% 96.1%; /* Very light blue */
+    --foreground: 215.4 16.3% 46.9%; /* Muted mid-blue */
 
-    --card: 176 50% 97%; /* Lighter Powder Blue */
-    --card-foreground: 175 100% 13%;
+    --card: 210 40% 98%; /* Even lighter blue for cards */
+    --card-foreground: 215.4 16.3% 46.9%;
 
-    --popover: 175 50% 95%;
-    --popover-foreground: 175 100% 13%;
+    --popover: 210 40% 98%;
+    --popover-foreground: 215.4 16.3% 46.9%;
 
-    --primary: 174 63% 41%; /* Soft Ocean (#26a69a) */
-    --primary-foreground: 0 0% 100%;
+    --primary: 217.2 91.2% 59.8%; /* Vibrant blue */
+    --primary-foreground: 210 40% 98%;
     
-    --secondary: 176 49% 78%; /* Powder Blue (#b2dfdb) */
-    --secondary-foreground: 175 100% 13%;
+    --secondary: 210 40% 91.1%; /* Lighter blue for secondary elements */
+    --secondary-foreground: 217.2 91.2% 59.8%;
 
-    --muted: 175 32% 66%; /* Aqua Mist (#80cbc4) */
-    --muted-foreground: 175 100% 18%;
+    --muted: 210 40% 91.1%;
+    --muted-foreground: 215.4 16.3% 56.9%;
 
-    --accent: 175 100% 24%; /* Deep Lagoon (#00796b) */
-    --accent-foreground: 0 0% 100%;
+    --accent: 217.2 91.2% 64.8%; /* Slightly lighter vibrant blue for accents */
+    --accent-foreground: 210 40% 98%;
 
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
 
-    --border: 180 33% 94%; /* Cool Gray (#eceff1) */
-    --input: 176 49% 88%;
-    --ring: 174 63% 41%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 217.2 91.2% 59.8%;
   }
 }
 
