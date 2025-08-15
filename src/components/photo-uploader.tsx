@@ -11,14 +11,20 @@ import Image from "next/image";
 import { useToast } from "@/hooks/use-toast";
 import { Photo } from "@/app/dashboard/album/[albumId]/page";
 import { ScrollArea } from "./ui/scroll-area";
+import { uploadPhoto } from "@/app/dashboard/album/[albumId]/actions";
 
-interface PhotoUploaderProps {
-    onUploadComplete: (photo: Photo) => void;
+interface UploadFile {
+  file: File;
+  preview: string;
 }
 
-export function PhotoUploader({ onUploadComplete }: PhotoUploaderProps) {
-  const [files, setFiles] = useState<File[]>([]);
-  const [previews, setPreviews] = useState<string[]>([]);
+interface PhotoUploaderProps {
+  onUploadComplete: (photo: Photo) => void;
+  albumId: string;
+}
+
+export function PhotoUploader({ onUploadComplete, albumId }: PhotoUploaderProps) {
+  const [files, setFiles] = useState<UploadFile[]>([]);
   const [progress, setProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -27,81 +33,85 @@ export function PhotoUploader({ onUploadComplete }: PhotoUploaderProps) {
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = e.target.files;
     if (selectedFiles && selectedFiles.length > 0) {
-      const newFiles = Array.from(selectedFiles);
-      setFiles(newFiles);
-
-      const newPreviews: string[] = [];
-      const filePromises = newFiles.map(file => {
-          return new Promise<string>((resolve) => {
-              const reader = new FileReader();
-              reader.onloadend = () => {
-                  resolve(reader.result as string);
-              };
-              reader.readAsDataURL(file);
-          });
+      const newUploadFiles: UploadFile[] = [];
+      const filePromises = Array.from(selectedFiles).map((file) => {
+        return new Promise<void>((resolve) => {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            newUploadFiles.push({ file, preview: reader.result as string });
+            resolve();
+          };
+          reader.readAsDataURL(file);
+        });
       });
 
-      Promise.all(filePromises).then((results) => {
-        setPreviews(results);
-        handleUpload(newFiles, results);
+      Promise.all(filePromises).then(() => {
+        const allFiles = [...files, ...newUploadFiles];
+        setFiles(allFiles);
+        handleUpload(allFiles); 
       });
     }
   };
-  
-  const handleUpload = async (uploadFiles: File[], photoDataUris: string[]) => {
+
+  const handleUpload = async (filesToUpload: UploadFile[]) => {
+    if (isUploading) return;
     setIsUploading(true);
     setProgress(0);
 
-    const totalFiles = uploadFiles.length;
+    const totalFiles = filesToUpload.length;
     let filesUploaded = 0;
 
     for (let i = 0; i < totalFiles; i++) {
-        const file = uploadFiles[i];
-        const photoDataUri = photoDataUris[i];
-        
-        // Simulate individual file upload
-        await new Promise(resolve => setTimeout(resolve, 500)); 
+      const { file, preview } = filesToUpload[i];
+      
+      const formData = new FormData();
+      formData.append('albumId', albumId);
+      formData.append('photoName', file.name);
+      formData.append('photoDataUri', preview);
 
-        const newPhoto: Photo = {
-            id: Date.now() + i,
-            url: photoDataUri,
-            dataAiHint: 'nova foto',
-            name: file.name
-        };
-        onUploadComplete(newPhoto);
+      const result = await uploadPhoto(formData);
 
-        filesUploaded++;
-        setProgress((filesUploaded / totalFiles) * 100);
+      if (result.error || !result.data) {
+        toast({
+            title: `Erro ao enviar ${file.name}`,
+            description: result.error,
+            variant: "destructive"
+        });
+      } else {
+         onUploadComplete(result.data);
+      }
+
+      filesUploaded++;
+      setProgress((filesUploaded / totalFiles) * 100);
     }
-
 
     toast({
       title: "Upload Concluído!",
-      description: `${totalFiles} foto(s) foram enviadas com sucesso.`,
+      description: `${totalFiles} foto(s) foram processadas.`,
     });
 
-    // Reset after a short delay to show completion
     setTimeout(() => {
       setIsUploading(false);
       setFiles([]);
-      setPreviews([]);
       setProgress(0);
-      if(fileInputRef.current) {
-          fileInputRef.current.value = "";
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
       }
     }, 1500);
-
   };
 
-  const handleRemoveFiles = () => {
+  const handleRemoveFile = (indexToRemove: number) => {
+    setFiles(files.filter((_, index) => index !== indexToRemove));
+  };
+  
+  const handleClearAll = () => {
     setFiles([]);
-    setPreviews([]);
     setProgress(0);
     setIsUploading(false);
     if(fileInputRef.current) {
         fileInputRef.current.value = "";
     }
-  };
+  }
 
   return (
     <Card>
@@ -110,7 +120,7 @@ export function PhotoUploader({ onUploadComplete }: PhotoUploaderProps) {
           className="flex justify-center items-center w-full h-48 border-2 border-dashed rounded-lg cursor-pointer hover:bg-muted/50 transition-colors"
           onClick={() => fileInputRef.current?.click()}
         >
-          {previews.length === 0 && !isUploading && (
+          {files.length === 0 && !isUploading && (
             <div className="text-center">
               <UploadCloud className="mx-auto h-12 w-12 text-muted-foreground" />
               <p className="mt-2 text-sm text-muted-foreground">
@@ -119,14 +129,33 @@ export function PhotoUploader({ onUploadComplete }: PhotoUploaderProps) {
               <p className="text-xs text-muted-foreground">PNG, JPG, WEBP (múltiplos arquivos permitidos)</p>
             </div>
           )}
-          {previews.length > 0 && (
-            <ScrollArea className="h-full w-full">
-                <div className="flex flex-wrap justify-center gap-2 p-4">
-                    {previews.map((src, index) => (
-                        <Image key={index} src={src} alt={`Pré-visualização ${index}`} width={100} height={100} className="object-contain max-h-full rounded-md border" />
+          {files.length > 0 && !isUploading && (
+             <ScrollArea className="h-full w-full p-4">
+                <div className="flex flex-wrap justify-center gap-4">
+                    {files.map(({ preview }, index) => (
+                      <div key={index} className="relative group">
+                          <Image src={preview} alt={`Pré-visualização ${index}`} width={100} height={100} className="object-cover h-24 w-24 rounded-md border" />
+                          <Button
+                            variant="destructive"
+                            size="icon"
+                            className="absolute -top-2 -right-2 h-6 w-6 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleRemoveFile(index);
+                            }}
+                           >
+                            <X className="h-4 w-4" />
+                           </Button>
+                      </div>
                     ))}
                 </div>
             </ScrollArea>
+          )}
+           {isUploading && (
+              <div className="flex flex-col items-center justify-center gap-2 text-sm text-muted-foreground">
+                  <Loader2 className="h-8 w-8 animate-spin"/>
+                  <span>Enviando {files.length} fotos...</span>
+              </div>
           )}
           <Input
             ref={fileInputRef}
@@ -141,28 +170,16 @@ export function PhotoUploader({ onUploadComplete }: PhotoUploaderProps) {
 
         {files.length > 0 && (
           <div className="mt-4">
-            <div className="flex items-center justify-between text-sm">
-                <div className="flex items-center gap-2 truncate">
-                    <FileImage className="h-5 w-5 flex-shrink-0 text-muted-foreground" />
-                    <span className="truncate font-medium">{files.length} arquivo(s) selecionado(s)</span>
+              {isUploading ? (
+                <>
+                  <Progress value={progress} className="w-full" />
+                   <p className="text-center text-sm text-muted-foreground mt-2">Enviando... {Math.round(progress)}%</p>
+                </>
+              ) : (
+                <div className="flex items-center justify-end">
+                    <Button variant="ghost" onClick={handleClearAll}>Limpar tudo</Button>
                 </div>
-                {!isUploading && progress === 0 && (
-                  <Button variant="ghost" size="icon" className="h-6 w-6" onClick={handleRemoveFiles}>
-                      <X className="h-4 w-4" />
-                  </Button>
-                )}
-            </div>
-
-            {isUploading && (
-              <>
-                <Progress value={progress} className="w-full mt-2" />
-                <div className="flex items-center justify-center gap-2 mt-2 text-sm text-muted-foreground">
-                    <Loader2 className="h-4 w-4 animate-spin"/>
-                    <span>Enviando... {Math.round(progress)}%</span>
-                </div>
-              </>
-            )}
-            
+              )}
           </div>
         )}
       </CardContent>

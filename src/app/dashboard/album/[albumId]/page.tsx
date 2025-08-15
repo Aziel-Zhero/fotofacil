@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { PhotoUploader } from "@/components/photo-uploader";
 import { PhotoGrid } from "@/components/photo-grid";
 import { ArrowLeft, Grid3x3, ImageIcon, Rows, Square, Send, Settings, Trash2, Edit } from "lucide-react";
@@ -15,7 +15,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { deleteAlbum, updateAlbum } from '../../actions';
 import { EditAlbumDialog } from '@/components/edit-album-dialog';
-
+import { getAlbumDetails, getPhotosForAlbum } from './actions';
 
 export type ViewMode = 'grid' | 'masonry' | 'carousel';
 
@@ -26,7 +26,6 @@ export interface Photo {
   name: string;
 }
 
-// Em um app real, isso viria do DB
 export interface AlbumData {
     id: string;
     name: string;
@@ -35,12 +34,44 @@ export interface AlbumData {
 
 
 export default function AlbumDetailPage({ params }: { params: { albumId: string } }) {
-  const { albumId } = params;
-  const albumName = "Casamento na Toscana"; // Mock data
+  const albumId = params.albumId; // Extract albumId once
+  const [album, setAlbum] = useState<AlbumData | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
-  const [photos, setPhotos] = useState<Photo[]>([]); // Começa vazio
+  const [photos, setPhotos] = useState<Photo[]>([]);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+
+  useEffect(() => {
+    const fetchAlbumData = async () => {
+      setLoading(true);
+      const [albumResult, photosResult] = await Promise.all([
+        getAlbumDetails(albumId),
+        getPhotosForAlbum(albumId)
+      ]);
+
+      if (albumResult.error || !albumResult.data) {
+        toast({ title: "Erro", description: albumResult.error || "Álbum não encontrado", variant: "destructive" });
+      } else {
+        setAlbum(albumResult.data);
+      }
+
+      if (photosResult.error || !photosResult.data) {
+        toast({ title: "Erro ao buscar fotos", description: photosResult.error, variant: "destructive" });
+      } else {
+        setPhotos(photosResult.data.map(p => ({
+          id: p.id,
+          url: p.url,
+          name: p.name || 'foto',
+          dataAiHint: p.tags?.join(' ') || ''
+        })));
+      }
+      setLoading(false);
+    };
+
+    fetchAlbumData();
+  }, [albumId, toast]);
+
 
   const addPhoto = (newPhoto: Photo) => {
     setPhotos(prevPhotos => [newPhoto, ...prevPhotos]);
@@ -71,6 +102,14 @@ export default function AlbumDetailPage({ params }: { params: { albumId: string 
   }
 
   const renderGallery = () => {
+    if (loading) {
+       return (
+            <div className="flex flex-col items-center justify-center h-64 text-center border-2 border-dashed rounded-lg bg-secondary/30 border-border">
+                <ImageIcon className="h-12 w-12 text-muted-foreground animate-pulse mb-4" />
+                <h2 className="text-xl font-semibold text-textDark">Carregando fotos...</h2>
+            </div>
+        )
+    }
     if (photos.length === 0) {
         return (
              <div className="flex flex-col items-center justify-center h-64 text-center border-2 border-dashed rounded-lg bg-secondary/30 border-border">
@@ -104,12 +143,12 @@ export default function AlbumDetailPage({ params }: { params: { albumId: string 
             </Button>
             <div className="flex justify-between items-center">
                 <div>
-                    <h1 className="text-3xl font-bold font-headline text-white">Gerenciar Álbum: {albumName}</h1>
+                    <h1 className="text-3xl font-bold font-headline text-white">Gerenciar Álbum: {album?.name || "Carregando..."}</h1>
                     <p className="text-muted-foreground">Faça upload de novas fotos e veja a galeria atual.</p>
                 </div>
                  <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="outline">
+                      <Button variant="outline" disabled={!album}>
                         <Settings className="mr-2 h-4 w-4" />
                         Ações
                       </Button>
@@ -150,16 +189,18 @@ export default function AlbumDetailPage({ params }: { params: { albumId: string 
             </div>
         </div>
         
-        <EditAlbumDialog
-            isOpen={isEditDialogOpen}
-            setIsOpen={setIsEditDialogOpen}
-            album={{ id: albumId, name: albumName, selection_limit: 50 }} // Mock data
-        />
+        {album && (
+            <EditAlbumDialog
+                isOpen={isEditDialogOpen}
+                setIsOpen={setIsEditDialogOpen}
+                album={album}
+            />
+        )}
         
         <div className="space-y-12">
             <div>
                 <h2 className="text-xl font-bold font-headline mb-4 text-white">Enviar Fotos</h2>
-                <PhotoUploader onUploadComplete={addPhoto} />
+                <PhotoUploader onUploadComplete={addPhoto} albumId={albumId} />
             </div>
             
             {photos.length > 0 && (
