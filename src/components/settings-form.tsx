@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -23,7 +23,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useTheme } from 'next-themes';
 
 const settingsSchema = z.object({
-    theme: z.string().default('light'),
+    theme: z.string(),
     instagram: z.string().optional(),
     whatsapp: z.string().optional(),
 });
@@ -31,19 +31,23 @@ const settingsSchema = z.object({
 export function SettingsForm() {
     const { toast } = useToast();
     const { theme, setTheme } = useTheme();
+    const [mounted, setMounted] = useState(false);
 
     const form = useForm<z.infer<typeof settingsSchema>>({
         resolver: zodResolver(settingsSchema),
         defaultValues: {
-            theme: theme,
             instagram: "https://instagram.com/seu-perfil",
             whatsapp: "5511999998888",
         },
     });
     
-    // Sincronizar o formulário com o tema atual no carregamento
+    // Efeito para sincronizar o formulário com o tema do next-themes APÓS a montagem no cliente.
+    // Isso evita o erro de hidratação.
     useEffect(() => {
-        form.setValue('theme', theme || 'light');
+        setMounted(true);
+        if (theme) {
+            form.setValue('theme', theme);
+        }
     }, [theme, form]);
     
     function onSubmit(values: z.infer<typeof settingsSchema>) {
@@ -52,6 +56,11 @@ export function SettingsForm() {
             title: "Configurações Salvas",
             description: "Suas preferências foram atualizadas com sucesso.",
         });
+    }
+    
+    // Não renderiza o seletor de tema até que o cliente esteja montado
+    if (!mounted) {
+        return null;
     }
 
     return (
