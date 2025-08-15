@@ -4,7 +4,7 @@
 import { useState } from 'react';
 import { PhotoUploader } from "@/components/photo-uploader";
 import { PhotoGrid } from "@/components/photo-grid";
-import { ArrowLeft, Grid3x3, ImageIcon, Rows, Square, Send, Settings, Trash2 } from "lucide-react";
+import { ArrowLeft, Grid3x3, ImageIcon, Rows, Square, Send, Settings, Trash2, Edit } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { PhotoCarousel } from '@/components/photo-carousel';
@@ -13,8 +13,9 @@ import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { deleteAlbum } from '../../actions';
-import { useRouter } from 'next/navigation';
+import { deleteAlbum, updateAlbum } from '../../actions';
+import { EditAlbumDialog } from '@/components/edit-album-dialog';
+
 
 export type ViewMode = 'grid' | 'masonry' | 'carousel';
 
@@ -34,11 +35,12 @@ export interface AlbumData {
 
 
 export default function AlbumDetailPage({ params }: { params: { albumId: string } }) {
+  const { albumId } = params;
   const albumName = "Casamento na Toscana"; // Mock data
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [photos, setPhotos] = useState<Photo[]>([]); // Começa vazio
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const { toast } = useToast();
-  const router = useRouter();
 
   const addPhoto = (newPhoto: Photo) => {
     setPhotos(prevPhotos => [newPhoto, ...prevPhotos]);
@@ -52,7 +54,7 @@ export default function AlbumDetailPage({ params }: { params: { albumId: string 
   }
 
   const handleDeleteAlbum = async () => {
-    const result = await deleteAlbum(params.albumId);
+    const result = await deleteAlbum(albumId);
     if (result?.error) {
       toast({
         title: "Erro ao excluir álbum",
@@ -107,12 +109,14 @@ export default function AlbumDetailPage({ params }: { params: { albumId: string 
                 </div>
                  <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="outline" size="icon">
-                        <Settings className="h-4 w-4" />
+                      <Button variant="outline">
+                        <Settings className="mr-2 h-4 w-4" />
+                        Ações
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem>
+                      <DropdownMenuItem onSelect={() => setIsEditDialogOpen(true)}>
+                        <Edit className="mr-2 h-4 w-4" />
                         Editar Detalhes
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
@@ -145,6 +149,12 @@ export default function AlbumDetailPage({ params }: { params: { albumId: string 
                   </DropdownMenu>
             </div>
         </div>
+        
+        <EditAlbumDialog
+            isOpen={isEditDialogOpen}
+            setIsOpen={setIsEditDialogOpen}
+            album={{ id: albumId, name: albumName, selection_limit: 50 }} // Mock data
+        />
         
         <div className="space-y-12">
             <div>
