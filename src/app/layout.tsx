@@ -3,6 +3,7 @@ import { Toaster } from "@/components/ui/toaster"
 import { Belleza, Alegreya } from 'next/font/google';
 import { cn } from '@/lib/utils';
 import './globals.css';
+import { ThemeProvider } from '@/components/theme-provider';
 
 const fontHeadline = Belleza({
   subsets: ['latin'],
@@ -33,8 +34,10 @@ export default function RootLayout({
           fontHeadline.variable,
           fontBody.variable
       )}>
-        {children}
-        <Toaster />
+        <ThemeProvider>
+            {children}
+            <Toaster />
+        </ThemeProvider>
       </body>
     </html>
   );

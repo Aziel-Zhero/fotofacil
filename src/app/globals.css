@@ -36,17 +36,17 @@
   }
 
   .dark {
-    --background: 222 47% 11%;
+    --background: 222 83% 4%;
     --foreground: 210 40% 98%;
     
-    --card: 222 47% 14%;
+    --card: 222 47% 11%;
     --card-foreground: 210 40% 98%;
     
-    --popover: 222 47% 11%;
+    --popover: 222 83% 4%;
     --popover-foreground: 210 40% 98%;
     
-    --primary: 210 40% 98%;
-    --primary-foreground: 222 47% 11%;
+    --primary: 217 91% 60%;
+    --primary-foreground: 210 40% 98%;
     
     --secondary: 217 33% 17%;
     --secondary-foreground: 210 40% 98%;
@@ -62,37 +62,37 @@
     
     --border: 217 33% 17%;
     --input: 217 33% 22%;
-    --ring: 215 20% 65%;
+    --ring: 217 91% 60%;
   }
 
  .theme-blue {
-    --background: 210 40% 96.1%; /* Very light blue */
-    --foreground: 215.4 16.3% 46.9%; /* Muted mid-blue */
+    --background: 206 100% 97%; /* Very light, almost white blue */
+    --foreground: 215 28% 17%; /* Dark blue-gray for text */
 
-    --card: 210 40% 98%; /* Even lighter blue for cards */
-    --card-foreground: 215.4 16.3% 46.9%;
+    --card: 210 100% 100%; /* White cards */
+    --card-foreground: 215 28% 17%;
 
-    --popover: 210 40% 98%;
-    --popover-foreground: 215.4 16.3% 46.9%;
+    --popover: 210 100% 100%;
+    --popover-foreground: 215 28% 17%;
 
-    --primary: 217.2 91.2% 59.8%; /* Vibrant blue */
+    --primary: 212 92% 59%; /* Bright, clear blue */
     --primary-foreground: 210 40% 98%;
     
-    --secondary: 210 40% 91.1%; /* Lighter blue for secondary elements */
-    --secondary-foreground: 217.2 91.2% 59.8%;
+    --secondary: 210 100% 92%; /* Light blue for secondary elements */
+    --secondary-foreground: 212 92% 59%;
 
-    --muted: 210 40% 91.1%;
-    --muted-foreground: 215.4 16.3% 56.9%;
+    --muted: 210 100% 92%;
+    --muted-foreground: 215 20% 65%; /* Muted blue-gray */
 
-    --accent: 217.2 91.2% 64.8%; /* Slightly lighter vibrant blue for accents */
+    --accent: 212 92% 65%; /* Slightly lighter accent blue */
     --accent-foreground: 210 40% 98%;
 
-    --destructive: 0 84.2% 60.2%;
+    --destructive: 0 84% 60%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 217.2 91.2% 59.8%;
+    --border: 210 100% 88%; /* Light blue border */
+    --input: 210 100% 90%;
+    --ring: 212 92% 59%;
   }
 }
 

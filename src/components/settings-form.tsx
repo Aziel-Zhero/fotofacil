@@ -20,6 +20,7 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Instagram, Smartphone, Palette, Sun, Moon, Cloud } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useTheme } from 'next-themes';
 
 const settingsSchema = z.object({
     theme: z.string().default('light'),
@@ -29,36 +30,23 @@ const settingsSchema = z.object({
 
 export function SettingsForm() {
     const { toast } = useToast();
+    const { theme, setTheme, systemTheme } = useTheme();
+
     const form = useForm<z.infer<typeof settingsSchema>>({
         resolver: zodResolver(settingsSchema),
         defaultValues: {
-            theme: 'light',
             instagram: "https://instagram.com/seu-perfil",
             whatsapp: "5511999998888",
         },
     });
-
+    
     // Sincronizar o formulário com o tema atual no carregamento
     useEffect(() => {
-        const currentTheme = document.documentElement.classList.contains('dark') ? 'dark' : 
-                             document.documentElement.classList.contains('theme-blue') ? 'blue' : 'light';
-        form.setValue('theme', currentTheme);
-    }, []);
+        form.setValue('theme', theme === 'system' ? systemTheme || 'light' : theme || 'light');
+    }, [theme, systemTheme, form]);
     
-    const theme = form.watch('theme');
-
-    useEffect(() => {
-        const root = window.document.documentElement;
-        root.classList.remove('dark', 'theme-blue');
-        if (theme === 'dark') {
-            root.classList.add('dark');
-        } else if (theme === 'blue') {
-            root.classList.add('theme-blue');
-        }
-    }, [theme]);
-
     function onSubmit(values: z.infer<typeof settingsSchema>) {
-        console.log(values);
+        setTheme(values.theme);
         toast({
             title: "Configurações Salvas",
             description: "Suas preferências foram atualizadas com sucesso.",
