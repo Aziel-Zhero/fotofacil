@@ -3,6 +3,7 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
+import { redirect } from 'next/navigation';
 import { z } from 'zod';
 
 const createClientSchema = z.object({
@@ -315,4 +316,77 @@ export async function updateClientPassword(formData: FormData) {
   }
 
   return { success: true, message: 'Senha do cliente atualizada com sucesso!' };
+}
+
+const updateAlbumSchema = z.object({
+  albumId: z.string().uuid(),
+  name: z.string().min(1, 'O nome do álbum é obrigatório.'),
+  selection_limit: z.coerce.number().min(1, 'O limite de seleção deve ser de pelo menos 1.'),
+});
+
+export async function updateAlbum(formData: FormData) {
+  const supabase = createClient();
+  const data = Object.fromEntries(formData.entries());
+  
+  const parsed = updateAlbumSchema.safeParse(data);
+  if (!parsed.success) {
+    return { error: 'Dados inválidos.' };
+  }
+
+  const { albumId, ...updateData } = parsed.data;
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return { error: 'Fotógrafo não autenticado.' };
+  }
+
+  const { error } = await supabase
+    .from('albums')
+    .update(updateData)
+    .eq('id', albumId)
+    .eq('photographer_id', user.id); // Security check
+
+  if (error) {
+    console.error("Error updating album:", error);
+    return { error: `Não foi possível atualizar o álbum: ${error.message}` };
+  }
+
+  revalidatePath(`/dashboard/album/${albumId}`);
+  return { success: true, message: 'Álbum atualizado com sucesso!' };
+}
+
+export async function deleteAlbum(albumId: string) {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: 'Fotógrafo não autenticado.' };
+  }
+  
+  // Primeiro, verifique se o álbum pertence ao fotógrafo logado.
+  const { data: album, error: fetchError } = await supabase
+    .from('albums')
+    .select('id')
+    .eq('id', albumId)
+    .eq('photographer_id', user.id)
+    .single();
+
+  if (fetchError || !album) {
+    return { error: 'Álbum não encontrado ou você não tem permissão para excluí-lo.' };
+  }
+
+  // Se a verificação for bem-sucedida, prossiga com a exclusão.
+  // O ON DELETE CASCADE no banco cuidará da exclusão das fotos associadas.
+  const { error: deleteError } = await supabase
+    .from('albums')
+    .delete()
+    .eq('id', albumId);
+
+  if (deleteError) {
+    console.error("Error deleting album:", deleteError);
+    return { error: `Não foi possível excluir o álbum: ${deleteError.message}` };
+  }
+  
+  revalidatePath('/dashboard');
+  redirect('/dashboard');
 }
