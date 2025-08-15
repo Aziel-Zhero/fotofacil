@@ -40,6 +40,7 @@ export default async function ReceivedPage() {
 
   if (albumIds.length > 0) {
       // Etapa 2: Buscar todas as fotos selecionadas que pertencem a esses álbuns.
+      // Correção: A sintaxe para filtrar em uma junção é diferente.
       const { data: selections, error: selectionsError } = await supabase
         .from('album_selections')
         .select(`
@@ -48,13 +49,12 @@ export default async function ReceivedPage() {
                 url,
                 name,
                 tags,
-                album_id,
                 albums (
                     name
                 )
             )
         `)
-        .in('photos.album_id', albumIds);
+        .filter('photos.album_id', 'in', `(${albumIds.join(',')})`);
       
       if (selectionsError) {
         console.error('Error fetching received photos:', selectionsError);
