@@ -30,11 +30,12 @@ const settingsSchema = z.object({
 
 export function SettingsForm() {
     const { toast } = useToast();
-    const { theme, setTheme, systemTheme } = useTheme();
+    const { theme, setTheme } = useTheme();
 
     const form = useForm<z.infer<typeof settingsSchema>>({
         resolver: zodResolver(settingsSchema),
         defaultValues: {
+            theme: theme,
             instagram: "https://instagram.com/seu-perfil",
             whatsapp: "5511999998888",
         },
@@ -42,8 +43,8 @@ export function SettingsForm() {
     
     // Sincronizar o formulário com o tema atual no carregamento
     useEffect(() => {
-        form.setValue('theme', theme === 'system' ? systemTheme || 'light' : theme || 'light');
-    }, [theme, systemTheme, form]);
+        form.setValue('theme', theme || 'light');
+    }, [theme, form]);
     
     function onSubmit(values: z.infer<typeof settingsSchema>) {
         setTheme(values.theme);

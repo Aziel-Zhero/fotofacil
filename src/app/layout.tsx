@@ -34,7 +34,12 @@ export default function RootLayout({
           fontHeadline.variable,
           fontBody.variable
       )}>
-        <ThemeProvider>
+        <ThemeProvider
+            attribute="class"
+            defaultTheme="light"
+            enableSystem={false}
+            disableTransitionOnChange
+          >
             {children}
             <Toaster />
         </ThemeProvider>
