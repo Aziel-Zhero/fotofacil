@@ -4,11 +4,13 @@
 import { useState } from 'react';
 import { PhotoUploader } from "@/components/photo-uploader";
 import { PhotoGrid } from "@/components/photo-grid";
-import { ArrowLeft, Grid3x3, ImageIcon, Rows, Square } from "lucide-react";
+import { ArrowLeft, Grid3x3, ImageIcon, Rows, Square, Send } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { PhotoCarousel } from '@/components/photo-carousel';
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { useToast } from '@/hooks/use-toast';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 export type ViewMode = 'grid' | 'masonry' | 'carousel';
 
@@ -22,18 +24,19 @@ export interface Photo {
 export default function AlbumDetailPage({ params }: { params: { albumId: string } }) {
   const albumName = "Casamento na Toscana"; // Mock data
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
-  const [photos, setPhotos] = useState<Photo[]>(
-    Array.from({ length: 12 }, (_, i) => ({
-        id: i + 1,
-        url: `https://placehold.co/400x${i % 2 === 0 ? '400' : '600'}.png`, // Mix aspect ratios
-        dataAiHint: 'casal de noivos',
-        name: `Foto_${String(i + 1).padStart(3, '0')}.jpg`
-    }))
-  );
+  const [photos, setPhotos] = useState<Photo[]>([]); // Começa vazio
+  const { toast } = useToast();
 
   const addPhoto = (newPhoto: Photo) => {
     setPhotos(prevPhotos => [newPhoto, ...prevPhotos]);
   };
+
+  const handleNotifyClient = () => {
+    toast({
+        title: "Cliente Notificado!",
+        description: "Um e-mail foi enviado ao cliente avisando que o álbum está pronto para seleção."
+    });
+  }
 
   const renderGallery = () => {
     switch (viewMode) {
@@ -65,9 +68,24 @@ export default function AlbumDetailPage({ params }: { params: { albumId: string 
                 <h2 className="text-xl font-bold font-headline mb-4 text-white">Enviar Fotos</h2>
                 <PhotoUploader onUploadComplete={addPhoto} />
             </div>
+            
+            {photos.length > 0 && (
+                 <Alert>
+                    <Send className="h-4 w-4" />
+                    <AlertTitle className="font-headline">Tudo pronto para o cliente?</AlertTitle>
+                    <AlertDescription className="flex justify-between items-center">
+                       Quando terminar de enviar as fotos, notifique seu cliente para que ele possa começar a seleção.
+                       <Button onClick={handleNotifyClient}>
+                         <Send className="mr-2 h-4 w-4" />
+                         Notificar Cliente para Seleção
+                       </Button>
+                    </AlertDescription>
+                </Alert>
+            )}
+
             <div>
                 <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-xl font-bold font-headline text-white">Galeria</h2>
+                    <h2 className="text-xl font-bold font-headline text-white">Galeria ({photos.length} fotos)</h2>
                     <ToggleGroup type="single" value={viewMode} onValueChange={(value: ViewMode) => value && setViewMode(value)} aria-label="Modo de Visualização">
                         <ToggleGroupItem value="grid" aria-label="Grade">
                             <Grid3x3 className="h-4 w-4" />
