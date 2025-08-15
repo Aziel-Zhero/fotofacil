@@ -143,21 +143,62 @@ export async function getClientsForPhotographer() {
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
-        return { error: 'Usuário não autenticado' };
+        return { error: 'Usuário não autenticado', clients: [] };
     }
     
     // Busca na tabela 'clients' os clientes que pertencem ao fotógrafo logado.
     const { data: clients, error } = await supabase
         .from('clients')
-        .select('id, full_name, email')
-        .eq('photographer_id', user.id);
+        .select('id, full_name, email, phone')
+        .eq('photographer_id', user.id)
+        .order('created_at', { ascending: false });
 
     if (error) {
         console.error("Erro ao buscar clientes:", error);
-        return { error: 'Não foi possível carregar a lista de clientes.' };
+        return { error: 'Não foi possível carregar a lista de clientes.', clients: [] };
     }
 
-    return { clients };
+    return { clients: clients || [] };
+}
+
+const updateClientSchema = z.object({
+    clientId: z.string().uuid(),
+    fullName: z.string().min(1, 'Nome completo é obrigatório.'),
+    email: z.string().email('Email inválido.'),
+    phone: z.string().min(1, 'Telefone é obrigatório.'),
+});
+
+export async function updateClient(formData: FormData) {
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+        return { error: 'Fotógrafo não autenticado.' };
+    }
+
+    const data = Object.fromEntries(formData.entries());
+    const parsed = updateClientSchema.safeParse(data);
+
+    if (!parsed.success) {
+        return { error: 'Dados inválidos.' };
+    }
+
+    const { clientId, fullName, email, phone } = parsed.data;
+
+    // Update na tabela 'clients', garantindo que o fotógrafo só edite seus próprios clientes
+    const { error } = await supabase
+        .from('clients')
+        .update({ full_name: fullName, email, phone })
+        .eq('id', clientId)
+        .eq('photographer_id', user.id);
+
+    if (error) {
+        console.error("Erro ao atualizar cliente:", error);
+        return { error: 'Não foi possível atualizar o cliente.' };
+    }
+
+    revalidatePath('/dashboard/clients');
+    return { success: true, message: 'Cliente atualizado com sucesso!' };
 }
 
 
