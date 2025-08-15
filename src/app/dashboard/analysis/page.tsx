@@ -36,7 +36,7 @@ export default async function AnalysisPage() {
       </div>
       <DashboardStats 
         totalAlbums={albumCount ?? 0}
-        totalPhotos={photoCount ?? 0}
+        totalPhotos={photoCount}
         planName={planDetails.name}
         photoLimit={planDetails.limit}
       />
