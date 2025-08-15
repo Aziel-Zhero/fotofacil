@@ -102,27 +102,34 @@ export async function login(formData: FormData) {
     
     const userRole = user.user_metadata?.role;
 
-    if (userRole === 'photographer') {
-        const { data: profile, error: profileError } = await supabase
-            .from('photographers')
-            .select('id')
-            .eq('id', user.id)
-            .single();
-        
-        if (profileError || !profile) {
-          await supabase.auth.signOut();
-          let errorMessage = 'Não foi possível encontrar seu perfil de fotógrafo. Contate o suporte.';
-          if (profileError) {
-            console.error("Profile fetch error:", profileError);
-            errorMessage = `Erro ao buscar perfil (${profileError.code}). Contate o suporte.`;
-          }
-           return { error: errorMessage };
-        }
-        redirect('/dashboard');
-    } else {
+    if (userRole !== 'photographer') {
+        // Se não for fotógrafo (cliente ou outro), desloga e mostra erro.
         await supabase.auth.signOut();
         return { error: 'O acesso do cliente é feito através de um link seguro fornecido pelo fotógrafo.' };
     }
+
+    // A partir daqui, sabemos que é um fotógrafo.
+    // Verifica se o perfil de fotógrafo existe.
+    const { data: profile, error: profileError } = await supabase
+        .from('photographers')
+        .select('id')
+        .eq('id', user.id)
+        .single();
+    
+    if (profileError || !profile) {
+      // Se não encontrar o perfil, desloga e mostra erro.
+      await supabase.auth.signOut();
+      let errorMessage = 'Não foi possível encontrar seu perfil de fotógrafo. Contate o suporte.';
+      if (profileError) {
+        console.error("Profile fetch error:", profileError);
+        errorMessage = `Erro ao buscar perfil (${profileError.code}). Contate o suporte.`;
+      }
+       return { error: errorMessage };
+    }
+
+    // Se tudo deu certo, redireciona para o dashboard.
+    // Esta é a única chamada de `redirect` na função.
+    redirect('/dashboard');
 }
 
 const forgotPasswordSchema = z.object({
