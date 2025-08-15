@@ -8,6 +8,7 @@ import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { Switch } from '@/components/ui/switch';
 
 import {
     Form,
@@ -18,13 +19,18 @@ import {
     FormDescription,
   } from '@/components/ui/form';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Instagram, Smartphone, Palette, Sun, Moon, Droplets } from 'lucide-react';
+import { Instagram, Smartphone, Palette, Sun, Moon, Cloud, Bell, Mail, Send } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { Separator } from './ui/separator';
 
 const settingsSchema = z.object({
     theme: z.string().default('light'),
     instagram: z.string().optional(),
     whatsapp: z.string().optional(),
+    notificationsEnabled: z.boolean().default(true),
+    emailNotifications: z.boolean().default(true),
+    whatsappNotifications: z.boolean().default(false),
+    telegramNotifications: z.boolean().default(false),
 });
 
 export function SettingsForm() {
@@ -35,6 +41,10 @@ export function SettingsForm() {
             theme: 'light',
             instagram: "https://instagram.com/seu-perfil",
             whatsapp: "5511999998888",
+            notificationsEnabled: true,
+            emailNotifications: true,
+            whatsappNotifications: false,
+            telegramNotifications: false,
         },
     });
 
@@ -64,6 +74,8 @@ export function SettingsForm() {
             description: "Suas preferências foram atualizadas com sucesso.",
         });
     }
+
+    const notificationsEnabled = form.watch('notificationsEnabled');
 
     return (
         <Form {...form}>
@@ -98,7 +110,7 @@ export function SettingsForm() {
                                         <FormItem>
                                             <RadioGroupItem value="blue" id="blue" className="sr-only" />
                                             <FormLabel htmlFor="blue" className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground [&:has([data-state=checked])]:border-primary cursor-pointer">
-                                                <Droplets className="mb-3 h-6 w-6" />
+                                                <Cloud className="mb-3 h-6 w-6" />
                                                 Azul
                                             </FormLabel>
                                         </FormItem>
@@ -113,6 +125,64 @@ export function SettingsForm() {
                                 </FormItem>
                             )}
                         />
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="font-headline">Notificações</CardTitle>
+                        <CardDescription>Escolha como e quando você quer ser notificado.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                        <FormField
+                            control={form.control}
+                            name="notificationsEnabled"
+                            render={({ field }) => (
+                                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                                    <div className="space-y-0.5">
+                                        <FormLabel className="text-base flex items-center gap-2"><Bell />Ativar Notificações</FormLabel>
+                                        <FormDescription>Receba alertas sobre atividades importantes na sua conta.</FormDescription>
+                                    </div>
+                                    <FormControl>
+                                        <Switch checked={field.value} onCheckedChange={field.onChange} />
+                                    </FormControl>
+                                </FormItem>
+                            )}
+                        />
+                        <Separator />
+                         <div className={`space-y-4 ${!notificationsEnabled ? 'opacity-50 pointer-events-none' : ''}`}>
+                            <h3 className="mb-4 text-base font-medium text-muted-foreground">Canais de Notificação</h3>
+                             <FormField
+                                control={form.control}
+                                name="emailNotifications"
+                                render={({ field }) => (
+                                <FormItem className="flex flex-row items-center justify-between">
+                                    <FormLabel className="flex items-center gap-3"><Mail /> Email</FormLabel>
+                                    <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} disabled={!notificationsEnabled}/></FormControl>
+                                </FormItem>
+                                )}
+                            />
+                             <FormField
+                                control={form.control}
+                                name="whatsappNotifications"
+                                render={({ field }) => (
+                                <FormItem className="flex flex-row items-center justify-between">
+                                     <FormLabel className="flex items-center gap-3"><Smartphone /> WhatsApp</FormLabel>
+                                     <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} disabled={!notificationsEnabled}/></FormControl>
+                                </FormItem>
+                                )}
+                            />
+                             <FormField
+                                control={form.control}
+                                name="telegramNotifications"
+                                render={({ field }) => (
+                                <FormItem className="flex flex-row items-center justify-between">
+                                    <FormLabel className="flex items-center gap-3"><Send /> Telegram</FormLabel>
+                                    <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} disabled={!notificationsEnabled}/></FormControl>
+                                </FormItem>
+                                )}
+                            />
+                        </div>
                     </CardContent>
                 </Card>
 

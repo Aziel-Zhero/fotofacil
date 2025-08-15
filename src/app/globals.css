@@ -36,63 +36,63 @@
   }
 
   .dark {
-    --background: 222 47% 11%;
-    --foreground: 210 40% 98%;
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
     
-    --card: 222 47% 14%;
-    --card-foreground: 210 40% 98%;
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
     
-    --popover: 222 47% 11%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
     
-    --primary: 210 40% 98%;
-    --primary-foreground: 222 47% 11%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 240 5.9% 10%;
     
-    --secondary: 217 33% 17%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
     
-    --muted: 217 33% 17%;
-    --muted-foreground: 215 20% 65%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
     
-    --accent: 217 33% 25%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
     
-    --destructive: 0 63% 31%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
     
-    --border: 217 33% 17%;
-    --input: 217 33% 22%;
-    --ring: 215 20% 65%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 240 4.9% 83.9%;
   }
 
   .theme-blue {
-    --background: 175 50% 95%; /* Ice Blue (#e0f2f1) */
-    --foreground: 175 100% 13%; /* Dark Teal (#004d40) */
-
-    --card: 176 50% 97%; /* Lighter Powder Blue */
-    --card-foreground: 175 100% 13%;
-
-    --popover: 175 50% 95%;
-    --popover-foreground: 175 100% 13%;
-
-    --primary: 174 63% 41%; /* Soft Ocean (#26a69a) */
-    --primary-foreground: 0 0% 100%;
+    --background: 210 40% 96.1%;
+    --foreground: 222.2 84% 4.9%;
     
-    --secondary: 176 49% 78%; /* Powder Blue (#b2dfdb) */
-    --secondary-foreground: 175 100% 13%;
+    --card: 210 40% 96.1%;
+    --card-foreground: 222.2 84% 4.9%;
 
-    --muted: 175 32% 66%; /* Aqua Mist (#80cbc4) */
-    --muted-foreground: 175 100% 18%;
+    --popover: 210 40% 96.1%;
+    --popover-foreground: 222.2 84% 4.9%;
 
-    --accent: 175 100% 24%; /* Deep Lagoon (#00796b) */
-    --accent-foreground: 0 0% 100%;
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+    
+    --secondary: 210 40% 91.2%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
 
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
+    --muted: 210 40% 91.2%;
+    --muted-foreground: 215.4 16.3% 46.9%;
 
-    --border: 180 33% 94%; /* Cool Gray (#eceff1) */
-    --input: 176 49% 88%;
-    --ring: 174 63% 41%;
+    --accent: 210 40% 91.2%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
   }
 }
 
