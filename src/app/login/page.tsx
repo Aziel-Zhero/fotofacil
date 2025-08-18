@@ -12,7 +12,7 @@ export default function LoginPage({
       title="Acesse sua Conta"
       description="Insira suas credenciais para acessar sua conta de fotógrafo ou cliente."
     >
-      <LoginForm message={searchParams.message} error={searchParams.error}/>
+      <LoginForm searchParams={searchParams} />
     </AuthLayout>
   );
 }

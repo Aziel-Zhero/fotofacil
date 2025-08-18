@@ -27,11 +27,11 @@ const formSchema = z.object({
   password: z.string().min(1, { message: 'Senha é obrigatória.' }),
 });
 
-export function LoginForm({ message, error }: { message?: string, error?: string }) {
+export function LoginForm({ searchParams }: { searchParams: { message?: string, error?: string } }) {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formError, setFormError] = useState<string | null>(error || null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(message || null);
+  const [formError, setFormError] = useState<string | null>(searchParams?.error || null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(searchParams?.message || null);
 
 
   const form = useForm<z.infer<typeof formSchema>>({
