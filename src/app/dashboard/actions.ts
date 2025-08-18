@@ -14,8 +14,6 @@ const createClientSchema = z.object({
 export async function createClientByUser(formData: FormData) {
     const supabase = createClient();
     
-    // A chamada RPC já valida se o chamador é um fotógrafo autenticado.
-    // A linha abaixo ainda é útil para garantir que a sessão existe antes de prosseguir.
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
         return { error: 'Fotógrafo não autenticado. Faça login novamente.' };
@@ -33,11 +31,10 @@ export async function createClientByUser(formData: FormData) {
     }
 
     const { fullName, email, phone } = parsed.data;
-
-    // **AQUI ESTÁ A MUDANÇA PRINCIPAL**
-    // Chamando a função RPC 'create_client' que você definiu no Supabase.
-    // Isso move a lógica de inserção para o banco de dados, tornando o processo mais seguro e robusto.
-    const { data: newClientId, error } = await supabase
+    
+    // Chamando a função RPC para criar o cliente.
+    // O `createClient(true)` usa a service_role key para ter permissão.
+    const { data: newClient, error } = await createClient(true)
         .rpc('create_client', {
             p_full_name: fullName,
             p_email: email,
@@ -45,8 +42,7 @@ export async function createClientByUser(formData: FormData) {
         });
 
     if (error) {
-        // Trata erros que podem vir da função RPC (ex: email duplicado, etc.)
-        if (error.code === '23505') { // unique_violation
+        if (error.code === '23505') { 
             return { error: 'Um cliente com este email já existe.' };
         }
         console.error("Error creating client via RPC:", error);
@@ -54,7 +50,7 @@ export async function createClientByUser(formData: FormData) {
     }
     
     revalidatePath('/dashboard/register-client');
-    return { success: true, message: `Cliente "${fullName}" criado com sucesso! ID: ${newClientId}` };
+    return { success: true, message: `Cliente "${fullName}" criado com sucesso!` };
 }
 
 
@@ -85,7 +81,7 @@ export async function createAlbum(formData: FormData) {
   
   const { 
     albumName, 
-    clientUserId, // Este é o ID da tabela 'clients'
+    clientUserId, 
     pixKey,
     expirationDate, 
     maxPhotos, 
@@ -98,20 +94,18 @@ export async function createAlbum(formData: FormData) {
   if (!photographerUser) {
     return { error: 'Fotógrafo não autenticado.' };
   }
-
-  // Verificar se o cliente selecionado realmente existe e pertence a este fotógrafo.
+  
   const { data: clientData, error: clientError } = await supabase
     .from('clients')
     .select('id')
     .eq('id', clientUserId)
-    .eq('photographer_id', photographerUser.id) // Garante segurança
+    .eq('photographer_id', photographerUser.id) 
     .single();
 
   if (clientError || !clientData) {
       return { error: `O cliente selecionado não foi encontrado ou não pertence a você.` };
   }
   
-  // Inserir o novo álbum.
   const { error: albumError } = await supabase.from('albums').insert({
     photographer_id: photographerUser.id,
     client_id: clientUserId,
@@ -137,7 +131,6 @@ export async function createAlbum(formData: FormData) {
 }
 
 
-// Função para buscar os clientes de um fotógrafo (usado no diálogo)
 export async function getClientsForPhotographer() {
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
@@ -146,7 +139,6 @@ export async function getClientsForPhotographer() {
         return { error: 'Usuário não autenticado', clients: [] };
     }
     
-    // Busca na tabela 'clients' os clientes que pertencem ao fotógrafo logado.
     const { data: clients, error } = await supabase
         .from('clients')
         .select('id, full_name, email, phone')
@@ -185,7 +177,6 @@ export async function updateClient(formData: FormData) {
 
     const { clientId, fullName, email, phone } = parsed.data;
 
-    // Update na tabela 'clients', garantindo que o fotógrafo só edite seus próprios clientes
     const { error } = await supabase
         .from('clients')
         .update({ full_name: fullName, email, phone })
@@ -201,8 +192,6 @@ export async function updateClient(formData: FormData) {
     return { success: true, message: 'Cliente atualizado com sucesso!' };
 }
 
-
-// Função para buscar os dados de uso de fotos dos últimos 6 meses.
 export async function getMonthlyPhotoUsage() {
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
@@ -224,9 +213,8 @@ export async function getMonthlyPhotoUsage() {
         return { error: "Não foi possível carregar os dados do gráfico.", data: [] };
     }
 
-    // Formata os dados para o gráfico
     const monthNames = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
-    const formattedData = data.map(item => ({
+    const formattedData = (data || []).map(item => ({
         month: monthNames[new Date(item.month).getMonth()],
         photos: item.photo_count
     }));
