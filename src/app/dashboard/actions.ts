@@ -342,7 +342,7 @@ export async function getAlbumsForDashboard() {
         }));
         return { albums: formattedAlbums, error: null };
     }
-
+    
     // Se a VIEW falhou (provavelmente porque não existe), registra o erro e tenta o método antigo.
     console.warn("Could not fetch from 'albums_with_counts' view. Falling back to unoptimized query. Please run the SQL migration script. Error: ", viewError.message);
 
