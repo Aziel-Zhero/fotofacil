@@ -16,7 +16,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { CardContent, CardFooter } from '@/components/ui/card';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Loader2 } from 'lucide-react';
 import { login } from '@/app/auth/actions';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -26,20 +26,13 @@ const formSchema = z.object({
   password: z.string().min(1, { message: 'Senha é obrigatória.' }),
 });
 
-export function LoginForm({ searchParams }: { searchParams: { [key: string]: string | string[] | undefined } }) {
+export function LoginForm({ error, message }: { error: string | null, message: string | null }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formError, setFormError] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  // O estado inicial agora é definido pelas props recebidas do Server Component.
+  const [formError, setFormError] = useState<string | null>(error);
+  const [successMessage, setSuccessMessage] = useState<string | null>(message);
 
-  useEffect(() => {
-    if (searchParams?.error && typeof searchParams.error === 'string') {
-      setFormError(searchParams.error);
-    }
-    if (searchParams?.message && typeof searchParams.message === 'string') {
-      setSuccessMessage(searchParams.message);
-    }
-  }, [searchParams]);
-
+  // O useEffect para ler searchParams foi removido, pois não é mais necessário.
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
