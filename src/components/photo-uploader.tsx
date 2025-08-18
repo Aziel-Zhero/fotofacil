@@ -54,7 +54,7 @@ export function PhotoUploader({ albumId }: PhotoUploaderProps) {
         handleUpload();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [files, isUploading]);
+  }, [files]);
 
 
   const handleUpload = async () => {
@@ -65,50 +65,35 @@ export function PhotoUploader({ albumId }: PhotoUploaderProps) {
     
     setIsUploading(true);
     setProgress(0);
-    setTotalFilesUploaded(0);
 
     const formData = new FormData();
     filesToUpload.forEach(f => formData.append('photos', f.file));
+    
+    // Marca arquivos como 'uploading'
+    setFiles(prev => prev.map(f => f.status === 'pending' ? {...f, status: 'uploading'} : f));
 
     const result = await uploadPhotos(albumId, formData);
-
-    // Simulação de progresso e status
-    // Em um app real, isso viria de um endpoint de progresso ou WebSocket
-    let uploadedCount = 0;
-    const totalCount = filesToUpload.length;
-
-    const updateFileStatus = (file: File, status: UploadStatus, error?: string) => {
-        setFiles(prev => prev.map(f => f.file === file ? {...f, status, error} : f));
-    }
     
-    for (const f of filesToUpload) {
-        updateFileStatus(f.file, 'uploading');
-    }
-
     if (result.error) {
         toast({ title: "Erro no Upload", description: result.error, variant: "destructive" });
-        filesToUpload.forEach(f => updateFileStatus(f.file, 'error', result.error));
+        setFiles(prev => prev.map(f => f.status === 'uploading' ? {...f, status: 'error', error: result.error} : f));
         setIsUploading(false);
         return;
     }
 
     // Sucesso
-    for (const f of filesToUpload) {
-        await new Promise(res => setTimeout(res, 200)); // Simula delay de upload por arquivo
-        uploadedCount++;
-        updateFileStatus(f.file, 'success');
-        setProgress((uploadedCount / totalCount) * 100);
-    }
-    
-    setTotalFilesUploaded(uploadedCount);
-    toast({ title: "Upload Concluído!", description: `${uploadedCount} fotos foram enviadas.`, variant: 'default' });
+    setFiles(prev => prev.map(f => f.status === 'uploading' ? {...f, status: 'success'} : f));
+    setTotalFilesUploaded(prev => prev + filesToUpload.length);
+    toast({ title: "Upload Concluído!", description: `${filesToUpload.length} fotos foram enviadas.`, variant: 'default' });
 
     setIsUploading(false);
+    setProgress(100);
   };
 
   const clearCompleted = () => {
     setFiles(prev => prev.filter(f => f.status !== 'success' && f.status !== 'error'));
     setTotalFilesUploaded(0);
+    setProgress(0);
   }
 
   const FileStatusIcon = ({ status }: { status: UploadStatus }) => {
@@ -120,6 +105,10 @@ export function PhotoUploader({ albumId }: PhotoUploaderProps) {
     }
   }
   
+  const filesPending = files.filter(f => f.status === 'pending' || f.status === 'uploading').length;
+  const filesDone = files.filter(f => f.status === 'success' || f.status === 'error').length;
+  const successfullyUploadedCount = files.filter(f => f.status === 'success').length;
+
   return (
     <Card>
       <CardHeader>
@@ -147,7 +136,7 @@ export function PhotoUploader({ albumId }: PhotoUploaderProps) {
         {files.length > 0 && (
           <div className="space-y-4">
             <h3 className="font-semibold text-textDark">Fila de Upload ({files.length})</h3>
-            {isUploading && <Progress value={progress} className="w-full" />}
+            {(isUploading || progress > 0) && <Progress value={isUploading ? (successfullyUploadedCount / files.length) * 100 : progress} className="w-full" />}
             <ScrollArea className="h-60 w-full pr-4">
               <div className="space-y-3">
                 {files.map((upload, index) => (
@@ -170,12 +159,12 @@ export function PhotoUploader({ albumId }: PhotoUploaderProps) {
             </ScrollArea>
             
             <div className="flex justify-end gap-2">
-                {totalFilesUploaded > 0 && !isUploading && (
-                     <Button variant="secondary" onClick={clearCompleted}>Limpar Concluídos</Button>
+                {filesDone > 0 && !isUploading && (
+                     <Button variant="secondary" onClick={clearCompleted}>Limpar Lista</Button>
                 )}
-                {totalFilesUploaded > 0 && !isUploading && (
+                {successfullyUploadedCount > 0 && !isUploading && (
                     <Button onClick={() => document.getElementById('gallery-section')?.scrollIntoView({ behavior: 'smooth' })}>
-                        Próximo Passo: Notificar Cliente
+                        Ir para a Galeria
                         <ArrowRight className="ml-2 h-4 w-4"/>
                     </Button>
                 )}
@@ -187,5 +176,3 @@ export function PhotoUploader({ albumId }: PhotoUploaderProps) {
     </Card>
   );
 }
-
-    
