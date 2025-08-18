@@ -31,7 +31,7 @@ interface Album {
 }
 
 export default function AlbumDetailPage({ params }: { params: { albumId: string } }) {
-  const { albumId } = params;
+  const albumId = params.albumId;
   const { toast } = useToast();
   
   const [album, setAlbum] = useState<Album | null>(null);
