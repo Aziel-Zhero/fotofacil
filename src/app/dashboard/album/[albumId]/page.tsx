@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import { useParams } from 'next/navigation';
 import { PhotoUploader } from "@/components/photo-uploader";
 import { PhotoGrid } from "@/components/photo-grid";
 import { ArrowLeft, Grid3x3, Rows, Square, Send, Loader2 } from "lucide-react";
@@ -30,8 +31,9 @@ interface Album {
     // Adicione outras propriedades do álbum que você precisar
 }
 
-export default function AlbumDetailPage({ params }: { params: { albumId: string } }) {
-  const albumId = params.albumId;
+export default function AlbumDetailPage() {
+  const params = useParams();
+  const albumId = Array.isArray(params.albumId) ? params.albumId[0] : params.albumId;
   const { toast } = useToast();
   
   const [album, setAlbum] = useState<Album | null>(null);
@@ -42,6 +44,7 @@ export default function AlbumDetailPage({ params }: { params: { albumId: string 
 
   useEffect(() => {
     async function fetchDetails() {
+        if (!albumId) return;
         setIsLoading(true);
         const result = await getAlbumDetails(albumId);
         if (result.error) {
@@ -56,6 +59,7 @@ export default function AlbumDetailPage({ params }: { params: { albumId: string 
   }, [albumId, toast]);
 
   const handleNotifyClient = async () => {
+    if (!albumId) return;
     setIsNotifying(true);
     const result = await notifyClient(albumId);
     if(result.error) {
@@ -123,7 +127,7 @@ export default function AlbumDetailPage({ params }: { params: { albumId: string 
         </div>
         
         <div className="space-y-12">
-            {album?.status === 'Pendente' && (
+            {album?.status === 'Pendente' && albumId && (
                  <div>
                     <h2 className="text-xl font-bold font-headline mb-4 text-textDark">Enviar Fotos</h2>
                     <PhotoUploader albumId={albumId} />
