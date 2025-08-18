@@ -2,7 +2,7 @@
 "use client"
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, User, Settings, LogOut, Aperture, Crown, HelpCircle, Star, FolderArchive, BarChart, Bell, UserPlus, Users } from 'lucide-react';
+import { Home, User, Settings, LogOut, Aperture, Crown, HelpCircle, Star, FolderArchive, BarChart, Bell, UserPlus, Users, Send, Inbox, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -20,10 +20,11 @@ import { type User as SupabaseUser } from "@supabase/supabase-js";
 
 const navItems = [
   { href: '/dashboard', label: 'Painel', icon: Home },
+  { href: '/dashboard/sent', label: 'Enviados', icon: Send },
+  { href: '/dashboard/received', label: 'Recebidos', icon: Inbox },
+  { href: '/dashboard/delivered', label: 'Entregues', icon: CheckCircle },
   { href: '/dashboard/clients', label: 'Clientes', icon: Users },
   { href: '/dashboard/analysis', label: 'Análise', icon: BarChart },
-  { href: '/dashboard/delivered', label: 'Entregues', icon: FolderArchive },
-  { href: '/dashboard/subscription', label: 'Assinatura', icon: Star },
 ];
 
 const profileNavItems = [
@@ -126,6 +127,12 @@ export function DashboardHeader() {
                         </DropdownMenuGroup>
                         <DropdownMenuSeparator />
                          <div className="md:hidden">
+                             <DropdownMenuItem asChild>
+                                <Link href="/dashboard/subscription">
+                                    <Star className="mr-2 h-4 w-4" />
+                                    <span>Assinatura</span>
+                                </Link>
+                             </DropdownMenuItem>
                             {navItems.map(item => (
                                 <DropdownMenuItem key={item.href} asChild>
                                     <Link href={item.href}>

@@ -1,9 +1,10 @@
 
 import { AlbumCard } from '@/components/album-card';
+import { CheckCircle } from 'lucide-react';
 
 const mockDeliveredAlbums = [
-  { id: '2', name: 'Retratos Corporativos Q2', photoCount: 50, status: 'Entregue', client: 'Innovate Corp' },
-  { id: '3', name: 'Sessão Newborn - Baby Leo', photoCount: 80, status: 'Entregue', client: 'Maria da Silva' },
+  { id: '10', name: 'Aniversário de 1 Ano - Laura', photoCount: 150, status: 'Entregue', client: 'Família Souza' },
+  { id: '11', name: 'Ensaio Gestante - Carla', photoCount: 75, status: 'Entregue', client: 'Carla e Pedro' },
 ];
 
 export default function DashboardDeliveredPage() {
@@ -11,7 +12,7 @@ export default function DashboardDeliveredPage() {
     <div className="container mx-auto py-8">
       <div className="mb-8">
         <h1 className="text-3xl font-bold font-headline">Álbuns Entregues</h1>
-        <p className="text-muted-foreground">Aqui está um histórico de todos os seus projetos finalizados e entregues.</p>
+        <p className="text-muted-foreground">Aqui está o histórico de todos os seus projetos finalizados e disponíveis para download pelo cliente.</p>
       </div>
 
       {mockDeliveredAlbums.length > 0 ? (
@@ -22,9 +23,10 @@ export default function DashboardDeliveredPage() {
         </div>
       ) : (
         <div className="flex flex-col items-center justify-center h-64 text-center border-2 border-dashed rounded-lg">
-            <h2 className="text-xl font-semibold">Nenhum álbum entregue ainda</h2>
+            <CheckCircle className="h-12 w-12 text-muted-foreground mb-4" />
+            <h2 className="text-xl font-semibold">Nenhum álbum foi entregue ainda</h2>
             <p className="text-muted-foreground mt-2">
-                Quando um álbum tiver sua seleção finalizada pelo cliente, ele aparecerá aqui.
+                Quando você enviar as fotos editadas para um cliente, o álbum aparecerá aqui.
             </p>
         </div>
       )}
