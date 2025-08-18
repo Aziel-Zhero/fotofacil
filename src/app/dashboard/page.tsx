@@ -6,6 +6,8 @@ import { PlusCircle, GalleryVertical } from 'lucide-react';
 import { ProfileCompletionDialog } from '@/components/profile-completion-dialog';
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
+import { getAlbumsForDashboard } from './actions';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 export default async function DashboardPage() {
   const supabase = createClient();
@@ -16,39 +18,20 @@ export default async function DashboardPage() {
     return redirect('/login');
   }
 
-  // Fetch albums first
-  const { data: albums, error: albumsError } = await supabase
-    .from('albums')
-    .select('*, clients(full_name)') 
-    .eq('photographer_id', user.id)
-    .order('created_at', { ascending: false });
+  // Chamar a nova ação otimizada para buscar todos os dados de uma vez
+  const { albums: formattedAlbums, error } = await getAlbumsForDashboard();
 
-  if (albumsError) {
-    console.error("Error fetching albums:", albumsError);
-    // You could return an error message to the user here
-    return <div>Error loading albums.</div>;
-  }
-  
-  // Função para contar as fotos por álbum
-  const getPhotoCount = async (albumId: string) => {
-    const { count, error } = await supabase.from('photos').select('*', { count: 'exact', head: true }).eq('album_id', albumId);
-    if (error) return 0;
-    return count;
+  if (error) {
+    return (
+        <div className="container mx-auto py-8">
+            <Alert variant="destructive">
+                <AlertTitle>Erro ao Carregar Álbuns</AlertTitle>
+                <AlertDescription>{error}</AlertDescription>
+            </Alert>
+        </div>
+    )
   }
 
-  // Formata os álbuns com a contagem de fotos
-  const formattedAlbums = await Promise.all(albums?.map(async (album: any) => ({
-    id: album.id,
-    name: album.name,
-    photoCount: await getPhotoCount(album.id),
-    maxPhotos: album.selection_limit,
-    status: album.status,
-    // Correção: o objeto agora é `clients` em minúsculo, conforme o Supabase retorna
-    client: album.clients?.full_name || 'Cliente não vinculado',
-    createdAt: album.created_at,
-    clientUserId: album.client_id || null, 
-  })) || []);
-  
   const isProfileComplete = user.user_metadata?.companyName && user.user_metadata?.companyName !== 'N/A';
 
   return (

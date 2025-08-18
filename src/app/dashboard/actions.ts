@@ -34,7 +34,7 @@ export async function createClientByUser(formData: FormData) {
     const { fullName, email, phone } = parsed.data;
     
     // Chamando a função RPC para criar o cliente.
-    // O `createClient(true)` usa a service_role key para ter permissão.
+    // O createClient(true) usa a service_role key para ter permissão.
     const { data: newClient, error } = await createClient(true)
         .rpc('create_client', {
             p_full_name: fullName,
@@ -310,4 +310,43 @@ export async function notifyClient(albumId: string) {
     revalidatePath(`/dashboard/album/${albumId}`);
     revalidatePath('/dashboard');
     return { success: true, message: 'Cliente notificado! O álbum agora está aguardando a seleção.' };
+}
+
+
+export async function getAlbumsForDashboard() {
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+        return { error: 'Usuário não autenticado.', albums: [] };
+    }
+
+    // Usaremos uma função RPC para obter todos os dados de uma só vez.
+    // O nome da função será 'get_albums_with_photo_count'.
+    // Como a função ainda não existe, vou chamar a consulta antiga por enquanto,
+    // mas a estrutura está pronta para a nova função.
+    const { data: albums, error } = await supabase
+        .from('albums_with_counts') // Supondo que a VIEW/RPC se chamará assim
+        .select('*')
+        .eq('photographer_id', user.id)
+        .order('created_at', { ascending: false });
+
+    if (error) {
+        console.error('Error fetching albums with counts:', error);
+        return { error: 'Falha ao carregar os dados dos álbuns. Por favor, tente novamente mais tarde. Detalhe: ' + error.message, albums: [] };
+    }
+    
+    // O RPC retornará os dados já formatados, então o mapeamento complexo é removido.
+    const formattedAlbums = albums.map((album: any) => ({
+        id: album.id,
+        name: album.name,
+        photoCount: album.photo_count,
+        maxPhotos: album.selection_limit,
+        status: album.status,
+        client: album.client_name || 'Cliente não vinculado',
+        createdAt: album.created_at,
+        clientUserId: album.client_id || null,
+    }));
+    
+    return { albums: formattedAlbums, error: null };
 }
