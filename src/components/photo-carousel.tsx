@@ -37,7 +37,7 @@ export function PhotoCarousel({ photos }: PhotoCarouselProps) {
                                 <CardContent className="flex aspect-square items-center justify-center p-0 relative">
                                     <Image
                                         src={photo.url}
-                                        alt={photo.name}
+                                        alt={photo.name || `Foto ${photo.id}`}
                                         fill
                                         className="object-contain"
                                         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"

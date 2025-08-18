@@ -18,7 +18,7 @@ export function PhotoGrid({ photos, viewMode }: PhotoGridProps) {
         {photos.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-64 text-center">
             <p className="text-muted-foreground">Nenhuma foto enviada ainda.</p>
-            <p className="text-sm text-muted-foreground">Use o uploader para adicionar fotos a este álbum.</p>
+            <p className="text-sm text-muted-foreground">Use o uploader acima para adicionar fotos a este álbum.</p>
           </div>
         ) : (
           <TooltipProvider delayDuration={200}>
@@ -33,7 +33,7 @@ export function PhotoGrid({ photos, viewMode }: PhotoGridProps) {
                             <div className="relative group mb-4 break-inside-avoid">
                                 <Image
                                 src={photo.url}
-                                alt={`Foto ${String(index + 1).padStart(3, '0')}`}
+                                alt={photo.name || `Foto ${photo.id}`}
                                 width={400}
                                 height={viewMode === 'grid' ? 400 : 600}
                                 className={cn(
@@ -41,7 +41,6 @@ export function PhotoGrid({ photos, viewMode }: PhotoGridProps) {
                                     viewMode === 'grid' && "aspect-square",
                                     "transition-transform duration-200 group-hover:scale-105"
                                 )}
-                                data-ai-hint={photo.dataAiHint}
                                 />
                                 <Badge className="absolute top-2 left-2">
                                     {String(index + 1).padStart(3, '0')}

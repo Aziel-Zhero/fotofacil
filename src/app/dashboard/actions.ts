@@ -4,6 +4,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
+import { Photo } from './album/[albumId]/page';
 
 const createClientSchema = z.object({
   fullName: z.string().min(1, 'Nome completo é obrigatório.'),
@@ -110,7 +111,7 @@ export async function createAlbum(formData: FormData) {
     photographer_id: photographerUser.id,
     client_id: clientUserId,
     name: albumName,
-    status: 'Aguardando Seleção',
+    status: 'Pendente', // Novo status inicial
     selection_limit: maxPhotos,
     extra_photo_cost: extraPhotoCost,
     courtesy_photos: giftPhotos,
@@ -220,4 +221,93 @@ export async function getMonthlyPhotoUsage() {
     }));
 
     return { data: formattedData };
+}
+
+
+export async function getAlbumDetails(albumId: string) {
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { error: 'Não autenticado' };
+    
+    const { data: album, error } = await supabase
+        .from('albums')
+        .select('*, clients (full_name)')
+        .eq('id', albumId)
+        .eq('photographer_id', user.id)
+        .single();
+        
+    if (error) return { error: 'Álbum não encontrado ou sem permissão.' };
+    
+    const { data: photos, error: photosError } = await supabase
+        .from('photos')
+        .select('*')
+        .eq('album_id', albumId)
+        .order('created_at', { ascending: false });
+
+    if (photosError) return { error: 'Erro ao buscar fotos.' };
+
+    return { album, photos: (photos as Photo[]) || [] };
+}
+
+
+export async function uploadPhotos(albumId: string, files: FormData) {
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { error: 'Não autenticado' };
+
+    const photoFiles = files.getAll('photos') as File[];
+    if (!photoFiles.length) return { error: 'Nenhum arquivo enviado.' };
+
+    const photoEntries = [];
+
+    for (const file of photoFiles) {
+        const filePath = `${user.id}/${albumId}/${file.name}`;
+        const { error: uploadError } = await supabase.storage.from('album-photos').upload(filePath, file);
+
+        if (uploadError) {
+            console.error('Erro no upload:', uploadError);
+            return { error: `Falha ao enviar ${file.name}.` };
+        }
+
+        const { data: { publicUrl } } = supabase.storage.from('album-photos').getPublicUrl(filePath);
+        
+        photoEntries.push({
+            album_id: albumId,
+            photographer_id: user.id,
+            url: publicUrl,
+            name: file.name
+        });
+    }
+
+    const { error: insertError } = await supabase.from('photos').insert(photoEntries);
+
+    if (insertError) {
+        console.error('Erro ao inserir no BD:', insertError);
+        return { error: 'Falha ao salvar fotos no banco de dados.' };
+    }
+
+    revalidatePath(`/dashboard/album/${albumId}`);
+    return { success: true };
+}
+
+
+export async function notifyClient(albumId: string) {
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { error: 'Não autenticado' };
+
+    const { error } = await supabase
+        .from('albums')
+        .update({ status: 'Aguardando Seleção' })
+        .eq('id', albumId)
+        .eq('photographer_id', user.id);
+
+    if (error) {
+        console.error('Erro ao notificar cliente:', error);
+        return { error: 'Não foi possível atualizar o status do álbum.' };
+    }
+
+    revalidatePath(`/dashboard/album/${albumId}`);
+    revalidatePath('/dashboard');
+    return { success: true, message: 'Cliente notificado! O álbum agora está aguardando a seleção.' };
 }
