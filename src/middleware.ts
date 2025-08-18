@@ -3,6 +3,7 @@ import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
 export async function middleware(request: NextRequest) {
+  // Criar uma resposta inicial que pode ser modificada
   let response = NextResponse.next({
     request: {
       headers: request.headers,
@@ -18,21 +19,11 @@ export async function middleware(request: NextRequest) {
           return request.cookies.get(name)?.value;
         },
         set(name: string, value: string, options: CookieOptions) {
-          request.cookies.set({ name, value, ...options });
-          response = NextResponse.next({
-            request: {
-              headers: request.headers,
-            },
-          });
+          // Modifica os cookies na resposta existente, em vez de criar uma nova.
           response.cookies.set({ name, value, ...options });
         },
         remove(name: string, options: CookieOptions) {
-          request.cookies.set({ name, value: '', ...options });
-          response = NextResponse.next({
-            request: {
-              headers: request.headers,
-            },
-          });
+          // Modifica os cookies na resposta existente para remover.
           response.cookies.set({ name, value: '', ...options });
         },
       },
@@ -83,10 +74,13 @@ export async function middleware(request: NextRequest) {
   } else { // Se não estiver logado
     // E tentando acessar uma rota protegida
     if (!isPublicRoute) {
-      return NextResponse.redirect(new URL('/login?error=Você precisa estar logado para acessar esta página.', request.url));
+      const redirectUrl = new URL('/login', request.url)
+      redirectUrl.searchParams.set('error', 'Você precisa estar logado para acessar esta página.')
+      return NextResponse.redirect(redirectUrl);
     }
   }
 
+  // Retorna a resposta (possivelmente com cookies atualizados)
   return response;
 }
 
