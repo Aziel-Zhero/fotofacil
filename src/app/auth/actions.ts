@@ -120,7 +120,7 @@ export async function login(formData: FormData) {
                 console.error("Profile fetch error:", profileError);
                 errorMessage = `Erro ao buscar perfil (${profileError.code}). Contate o suporte.`;
             }
-            return { error: errorMessage };
+            return { error: errorMessage }; // ESTA LINHA FOI ADICIONADA
         }
         redirect('/dashboard');
     }
