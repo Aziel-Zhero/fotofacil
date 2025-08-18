@@ -115,13 +115,6 @@ export default function AlbumDetailPage() {
                         </h1>
                         <p className="text-muted-foreground">Faça upload de novas fotos, veja a galeria e envie para o cliente.</p>
                     </div>
-                    {photos.length > 0 && album?.status === 'Pendente' && (
-                        <Button onClick={handleNotifyClient} disabled={isNotifying}>
-                            {isNotifying && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
-                            <Send className="mr-2 h-4 w-4" />
-                            Enviar para Cliente
-                        </Button>
-                    )}
                 </div>
             )}
         </div>
@@ -129,28 +122,36 @@ export default function AlbumDetailPage() {
         <div className="space-y-12">
             {album?.status === 'Pendente' && albumId && (
                  <div>
-                    <h2 className="text-xl font-bold font-headline mb-4 text-textDark">Enviar Fotos</h2>
                     <PhotoUploader albumId={albumId} />
                 </div>
             )}
            
-            <div>
+            <div id="gallery-section">
                 <div className="flex justify-between items-center mb-4">
                     <div className="flex items-center gap-4">
                         <h2 className="text-xl font-bold font-headline text-textDark">Galeria</h2>
                         {album?.status && <Badge>{album.status}</Badge>}
                     </div>
-                    <ToggleGroup type="single" value={viewMode} onValueChange={(value: ViewMode) => value && setViewMode(value)} aria-label="Modo de Visualização">
-                        <ToggleGroupItem value="grid" aria-label="Grade">
-                            <Grid3x3 className="h-4 w-4" />
-                        </ToggleGroupItem>
-                        <ToggleGroupItem value="masonry" aria-label="Masonry">
-                            <Rows className="h-4 w-4" />
-                        </ToggleGroupItem>
-                        <ToggleGroupItem value="carousel" aria-label="Carrossel">
-                            <Square className="h-4 w-4" />
-                        </ToggleGroupItem>
-                    </ToggleGroup>
+                    <div className="flex items-center gap-4">
+                        {photos.length > 0 && album?.status === 'Pendente' && (
+                            <Button onClick={handleNotifyClient} disabled={isNotifying}>
+                                {isNotifying && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
+                                <Send className="mr-2 h-4 w-4" />
+                                Enviar para Cliente
+                            </Button>
+                        )}
+                        <ToggleGroup type="single" value={viewMode} onValueChange={(value: ViewMode) => value && setViewMode(value)} aria-label="Modo de Visualização">
+                            <ToggleGroupItem value="grid" aria-label="Grade">
+                                <Grid3x3 className="h-4 w-4" />
+                            </ToggleGroupItem>
+                            <ToggleGroupItem value="masonry" aria-label="Masonry">
+                                <Rows className="h-4 w-4" />
+                            </ToggleGroupItem>
+                            <ToggleGroupItem value="carousel" aria-label="Carrossel">
+                                <Square className="h-4 w-4" />
+                            </ToggleGroupItem>
+                        </ToggleGroup>
+                    </div>
                  </div>
                 {renderGallery()}
             </div>
@@ -158,3 +159,5 @@ export default function AlbumDetailPage() {
     </div>
   );
 }
+
+    
