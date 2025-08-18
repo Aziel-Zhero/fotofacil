@@ -8,6 +8,7 @@ import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { Switch } from '@/components/ui/switch';
 
 import {
     Form,
@@ -18,14 +19,19 @@ import {
     FormDescription,
   } from '@/components/ui/form';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Instagram, Smartphone, Palette, Sun, Moon, Cloud } from 'lucide-react';
+import { Instagram, Smartphone, Palette, Sun, Moon, Cloud, Bell } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useTheme } from 'next-themes';
+import { Separator } from './ui/separator';
 
 const settingsSchema = z.object({
     theme: z.string(),
     instagram: z.string().optional(),
     whatsapp: z.string().optional(),
+    notifyOnAlbumShare: z.boolean().default(true),
+    notifyOnSelectionComplete: z.boolean().default(true),
+    notifyOnAlbumDelivered: z.boolean().default(true),
+    notifyOnExpiration: z.boolean().default(true),
 });
 
 export function SettingsForm() {
@@ -39,6 +45,10 @@ export function SettingsForm() {
             theme: theme || 'light',
             instagram: "https://instagram.com/seu-perfil",
             whatsapp: "5511999998888",
+            notifyOnAlbumShare: true,
+            notifyOnSelectionComplete: true,
+            notifyOnAlbumDelivered: false,
+            notifyOnExpiration: true,
         },
     });
     
@@ -54,6 +64,7 @@ export function SettingsForm() {
     
     function onSubmit(values: z.infer<typeof settingsSchema>) {
         setTheme(values.theme);
+        console.log(values);
         toast({
             title: "Configurações Salvas",
             description: "Suas preferências foram atualizadas com sucesso.",
@@ -109,6 +120,75 @@ export function SettingsForm() {
                                             </FormLabel>
                                         </FormItem>
                                     </RadioGroup>
+                                </FormItem>
+                            )}
+                        />
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="font-headline">Notificações</CardTitle>
+                        <CardDescription>Escolha como você deseja ser notificado por e-mail e na plataforma.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                        <FormField
+                            control={form.control}
+                            name="notifyOnAlbumShare"
+                            render={({ field }) => (
+                                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                                <div className="space-y-0.5">
+                                    <FormLabel className="text-base">Novo Álbum Compartilhado</FormLabel>
+                                    <FormDescription>Receber um alerta quando um cliente visualizar um álbum pela primeira vez.</FormDescription>
+                                </div>
+                                <FormControl>
+                                    <Switch checked={field.value} onCheckedChange={field.onChange} />
+                                </FormControl>
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="notifyOnSelectionComplete"
+                            render={({ field }) => (
+                                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                                <div className="space-y-0.5">
+                                    <FormLabel className="text-base">Seleção do Cliente Finalizada</FormLabel>
+                                    <FormDescription>Receber um alerta quando um cliente enviar a seleção de fotos.</FormDescription>
+                                </div>
+                                <FormControl>
+                                    <Switch checked={field.value} onCheckedChange={field.onChange} />
+                                </FormControl>
+                                </FormItem>
+                            )}
+                        />
+                         <FormField
+                            control={form.control}
+                            name="notifyOnAlbumDelivered"
+                            render={({ field }) => (
+                                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                                <div className="space-y-0.5">
+                                    <FormLabel className="text-base">Download do Cliente</FormLabel>
+                                    <FormDescription>Receber um alerta quando o cliente baixar o álbum final.</FormDescription>
+                                </div>
+                                <FormControl>
+                                    <Switch checked={field.value} onCheckedChange={field.onChange} />
+                                </FormControl>
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="notifyOnExpiration"
+                            render={({ field }) => (
+                                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                                <div className="space-y-0.5">
+                                    <FormLabel className="text-base">Lembretes de Expiração</FormLabel>
+                                    <FormDescription>Enviar lembretes automáticos para clientes antes de um álbum expirar.</FormDescription>
+                                </div>
+                                <FormControl>
+                                    <Switch checked={field.value} onCheckedChange={field.onChange} />
+                                </FormControl>
                                 </FormItem>
                             )}
                         />
