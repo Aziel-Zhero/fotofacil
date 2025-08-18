@@ -16,7 +16,6 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { CardContent, CardFooter } from '@/components/ui/card';
-import { useToast } from '@/hooks/use-toast';
 import { useEffect, useState } from 'react';
 import { Loader2 } from 'lucide-react';
 import { login } from '@/app/auth/actions';
@@ -27,11 +26,19 @@ const formSchema = z.object({
   password: z.string().min(1, { message: 'Senha é obrigatória.' }),
 });
 
-export function LoginForm({ searchParams }: { searchParams: { message?: string, error?: string } }) {
-  const { toast } = useToast();
+export function LoginForm({ searchParams }: { searchParams: { [key: string]: string | string[] | undefined } }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formError, setFormError] = useState<string | null>(searchParams?.error || null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(searchParams?.message || null);
+  const [formError, setFormError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (searchParams?.error && typeof searchParams.error === 'string') {
+      setFormError(searchParams.error);
+    }
+    if (searchParams?.message && typeof searchParams.message === 'string') {
+      setSuccessMessage(searchParams.message);
+    }
+  }, [searchParams]);
 
 
   const form = useForm<z.infer<typeof formSchema>>({

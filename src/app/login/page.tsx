@@ -5,7 +5,7 @@ import AuthLayout from '@/components/layouts/auth-layout';
 export default function LoginPage({
   searchParams,
 }: {
-  searchParams: { message?: string, error?: string };
+  searchParams: { [key: string]: string | string[] | undefined };
 }) {
   return (
     <AuthLayout
