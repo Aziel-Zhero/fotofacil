@@ -102,10 +102,6 @@ export async function login(formData: FormData) {
     
     const userRole = user.user_metadata?.role;
 
-    if (userRole === 'client') {
-        redirect('/gallery');
-    }
-
     if (userRole === 'photographer') {
         const { data: profile, error: profileError } = await supabase
             .from('photographers')
@@ -120,9 +116,13 @@ export async function login(formData: FormData) {
                 console.error("Profile fetch error:", profileError);
                 errorMessage = `Erro ao buscar perfil (${profileError.code}). Contate o suporte.`;
             }
-            return { error: errorMessage }; // ESTA LINHA FOI ADICIONADA
+            return { error: errorMessage };
         }
         redirect('/dashboard');
+    }
+    
+    if (userRole === 'client') {
+        redirect('/gallery');
     }
 
     // Se não for nenhum dos roles esperados, desloga e avisa.
