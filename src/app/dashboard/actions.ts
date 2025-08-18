@@ -321,32 +321,66 @@ export async function getAlbumsForDashboard() {
         return { error: 'Usuário não autenticado.', albums: [] };
     }
 
-    // Usaremos uma função RPC para obter todos os dados de uma só vez.
-    // O nome da função será 'get_albums_with_photo_count'.
-    // Como a função ainda não existe, vou chamar a consulta antiga por enquanto,
-    // mas a estrutura está pronta para a nova função.
-    const { data: albums, error } = await supabase
-        .from('albums_with_counts') // Supondo que a VIEW/RPC se chamará assim
+    // Tenta primeiro a consulta otimizada com a VIEW.
+    const { data: albumsFromView, error: viewError } = await supabase
+        .from('albums_with_counts')
         .select('*')
         .eq('photographer_id', user.id)
         .order('created_at', { ascending: false });
 
-    if (error) {
-        console.error('Error fetching albums with counts:', error);
-        return { error: 'Falha ao carregar os dados dos álbuns. Por favor, tente novamente mais tarde. Detalhe: ' + error.message, albums: [] };
+    if (!viewError) {
+        // Sucesso com a VIEW! Retorna os dados formatados.
+        const formattedAlbums = albumsFromView.map((album: any) => ({
+            id: album.id,
+            name: album.name,
+            photoCount: album.photo_count,
+            maxPhotos: album.selection_limit,
+            status: album.status,
+            client: album.client_name || 'Cliente não vinculado',
+            createdAt: album.created_at,
+            clientUserId: album.client_id || null,
+        }));
+        return { albums: formattedAlbums, error: null };
     }
-    
-    // O RPC retornará os dados já formatados, então o mapeamento complexo é removido.
-    const formattedAlbums = albums.map((album: any) => ({
-        id: album.id,
-        name: album.name,
-        photoCount: album.photo_count,
-        maxPhotos: album.selection_limit,
-        status: album.status,
-        client: album.client_name || 'Cliente não vinculado',
-        createdAt: album.created_at,
-        clientUserId: album.client_id || null,
-    }));
-    
-    return { albums: formattedAlbums, error: null };
+
+    // Se a VIEW falhou (provavelmente porque não existe), registra o erro e tenta o método antigo.
+    console.warn("Could not fetch from 'albums_with_counts' view. Falling back to unoptimized query. Please run the SQL migration script. Error: ", viewError.message);
+
+    // Fallback: Consulta antiga e ineficiente (N+1)
+    const { data: albums, error: albumsError } = await supabase
+        .from('albums')
+        .select('*, clients(full_name)')
+        .eq('photographer_id', user.id)
+        .order('created_at', { ascending: false });
+
+    if (albumsError) {
+        console.error('Error fetching albums (fallback):', albumsError);
+        return { error: 'Falha grave ao carregar os dados dos álbuns.', albums: [] };
+    }
+
+    // Mapeamento manual dos dados, já que a consulta de fallback é diferente
+    const formattedAlbumsWithFallback = await Promise.all(
+        (albums || []).map(async (album: any) => {
+            const { count, error: countError } = await supabase
+                .from('photos')
+                .select('id', { count: 'exact', head: true })
+                .eq('album_id', album.id);
+
+            return {
+                id: album.id,
+                name: album.name,
+                photoCount: countError ? 0 : count,
+                maxPhotos: album.selection_limit,
+                status: album.status,
+                client: album.clients?.full_name || 'Cliente não vinculado',
+                createdAt: album.created_at,
+                clientUserId: album.client_id || null,
+            };
+        })
+    );
+
+    return { 
+        albums: formattedAlbumsWithFallback, 
+        error: "Atenção: A aplicação está operando em modo de baixa performance. Execute o script SQL no painel do Supabase para otimizar o carregamento."
+    };
 }
