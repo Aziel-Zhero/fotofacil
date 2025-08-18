@@ -74,7 +74,7 @@ export async function middleware(request: NextRequest) {
   const guestRoutes = ['/login', '/register', '/register/photographer'];
   
   // Define protected routes that require authentication
-  const protectedRoutes = ['/dashboard', '/gallery'];
+  const protectedRoutes = ['/dashboard'];
 
   if (!user && protectedRoutes.some(route => pathname.startsWith(route))) {
     // If no user is logged in and they are trying to access a protected route,

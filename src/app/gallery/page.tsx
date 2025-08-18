@@ -1,4 +1,5 @@
 
+
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { GalleryVertical } from "lucide-react";
 import Link from "next/link";
@@ -7,20 +8,14 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 
 export default async function ClientGalleryPage() {
-    // Como os clientes não fazem mais login, esta página pode ser um placeholder
-    // ou uma página de erro se acessada diretamente.
-    // O acesso real seria via /gallery/album/{albumId} com um token, por exemplo.
-    // Por enquanto, redirecionaremos para a página inicial.
-    redirect('/');
-
-    // A lógica abaixo está mantida, mas não será executada devido ao redirect.
-    // Ela seria útil se voltássemos a ter login de cliente.
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
         return redirect('/login?error=Você precisa fazer login para ver seus álbuns.');
     }
+    
+    // A role check could be added here for extra security, but middleware should handle it.
 
     const { data: albums, error } = await supabase
         .from('albums')
