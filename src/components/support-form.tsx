@@ -167,7 +167,7 @@ export function SupportForm() {
                     )}
                      {preview && (
                         <div className="relative h-full w-full p-2">
-                             <Image src={preview} alt="Pré-visualização" layout="fill" className="object-contain rounded-md" />
+                             <Image src={preview} alt="Pré-visualização" fill sizes="200px" className="object-contain rounded-md" />
                         </div>
                      )}
                   </div>

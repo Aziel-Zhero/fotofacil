@@ -39,8 +39,8 @@ export function PhotoCarousel({ photos }: PhotoCarouselProps) {
                                         src={photo.url}
                                         alt={photo.name || `Foto ${photo.id}`}
                                         fill
-                                        className="object-contain"
                                         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                        className="object-contain"
                                     />
                                     <Badge className="absolute top-2 left-2">
                                         {String(index + 1).padStart(3, '0')}

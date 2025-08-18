@@ -88,8 +88,8 @@ export function PhotoViewerModal({
                 src={photo.url}
                 alt={photo.name}
                 fill
-                className="object-contain"
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 60vw"
+                className="object-contain"
             />
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                 <span className="text-white/40 text-5xl font-bold font-headline select-none transform -rotate-12">FotoFácil</span>
