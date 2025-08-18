@@ -118,10 +118,12 @@ export async function login(formData: FormData) {
             }
             return { error: errorMessage };
         }
+        // Redirecionamento para o dashboard do fotógrafo em caso de sucesso
         redirect('/dashboard');
     }
     
     if (userRole === 'client') {
+        // Redirecionamento para a galeria do cliente em caso de sucesso
         redirect('/gallery');
     }
 
