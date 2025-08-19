@@ -1,10 +1,10 @@
 
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { PhotoUploader } from "@/components/photo-uploader";
 import { PhotoGrid } from "@/components/photo-grid";
-import { ArrowLeft, Grid3x3, ImageIcon, Rows, Square, Send, Settings, Trash2, Edit } from "lucide-react";
+import { ArrowLeft, Grid3x3, ImageIcon, Rows, Square, Send, Settings, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { PhotoCarousel } from '@/components/photo-carousel';
@@ -14,7 +14,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { getAlbumDetails, getPhotosForAlbum } from './actions';
-import { notifyClient } from '../actions';
+import { notifyClient } from '../../actions';
 import { type Photo } from './page';
 
 export type ViewMode = 'grid' | 'masonry' | 'carousel';
