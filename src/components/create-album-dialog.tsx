@@ -24,14 +24,13 @@ import {
     FormLabel,
     FormMessage,
   } from '@/components/ui/form';
-import { Info, Loader2, UserPlus, DollarSign } from 'lucide-react';
+import { Info, Loader2, UserPlus, DollarSign, Settings, Calendar, Gift, Lock } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { createAlbum, getClientsForPhotographer } from '../app/dashboard/actions';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import Link from 'next/link';
 import { ScrollArea } from './ui/scroll-area';
 
-// Schema atualizado para refletir o novo formulário
 const formSchema = z.object({
   albumName: z.string().min(1, "O nome do álbum é obrigatório."),
   clientUserId: z.string({ required_error: "Por favor, selecione um cliente."}).uuid("Por favor, selecione um cliente."),
@@ -41,7 +40,6 @@ const formSchema = z.object({
   giftPhotos: z.coerce.number().min(0, "O valor deve ser zero ou maior.").optional(),
   pixKey: z.string().optional(),
 }).refine(data => {
-    // Se o custo da foto extra for maior que zero, a chave PIX é obrigatória.
     if ((data.extraPhotoCost || 0) > 0) {
         return !!data.pixKey && data.pixKey.length > 0;
     }
@@ -121,7 +119,7 @@ export function CreateAlbumDialog({ children }: { children: React.ReactNode }) {
       <DialogTrigger asChild>
         {children}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-2xl max-h-[90vh]" onInteractOutside={(e) => {
+      <DialogContent className="sm:max-w-3xl max-h-[90vh]" onInteractOutside={(e) => {
           if(isSubmitting) e.preventDefault();
       }}>
         <DialogHeader>
@@ -137,69 +135,62 @@ export function CreateAlbumDialog({ children }: { children: React.ReactNode }) {
             <form onSubmit={form.handleSubmit(onSubmit)}>
               <ScrollArea className="max-h-[65vh] pr-6">
                 <div className="space-y-6 py-4">
-                  <FormField name="albumName" control={form.control} render={({ field }) => (
-                      <FormItem><FormLabel>Nome do Álbum</FormLabel><FormControl><Input placeholder="ex: Casamento na Toscana" {...field} /></FormControl><FormMessage /></FormItem>
-                  )} />
-                  
-                  <div className="p-4 border rounded-md space-y-4 bg-muted/20">
-                       <h3 className="font-semibold text-textDark flex items-center gap-2"><UserPlus className="h-5 w-5"/> Vincular Cliente</h3>
-                       <FormField
-                          control={form.control}
-                          name="clientUserId"
-                          render={({ field }) => (
-                              <FormItem>
-                              <FormLabel>Cliente</FormLabel>
-                              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                  <FormControl>
-                                  <SelectTrigger>
-                                      <SelectValue placeholder="Selecione um cliente da sua lista" />
-                                  </SelectTrigger>
-                                  </FormControl>
-                                  <SelectContent>
-                                      {clients.length > 0 ? clients.map(client => (
-                                          <SelectItem key={client.id} value={client.id}>
-                                              {client.full_name} ({client.email})
-                                          </SelectItem>
-                                      )) : (
-                                          <div className="p-4 text-sm text-muted-foreground">Nenhum cliente cadastrado.</div>
-                                      )}
-                                  </SelectContent>
-                              </Select>
-                              <FormMessage />
-                              </FormItem>
-                          )}
-                          />
-                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <FormField name="albumName" control={form.control} render={({ field }) => (
+                        <FormItem className="md:col-span-2"><FormLabel>Nome do Álbum</FormLabel><FormControl><Input placeholder="ex: Casamento na Toscana" {...field} /></FormControl><FormMessage /></FormItem>
+                    )} />
 
-                  <div className="p-4 border rounded-md space-y-4 bg-muted/20">
-                      <h3 className="font-semibold text-textDark flex items-center gap-2"><DollarSign className="h-5 w-5"/> Configuração Financeira</h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <FormField name="extraPhotoCost" control={form.control} render={({ field }) => (
-                              <FormItem><FormLabel>Preço por Foto Extra (R$)</FormLabel><FormControl><Input type="number" placeholder="ex: 8.50" {...field} /></FormControl><FormMessage /></FormItem>
-                          )} />
-                          {(extraPhotoCost || 0) > 0 && (
-                               <FormField name="pixKey" control={form.control} render={({ field }) => (
-                                  <FormItem><FormLabel>Sua Chave PIX</FormLabel><FormControl><Input placeholder="Email, CPF, Telefone ou Chave Aleatória" {...field} /></FormControl><FormMessage /></FormItem>
-                              )} />
-                          )}
-                      </div>
-                  </div>
+                    <FormField
+                      control={form.control}
+                      name="clientUserId"
+                      render={({ field }) => (
+                          <FormItem className="md:col-span-2">
+                          <FormLabel>Vincular Cliente</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <FormControl>
+                              <SelectTrigger>
+                                  <SelectValue placeholder="Selecione um cliente da sua lista" />
+                              </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                  {clients.length > 0 ? clients.map(client => (
+                                      <SelectItem key={client.id} value={client.id}>
+                                          {client.full_name} ({client.email})
+                                      </SelectItem>
+                                  )) : (
+                                      <div className="p-4 text-sm text-muted-foreground">Nenhum cliente cadastrado.</div>
+                                  )}
+                              </SelectContent>
+                          </Select>
+                           <FormDescription>
+                               Não encontrou o cliente? <Link href="/dashboard/register-client" className="underline">Cadastre um novo</Link>.
+                            </FormDescription>
+                          <FormMessage />
+                          </FormItem>
+                      )}
+                      />
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                       <FormField name="expirationDate" control={form.control} render={({ field }) => (
-                          <FormItem><FormLabel>Expiração (Opcional)</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem>
+                    <FormField name="maxPhotos" control={form.control} render={({ field }) => (
+                          <FormItem><FormLabel>Máx. de Seleções do Pacote</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>
                       )} />
-                      <FormField name="maxPhotos" control={form.control} render={({ field }) => (
-                          <FormItem><FormLabel>Máx. de Seleções</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>
+
+                     <FormField name="expirationDate" control={form.control} render={({ field }) => (
+                        <FormItem><FormLabel>Data de Expiração (Opcional)</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem>
+                    )} />
+
+                     <FormField name="extraPhotoCost" control={form.control} render={({ field }) => (
+                          <FormItem><FormLabel>Preço por Foto Extra (R$)</FormLabel><FormControl><Input type="number" step="0.01" placeholder="ex: 8.50" {...field} /></FormControl><FormMessage /></FormItem>
                       )} />
-                      <FormField name="giftPhotos" control={form.control} render={({ field }) => (
+
+                    {(extraPhotoCost || 0) > 0 && (
+                          <FormField name="pixKey" control={form.control} render={({ field }) => (
+                            <FormItem><FormLabel>Sua Chave PIX</FormLabel><FormControl><Input placeholder="Email, CPF, Telefone ou Aleatória" {...field} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                    )}
+                    
+                    <FormField name="giftPhotos" control={form.control} render={({ field }) => (
                           <FormItem><FormLabel>Fotos de Cortesia</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>
                       )} />
-                  </div>
-                   
-                   <div className="text-xs text-muted-foreground bg-secondary/30 p-3 rounded-md flex gap-2 items-start border border-border">
-                      <Info className="h-4 w-4 flex-shrink-0 mt-0.5" />
-                      <span>Se o cliente não aparece na lista, você pode cadastrá-lo na página <Link href="/dashboard/register-client" className='underline font-semibold'>Cadastrar Cliente</Link>.</span>
                   </div>
                 </div>
               </ScrollArea>
