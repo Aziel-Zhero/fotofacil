@@ -194,30 +194,29 @@ export function AlbumDetailClient({ albumId }: { albumId: string }) {
         </div>
         
         <div className="space-y-12">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-              <div>
-                  <h2 className="text-xl font-bold font-headline mb-4 text-white">Enviar Fotos</h2>
-                  <PhotoUploader onUploadComplete={addPhoto} albumId={albumId} />
+            <div>
+              <h2 className="text-xl font-bold font-headline mb-4 text-white">Enviar Fotos</h2>
+              <PhotoUploader onUploadComplete={addPhoto} albumId={albumId} />
+            </div>
+
+            <div>
+              <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-xl font-bold font-headline text-white">Galeria ({photos.length} fotos)</h2>
+                  {photos.length > 0 && (
+                      <ToggleGroup type="single" value={viewMode} onValueChange={(value: ViewMode) => value && setViewMode(value)} aria-label="Modo de Visualização">
+                          <ToggleGroupItem value="grid" aria-label="Grade">
+                              <Grid3x3 className="h-4 w-4" />
+                          </ToggleGroupItem>
+                          <ToggleGroupItem value="masonry" aria-label="Masonry">
+                              <Rows className="h-4 w-4" />
+                          </ToggleGroupItem>
+                          <ToggleGroupItem value="carousel" aria-label="Carrossel">
+                              <Square className="h-4 w-4" />
+                          </ToggleGroupItem>
+                      </ToggleGroup>
+                  )}
               </div>
-              <div>
-                  <div className="flex justify-between items-center mb-4">
-                      <h2 className="text-xl font-bold font-headline text-white">Galeria ({photos.length} fotos)</h2>
-                      {photos.length > 0 && (
-                          <ToggleGroup type="single" value={viewMode} onValueChange={(value: ViewMode) => value && setViewMode(value)} aria-label="Modo de Visualização">
-                              <ToggleGroupItem value="grid" aria-label="Grade">
-                                  <Grid3x3 className="h-4 w-4" />
-                              </ToggleGroupItem>
-                              <ToggleGroupItem value="masonry" aria-label="Masonry">
-                                  <Rows className="h-4 w-4" />
-                              </ToggleGroupItem>
-                              <ToggleGroupItem value="carousel" aria-label="Carrossel">
-                                  <Square className="h-4 w-4" />
-                              </ToggleGroupItem>
-                          </ToggleGroup>
-                      )}
-                  </div>
-                  {renderGallery()}
-              </div>
+              {renderGallery()}
             </div>
             
             {photos.length > 0 && album?.status === 'Pendente' && (
