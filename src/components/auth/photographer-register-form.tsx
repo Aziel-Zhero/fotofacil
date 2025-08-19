@@ -18,7 +18,6 @@ import {
 import { CardContent, CardFooter } from '@/components/ui/card';
 import { signup } from '@/app/auth/actions';
 import { useState } from 'react';
-import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import PhoneInput from 'react-phone-number-input';
 import 'react-phone-number-input/style.css'

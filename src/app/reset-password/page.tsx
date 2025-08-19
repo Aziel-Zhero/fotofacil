@@ -17,10 +17,10 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { CardContent, CardFooter } from '@/components/ui/card';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { resetPassword } from '@/app/auth/actions';
 import { Loader2 } from 'lucide-react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
 const formSchema = z.object({
@@ -29,25 +29,13 @@ const formSchema = z.object({
 
 export default function ResetPasswordPage() {
     const router = useRouter();
-    const searchParams = useSearchParams();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [formError, setFormError] = useState<string | null>(null);
-    const [hasToken, setHasToken] = useState(false);
-
-    // O token de redefinição é passado como `code` na URL
-    useEffect(() => {
-        const code = searchParams.get('code');
-        if (code) {
-            setHasToken(true);
-        } else {
-             setFormError("Token de redefinição inválido ou ausente. Por favor, solicite um novo link.");
-        }
-    }, [searchParams]);
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-        password: '',
+          password: '',
         },
     });
 
@@ -97,7 +85,7 @@ export default function ResetPasswordPage() {
                 />
             </CardContent>
             <CardFooter className="flex-col gap-4">
-                <Button type="submit" className="w-full" disabled={isSubmitting || !hasToken}>
+                <Button type="submit" className="w-full" disabled={isSubmitting}>
                     {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     Salvar Nova Senha
                 </Button>

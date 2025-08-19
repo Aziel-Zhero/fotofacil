@@ -36,7 +36,6 @@ export async function signup(formData: FormData) {
     password,
     options: {
       data: {
-        // A role agora é fixa, pois esta ação é apenas para fotógrafos
         role: 'photographer', 
         fullName,
         username,
@@ -95,7 +94,6 @@ export async function login(formData: FormData) {
     return { error: 'Usuário não encontrado após login.' };
   }
 
-  // Verifica perfil fotógrafo (assumindo tabela 'photographers' com PK user.id)
   const { data: profile, error: profileError } = await supabase
     .from('photographers')
     .select('id')
