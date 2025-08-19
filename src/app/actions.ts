@@ -1,3 +1,4 @@
+
 "use server";
 
 import { autoImageTagging, type AutoImageTaggingInput } from "@/ai/flows/image-tagging";
@@ -33,12 +34,19 @@ export async function sendSupportEmail(formData: FormData) {
   const email = formData.get('email') as string;
   const reason = formData.get('contactReason') as string;
   const description = formData.get('description') as string;
-
+  const screenshotFile = formData.get('screenshot') as File | null;
+  
   if (!name || !email || !reason || !description) {
       return { error: 'Todos os campos são obrigatórios.' };
   }
   
   const subject = `FotoFácil - ${reason === 'problem' ? 'Relato de Problema' : 'Sugestão de Melhoria'}`;
+
+  let attachmentBuffer: Buffer | undefined;
+  if (screenshotFile && screenshotFile.size > 0) {
+      const arrayBuffer = await screenshotFile.arrayBuffer();
+      attachmentBuffer = Buffer.from(arrayBuffer);
+  }
 
   try {
     const { data, error } = await resend.emails.send({
@@ -51,7 +59,12 @@ export async function sendSupportEmail(formData: FormData) {
           description,
           userName: name,
           userEmail: email,
+          attachmentFilename: screenshotFile?.name,
       }),
+      attachments: attachmentBuffer ? [{
+        filename: screenshotFile!.name,
+        content: attachmentBuffer,
+      }] : [],
     });
 
     if (error) {

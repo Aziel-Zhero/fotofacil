@@ -1,3 +1,4 @@
+
 import {
   Body,
   Container,
@@ -5,6 +6,7 @@ import {
   Heading,
   Hr,
   Html,
+  Img,
   Preview,
   Section,
   Text,
@@ -17,6 +19,7 @@ interface SupportRequestEmailProps {
   description: string;
   userName: string;
   userEmail: string;
+  attachmentFilename?: string;
 }
 
 export const SupportRequestEmail = ({
@@ -24,8 +27,9 @@ export const SupportRequestEmail = ({
   description,
   userName,
   userEmail,
+  attachmentFilename,
 }: SupportRequestEmailProps) => {
-  const previewText = `Nova mensagem de suporte: ${reason}`;
+  const previewText = `Nova mensagem de suporte de ${userName}`;
   const reasonText = reason === 'problem' ? 'Relato de Problema' : 'Sugestão de Melhoria';
 
   return (
@@ -37,54 +41,70 @@ export const SupportRequestEmail = ({
           theme: {
             extend: {
               colors: {
-                primary: "hsl(24, 53%, 72%)",
-                background: "hsl(21, 56%, 95%)",
-                foreground: "hsl(19, 39%, 34%)",
+                brand: "hsl(var(--primary))",
+                bg: "hsl(var(--background))",
+                fg: "hsl(var(--foreground))",
               },
+              fontFamily: {
+                sans: ['Segoe UI', 'sans-serif'],
+              }
             },
           },
         }}
       >
-        <Body className="bg-background font-sans">
-          <Container className="bg-white border-foreground/20 rounded-lg shadow-sm my-10 mx-auto p-8 max-w-2xl">
-            <Heading className="text-2xl font-bold text-foreground">
-              Nova Mensagem de Suporte Recebida
+        <Body className="bg-bg font-sans text-fg">
+          <Container className="max-w-xl my-10 mx-auto p-8 bg-white border border-border rounded-lg shadow-sm">
+            <Heading as="h1" className="text-2xl font-semibold m-0 text-foreground">
+              📩 Nova Mensagem de Suporte Recebida
             </Heading>
+            <Text className="text-base mt-4">
+              Você recebeu uma nova mensagem através do formulário de contato do <strong>FotoFácil</strong>.
+            </Text>
 
             <Section className="my-6">
-              <Text className="text-lg text-foreground">
-                Uma nova mensagem foi enviada através do formulário de contato do <strong>FotoFácil</strong>.
-              </Text>
-            </Section>
-
-            <Hr className="border-t border-foreground/20" />
-
-            <Section className="my-6">
-              <Heading as="h2" className="text-xl font-semibold text-foreground">
-                Detalhes da Solicitação
+              <Heading as="h2" className="text-lg font-semibold text-foreground border-b border-border pb-2">
+                📝 Detalhes da Solicitação
               </Heading>
-              
-              <Text className="text-base text-foreground">
-                <strong className="font-semibold">Remetente:</strong> {userName}
+              <Text className="text-base mt-4">
+                <strong className="font-semibold">Motivo do Contato:</strong>
+                <span className="inline-block bg-secondary text-secondary-foreground text-xs font-medium ml-2 px-3 py-1 rounded-full">{reasonText}</span>
               </Text>
-              <Text className="text-base text-foreground">
-                <strong className="font-semibold">Email para resposta:</strong> {userEmail}
+              <Text className="text-base">
+                <strong className="font-semibold">Nome:</strong> {userName}
               </Text>
-               <Text className="text-base text-foreground">
-                <strong className="font-semibold">Motivo do Contato:</strong> {reasonText}
+              <Text className="text-base">
+                <strong className="font-semibold">E-mail para resposta:</strong> {userEmail}
               </Text>
-
-              <Text className="font-semibold mt-4 mb-2 text-foreground">Mensagem:</Text>
-              <Container className="bg-background/50 p-6 rounded-lg border border-foreground/10">
-                <Text className="text-base text-foreground whitespace-pre-wrap m-0">
-                  {description}
-                </Text>
-              </Container>
             </Section>
 
-            <Hr className="border-t border-foreground/20" />
+            <Section className="my-6">
+              <Heading as="h2" className="text-lg font-semibold text-foreground border-b border-border pb-2">
+                💬 Mensagem
+              </Heading>
+              <div className="bg-muted/30 border border-border/50 rounded-lg p-5 mt-4">
+                <Text className="text-base m-0 whitespace-pre-wrap">{description}</Text>
+              </div>
+            </Section>
 
-            <Section className="text-center mt-8 text-xs text-foreground/70">
+            {attachmentFilename && (
+               <Section className="my-6">
+                 <Heading as="h2" className="text-lg font-semibold text-foreground border-b border-border pb-2">
+                    📎 Anexo
+                 </Heading>
+                 <div className="bg-muted/30 border border-border/50 rounded-lg p-5 mt-4">
+                    <Text className="text-sm font-medium">
+                        {attachmentFilename}
+                    </Text>
+                    <Text className="text-xs text-muted-foreground">
+                        A imagem está anexada a este e-mail.
+                    </Text>
+                 </div>
+               </Section>
+            )}
+
+            <Hr className="border-t border-border my-8" />
+
+            <Section className="text-center text-xs text-muted-foreground">
               <Text>
                 Esta é uma mensagem automática enviada pelo sistema FotoFácil.
               </Text>
