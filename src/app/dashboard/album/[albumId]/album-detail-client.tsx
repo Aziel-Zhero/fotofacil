@@ -14,8 +14,8 @@ import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { deleteAlbum, notifyClient } from '../../actions';
 import { getAlbumDetails, getPhotosForAlbum } from './actions';
+import { deleteAlbum, notifyClient } from '../../actions';
 import { type Photo } from './page';
 
 export type ViewMode = 'grid' | 'masonry' | 'carousel';
@@ -27,7 +27,6 @@ export interface AlbumData {
     status: string;
 }
 
-// All the client-side logic is now in this component.
 export function AlbumDetailClient({ albumId }: { albumId: string }) {
   const [album, setAlbum] = useState<AlbumData | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
@@ -77,20 +76,20 @@ export function AlbumDetailClient({ albumId }: { albumId: string }) {
   const handleNotifyClient = async () => {
     if (!album) return;
     const result = await notifyClient(album.id);
-    if (result?.error) {
-       toast({
+    if (result?.success) {
+      toast({
+         title: "Cliente Notificado!",
+         description: "Um e-mail foi enviado ao cliente avisando que o álbum está pronto para seleção."
+     });
+      if(album) {
+       setAlbum({...album, status: 'Aguardando Seleção'});
+      }
+    } else {
+      toast({
         title: "Erro ao notificar",
         description: result.error,
         variant: "destructive"
       });
-    } else {
-       toast({
-          title: "Cliente Notificado!",
-          description: "Um e-mail foi enviado ao cliente avisando que o álbum está pronto para seleção."
-      });
-       if(album) {
-        setAlbum({...album, status: 'Aguardando Seleção'});
-       }
     }
   }
 
