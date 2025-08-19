@@ -58,7 +58,7 @@ export async function createClientByUser(formData: FormData) {
             return { error: 'Um cliente com este email já existe.' };
         }
         console.error("Error creating client via RPC:", rpcError);
-        return { error: `Não foi possível criar o cliente: ${rpcError.message}` };
+        return { error: 'Não foi possível criar o cliente: ' + rpcError.message };
     }
     
     revalidatePath('/dashboard/register-client');
@@ -117,7 +117,7 @@ export async function createAlbum(formData: FormData) {
     .single();
 
   if (clientError || !clientData) {
-      return { error: `O cliente selecionado não foi encontrado ou não pertence a você.` };
+      return { error: 'O cliente selecionado não foi encontrado ou não pertence a você.' };
   }
   
   // Inserir o novo álbum.
@@ -134,7 +134,7 @@ export async function createAlbum(formData: FormData) {
 
    if (albumError) {
     console.error('Erro ao criar álbum:', albumError);
-    return { error: `Erro ao criar álbum: ${albumError.message}` };
+    return { error: 'Erro ao criar álbum: ' + albumError.message };
   }
 
   revalidatePath('/dashboard');
@@ -227,7 +227,7 @@ export async function resetClientPassword(clientId: string) {
 
     if (error) {
         console.error("Admin reset password error:", error);
-        return { error: `Erro do servidor ao redefinir a senha: ${error.message}` };
+        return { error: 'Erro do servidor ao redefinir a senha: ' + error.message };
     }
     
     revalidatePath('/dashboard/clients');
@@ -319,7 +319,7 @@ export async function updateClientPassword(formData: FormData) {
 
   if (updateUserError) {
     console.error('Error updating client password:', updateUserError);
-    return { error: `Não foi possível atualizar a senha: ${updateUserError.message}` };
+    return { error: 'Não foi possível atualizar a senha: ' + updateUserError.message };
   }
 
   return { success: true, message: 'Senha do cliente atualizada com sucesso!' };
@@ -355,7 +355,7 @@ export async function updateAlbum(formData: FormData) {
 
   if (error) {
     console.error("Error updating album:", error);
-    return { error: `Não foi possível atualizar o álbum: ${error.message}` };
+    return { error: 'Não foi possível atualizar o álbum: ' + error.message };
   }
 
   revalidatePath(`/dashboard/album/${albumId}`);
@@ -388,7 +388,7 @@ export async function deleteAlbum(albumId: string) {
 
   if (deleteError) {
     console.error("Error deleting album:", deleteError);
-    return { error: `Não foi possível excluir o álbum: ${deleteError.message}` };
+    return { error: 'Não foi possível excluir o álbum: ' + deleteError.message };
   }
   
   revalidatePath('/dashboard');
