@@ -74,17 +74,20 @@ export function CheckoutForm() {
   const years = Array.from({ length: 10 }, (_, i) => String(currentYear + i));
 
   return (
-    <div className="relative">
-      <InteractiveCreditCard 
-        isFlipped={isCardFlipped}
-        cardNumber={cardValues.cardNumber}
-        cardHolder={cardValues.cardHolder}
-        cardExpiryMonth={cardValues.cardExpiryMonth}
-        cardExpiryYear={cardValues.cardExpiryYear.slice(-2)}
-        cardCvc={cardValues.cardCvc}
-      />
+    <div className="grid md:grid-cols-2 gap-12 items-start">
+       <div className="md:sticky md:top-24">
+          <InteractiveCreditCard 
+            isFlipped={isCardFlipped}
+            cardNumber={cardValues.cardNumber}
+            cardHolder={cardValues.cardHolder}
+            cardExpiryMonth={cardValues.cardExpiryMonth}
+            cardExpiryYear={cardValues.cardExpiryYear.slice(-2)}
+            cardCvc={cardValues.cardCvc}
+          />
+      </div>
+
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 mt-8">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <FormField name="fullName" control={form.control} render={({ field }) => (
             <FormItem><FormLabel>Nome Completo</FormLabel><FormControl><Input placeholder="Seu nome completo" {...field} /></FormControl><FormMessage /></FormItem>
           )} />

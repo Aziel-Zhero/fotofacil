@@ -15,7 +15,7 @@ export default function CheckoutPage() {
   };
 
   return (
-    <div className="container mx-auto py-8 max-w-lg">
+    <div className="container mx-auto py-8 max-w-4xl">
        <div className="mb-8">
             <Button variant="ghost" asChild className="mb-4">
                 <Link href="/dashboard/subscription">
@@ -25,9 +25,7 @@ export default function CheckoutPage() {
             </Button>
       </div>
 
-      <div className="grid grid-cols-1 gap-8">
-        <div>
-          <Card>
+        <Card>
             <CardHeader>
               <CardTitle className="font-headline">Finalizar Assinatura</CardTitle>
               <CardDescription>
@@ -37,9 +35,7 @@ export default function CheckoutPage() {
             <CardContent>
               <CheckoutForm />
             </CardContent>
-          </Card>
-        </div>
-      </div>
+        </Card>
     </div>
   );
 }
