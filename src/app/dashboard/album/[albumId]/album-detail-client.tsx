@@ -2,10 +2,9 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { PhotoUploader } from "@/components/photo-uploader";
 import { PhotoGrid } from "@/components/photo-grid";
-import { ArrowLeft, Grid3x3, ImageIcon, Rows, Square, Send, Settings, Trash2 } from "lucide-react";
+import { ArrowLeft, Grid3x3, ImageIcon, Rows, Square, Send, Settings, Trash2, Edit } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { PhotoCarousel } from '@/components/photo-carousel';
@@ -14,8 +13,9 @@ import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { deleteAlbum } from '../../actions';
+import { EditAlbumDialog } from '@/components/edit-album-dialog';
 import { getAlbumDetails, getPhotosForAlbum } from './actions';
-import { deleteAlbum, notifyClient } from '../../actions';
 import { type Photo } from './page';
 
 export type ViewMode = 'grid' | 'masonry' | 'carousel';
@@ -24,16 +24,16 @@ export interface AlbumData {
     id: string;
     name: string;
     selection_limit: number;
-    status: string;
 }
 
+// All the client-side logic is now in this component.
 export function AlbumDetailClient({ albumId }: { albumId: string }) {
   const [album, setAlbum] = useState<AlbumData | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [photos, setPhotos] = useState<Photo[]>([]);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
-  const router = useRouter();
 
   useEffect(() => {
     const fetchAlbumData = async () => {
@@ -52,7 +52,7 @@ export function AlbumDetailClient({ albumId }: { albumId: string }) {
       if (photosResult.error || !photosResult.data) {
         toast({ title: "Erro ao buscar fotos", description: photosResult.error, variant: "destructive" });
       } else {
-        setPhotos(photosResult.data.map((p: any) => ({
+        setPhotos(photosResult.data.map(p => ({
           id: p.id,
           url: p.url,
           name: p.name || 'foto',
@@ -72,24 +72,11 @@ export function AlbumDetailClient({ albumId }: { albumId: string }) {
     setPhotos(prevPhotos => [newPhoto, ...prevPhotos]);
   };
 
-  const handleNotifyClient = async () => {
-    if (!album) return;
-    const result = await notifyClient(album.id);
-    if (result?.success) {
-      toast({
-         title: "Cliente Notificado!",
-         description: "Um e-mail foi enviado ao cliente avisando que o álbum está pronto para seleção."
-     });
-      if(album) {
-       setAlbum({...album, status: 'Aguardando Seleção'});
-      }
-    } else {
-      toast({
-        title: "Erro ao notificar",
-        description: result.error,
-        variant: "destructive"
-      });
-    }
+  const handleNotifyClient = () => {
+    toast({
+        title: "Cliente Notificado!",
+        description: "Um e-mail foi enviado ao cliente avisando que o álbum está pronto para seleção."
+    });
   }
 
   const handleDeleteAlbum = async () => {
@@ -100,12 +87,12 @@ export function AlbumDetailClient({ albumId }: { albumId: string }) {
         description: result.error,
         variant: "destructive"
       });
-    } else if (result?.success) {
+    } else {
       toast({
         title: "Álbum excluído",
         description: "O álbum foi excluído com sucesso.",
       });
-      router.push('/dashboard');
+      // O redirect é feito na server action
     }
   }
 
@@ -143,7 +130,7 @@ export function AlbumDetailClient({ albumId }: { albumId: string }) {
   return (
     <div className="container mx-auto py-8">
         <div className="mb-8">
-            <Button variant="ghost" asChild className="mb-4 text-textDark">
+            <Button variant="ghost" asChild className="mb-4 text-white">
                 <Link href="/dashboard">
                     <ArrowLeft className="mr-2 h-4 w-4" />
                     Voltar para Álbuns
@@ -151,7 +138,7 @@ export function AlbumDetailClient({ albumId }: { albumId: string }) {
             </Button>
             <div className="flex justify-between items-center">
                 <div>
-                    <h1 className="text-3xl font-bold font-headline text-textDark">Gerenciar Álbum: {album?.name || "Carregando..."}</h1>
+                    <h1 className="text-3xl font-bold font-headline text-white">Gerenciar Álbum: {album?.name || "Carregando..."}</h1>
                     <p className="text-muted-foreground">Faça upload de novas fotos e veja a galeria atual.</p>
                 </div>
                  <DropdownMenu>
@@ -162,6 +149,10 @@ export function AlbumDetailClient({ albumId }: { albumId: string }) {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
+                      <DropdownMenuItem onSelect={() => setIsEditDialogOpen(true)}>
+                        <Edit className="mr-2 h-4 w-4" />
+                        Editar Detalhes
+                      </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <AlertDialog>
                           <AlertDialogTrigger asChild>
@@ -193,13 +184,21 @@ export function AlbumDetailClient({ albumId }: { albumId: string }) {
             </div>
         </div>
         
+        {album && (
+            <EditAlbumDialog
+                isOpen={isEditDialogOpen}
+                setIsOpen={setIsEditDialogOpen}
+                album={album}
+            />
+        )}
+        
         <div className="space-y-12">
             <div>
-              <h2 className="text-xl font-bold font-headline mb-4 text-textDark">Enviar Fotos</h2>
-              <PhotoUploader onUploadComplete={addPhoto} albumId={albumId} />
+                <h2 className="text-xl font-bold font-headline mb-4 text-white">Enviar Fotos</h2>
+                <PhotoUploader onUploadComplete={addPhoto} albumId={albumId} />
             </div>
-
-            {photos.length > 0 && album && album.status !== 'Aguardando Seleção' && album.status !== 'Entregue' && (
+            
+            {photos.length > 0 && (
                  <Alert>
                     <Send className="h-4 w-4" />
                     <AlertTitle className="font-headline">Tudo pronto para o cliente?</AlertTitle>
@@ -214,25 +213,28 @@ export function AlbumDetailClient({ albumId }: { albumId: string }) {
             )}
 
             <div>
-              <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-xl font-bold font-headline text-textDark">Galeria ({photos.length} fotos)</h2>
-                  {photos.length > 0 && (
-                      <ToggleGroup type="single" value={viewMode} onValueChange={(value: ViewMode) => value && setViewMode(value)} aria-label="Modo de Visualização">
-                          <ToggleGroupItem value="grid" aria-label="Grade">
-                              <Grid3x3 className="h-4 w-4" />
-                          </ToggleGroupItem>
-                          <ToggleGroupItem value="masonry" aria-label="Masonry">
-                              <Rows className="h-4 w-4" />
-                          </ToggleGroupItem>
-                          <ToggleGroupItem value="carousel" aria-label="Carrossel">
-                              <Square className="h-4 w-4" />
-                          </ToggleGroupItem>
-                      </ToggleGroup>
-                  )}
-              </div>
-              {renderGallery()}
+                <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-xl font-bold font-headline text-white">Galeria ({photos.length} fotos)</h2>
+                     {photos.length > 0 && (
+                        <ToggleGroup type="single" value={viewMode} onValueChange={(value: ViewMode) => value && setViewMode(value)} aria-label="Modo de Visualização">
+                            <ToggleGroupItem value="grid" aria-label="Grade">
+                                <Grid3x3 className="h-4 w-4" />
+                            </ToggleGroupItem>
+                            <ToggleGroupItem value="masonry" aria-label="Masonry">
+                                <Rows className="h-4 w-4" />
+                            </ToggleGroupItem>
+                            <ToggleGroupItem value="carousel" aria-label="Carrossel">
+                                <Square className="h-4 w-4" />
+                            </ToggleGroupItem>
+                        </ToggleGroup>
+                     )}
+                 </div>
+                {renderGallery()}
             </div>
         </div>
     </div>
   );
 }
+
+// We also need to export the Photo type from here now
+export type { Photo } from '@/app/dashboard/album/[albumId]/page';

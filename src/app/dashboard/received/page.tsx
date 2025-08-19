@@ -6,13 +6,13 @@ import Image from 'next/image';
 import { GalleryThumbnails } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
-// Definindo um tipo para a foto achatada para clareza
+// A RPC retornará objetos com esta estrutura.
 type SelectedPhoto = {
     id: string;
     url: string;
     name: string | null;
     tags: string[] | null;
-    albumName: string | null;
+    album_name: string | null;
 }
 
 export default async function ReceivedPage() {
@@ -23,56 +23,22 @@ export default async function ReceivedPage() {
     return redirect('/login');
   }
 
-  // Etapa 1: Buscar IDs de todos os álbuns do fotógrafo.
-  const { data: photographerAlbums, error: albumsError } = await supabase
-    .from('albums')
-    .select('id')
-    .eq('photographer_id', user.id);
+  // A lógica de busca agora é simplificada para uma única chamada de RPC.
+  const { data: photos, error } = await supabase
+    .rpc('get_selected_photos_for_photographer', { p_photographer_id: user.id });
 
-  if (albumsError) {
-    console.error('Error fetching photographer albums:', albumsError);
-    return <div>Erro ao carregar os álbuns.</div>;
+  if (error) {
+    console.error('Error fetching received photos:', error);
+    return (
+      <div className="container mx-auto py-8">
+        <h1 className="text-destructive">Erro ao carregar as fotos recebidas.</h1>
+        <p className="text-muted-foreground">Por favor, tente novamente mais tarde.</p>
+        <pre className="mt-4 text-xs bg-muted p-2 rounded">{JSON.stringify(error, null, 2)}</pre>
+      </div>
+    );
   }
   
-  const albumIds = photographerAlbums.map(a => a.id);
-
-  let photos: SelectedPhoto[] = [];
-
-  if (albumIds.length > 0) {
-      // Etapa 2: Buscar todas as fotos selecionadas que pertencem a esses álbuns.
-      const { data: selections, error: selectionsError } = await supabase
-        .from('album_selections')
-        .select(`
-            photos (
-                id,
-                url,
-                name,
-                tags,
-                albums (
-                    name
-                )
-            )
-        `)
-        .filter('photos.album_id', 'in', `(${albumIds.join(',')})`);
-      
-      if (selectionsError) {
-        console.error('Error fetching received photos:', selectionsError);
-        return <div>Erro ao carregar as fotos recebidas.</div>;
-      }
-      
-      // Achatando a estrutura para facilitar o uso no JSX.
-      photos = selections
-        .map(s => s.photos)
-        .filter((p): p is NonNullable<typeof p> => p !== null)
-        .map(p => ({
-            id: p.id,
-            url: p.url,
-            name: p.name,
-            tags: p.tags,
-            albumName: p.albums?.name || 'Álbum Desconhecido'
-        }));
-  }
-
+  const formattedPhotos: SelectedPhoto[] = photos || [];
 
   return (
     <div className="container mx-auto py-8">
@@ -85,16 +51,16 @@ export default async function ReceivedPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Galeria de Selecionadas ({photos.length})</CardTitle>
+          <CardTitle>Galeria de Selecionadas ({formattedPhotos.length})</CardTitle>
           <CardDescription>
             Visualize as imagens escolhidas pelos seus clientes.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {photos.length > 0 ? (
+          {formattedPhotos.length > 0 ? (
              <TooltipProvider delayDuration={200}>
                 <div className="columns-2 md:columns-3 lg:columns-4 xl:columns-5 gap-4">
-                    {photos.map((photo) => (
+                    {formattedPhotos.map((photo) => (
                          <Tooltip key={photo.id}>
                             <TooltipTrigger asChild>
                                 <div className="relative group mb-4 break-inside-avoid">
@@ -107,12 +73,12 @@ export default async function ReceivedPage() {
                                         data-ai-hint={photo.tags?.join(' ') || ''}
                                     />
                                     <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 rounded-b-md">
-                                      <p className="text-white text-xs font-semibold truncate">{photo.albumName}</p>
+                                      <p className="text-white text-xs font-semibold truncate">{photo.album_name}</p>
                                     </div>
                                 </div>
                             </TooltipTrigger>
                             <TooltipContent>
-                                <p>Álbum: {photo.albumName}</p>
+                                <p>Álbum: {photo.album_name}</p>
                             </TooltipContent>
                         </Tooltip>
                     ))}
