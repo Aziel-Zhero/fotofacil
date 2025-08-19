@@ -27,6 +27,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import Cropper from 'react-easy-crop';
 import { type Area } from 'react-easy-crop';
 import { Slider } from './ui/slider';
+import { Label } from './ui/label';
 
 
 const profileSchema = z.object({
