@@ -30,7 +30,7 @@ import IMask from 'imask';
 const checkoutSchema = z.object({
   fullName: z.string().min(1, 'Nome completo é obrigatório'),
   document: z.string().optional(),
-  cardNumber: z.string().min(19, 'O número do cartão deve ter pelo menos 16 dígitos.'), // 16 digits + 3 spaces
+  cardNumber: z.string().min(16, 'O número do cartão deve ter pelo menos 14 dígitos.'),
   cardHolder: z.string().min(1, 'O nome do titular é obrigatório.'),
   cardExpiry: z.string().length(5, 'A validade deve estar no formato MM/AA.'),
   cardCvc: z.string().length(3, 'O CVC deve ter 3 dígitos.'),
@@ -39,20 +39,12 @@ const checkoutSchema = z.object({
 
 type Brand = 'visa' | 'mastercard' | 'amex' | 'discover' | 'unknown';
 
-const cardBrandRegex: Record<Brand, RegExp> = {
-    visa: /^4/,
-    mastercard: /^5[1-5]/,
-    amex: /^3[47]/,
-    discover: /^(6011|65|64[4-9])/,
-    unknown: /.*/
-};
-
 function getCardBrand(number: string): Brand {
-    for (const brand in cardBrandRegex) {
-        if (cardBrandRegex[brand as Brand].test(number)) {
-            return brand as Brand;
-        }
-    }
+    const cleanedNumber = number.replace(/\s/g, '');
+    if (/^4/.test(cleanedNumber)) return 'visa';
+    if (/^5[1-5]/.test(cleanedNumber)) return 'mastercard';
+    if (/^3[47]/.test(cleanedNumber)) return 'amex';
+    if (/^(6011|65|64[4-9])/.test(cleanedNumber)) return 'discover';
     return 'unknown';
 }
 
@@ -169,10 +161,9 @@ export function CheckoutForm() {
                                                 mask={'0000 0000 0000 0000'}
                                                 value={value}
                                                 unmask={false}
-                                                onAccept={(val: string, mask: any) => {
+                                                onAccept={(val: string) => {
                                                     onChange(val);
-                                                    const unmaskedValue = mask.unmaskedValue;
-                                                    setCardBrand(getCardBrand(unmaskedValue));
+                                                    setCardBrand(getCardBrand(val));
                                                 }}
                                                 placeholder="0000 0000 0000 0000"
                                                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
@@ -211,7 +202,8 @@ export function CheckoutForm() {
                                                             mask: IMask.MaskedRange,
                                                             from: new Date().getFullYear() % 100,
                                                             to: 99,
-                                                            maxLength: 2
+                                                            maxLength: 2,
+                                                            autofix: 'pad'
                                                         },
                                                     }}
                                                     value={value}
