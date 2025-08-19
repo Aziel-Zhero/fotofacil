@@ -25,6 +25,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { createClient } from '@/lib/supabase/client';
 import type { User } from '@supabase/supabase-js';
 import { IMaskInput } from 'react-imask';
+import IMask from 'imask';
 
 const checkoutSchema = z.object({
   fullName: z.string().min(1, 'Nome completo é obrigatório'),
@@ -97,14 +98,7 @@ export function CheckoutForm() {
     { mask: '0000 000000 00000', regex: /^3[47]/, cardtype: 'amex' },
     { mask: '0000 0000 0000 0000', regex: /^(6011|65|64[4-9])/, cardtype: 'discover' },
     { mask: '0000 0000 0000 0000', cardtype: 'unknown' },
-  ];
-
-  const dispatchCardType = (value: string) => {
-    const number = (value || '').replace(/\D/g, '');
-    const foundMask = cardMasks.find(({ regex }) => number.match(regex));
-    setCardBrand((foundMask?.cardtype as Brand) || 'unknown');
-    return foundMask || cardMasks[cardMasks.length - 1];
-  }
+  ].map(card => ({...card, mask: IMask.MaskedPattern, ...card}));
 
 
   return (
@@ -166,8 +160,13 @@ export function CheckoutForm() {
                                                 mask={cardMasks}
                                                 value={value}
                                                 unmask={false}
-                                                onAccept={(val) => onChange(val)}
-                                                dispatch={(appended: any, dynamicMasked: any) => dispatchCardType(dynamicMasked.value + appended)}
+                                                onAccept={(val: any) => onChange(val)}
+                                                dispatch={(appended, dynamicMasked) => {
+                                                  const number = (dynamicMasked.value + appended).replace(/\D/g, '');
+                                                  const foundMask = cardMasks.find(({ regex }) => number.match(regex!));
+                                                  setCardBrand((foundMask?.cardtype as Brand) || 'unknown');
+                                                  return foundMask || cardMasks[cardMasks.length - 1];
+                                                }}
                                                 placeholder="0000 0000 0000 0000"
                                                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
                                             />
@@ -267,3 +266,4 @@ export function CheckoutForm() {
     </div>
   );
 }
+
