@@ -19,6 +19,7 @@ import {
 import {
     Form,
     FormControl,
+    FormDescription,
     FormField,
     FormItem,
     FormLabel,
@@ -119,7 +120,7 @@ export function CreateAlbumDialog({ children }: { children: React.ReactNode }) {
       <DialogTrigger asChild>
         {children}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-3xl max-h-[90vh]" onInteractOutside={(e) => {
+      <DialogContent className="sm:max-w-2xl max-h-[90vh]" onInteractOutside={(e) => {
           if(isSubmitting) e.preventDefault();
       }}>
         <DialogHeader>
@@ -135,7 +136,7 @@ export function CreateAlbumDialog({ children }: { children: React.ReactNode }) {
             <form onSubmit={form.handleSubmit(onSubmit)}>
               <ScrollArea className="max-h-[65vh] pr-6">
                 <div className="space-y-6 py-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
                     <FormField name="albumName" control={form.control} render={({ field }) => (
                         <FormItem className="md:col-span-2"><FormLabel>Nome do Álbum</FormLabel><FormControl><Input placeholder="ex: Casamento na Toscana" {...field} /></FormControl><FormMessage /></FormItem>
                     )} />
@@ -171,11 +172,11 @@ export function CreateAlbumDialog({ children }: { children: React.ReactNode }) {
                       />
 
                     <FormField name="maxPhotos" control={form.control} render={({ field }) => (
-                          <FormItem><FormLabel>Máx. de Seleções do Pacote</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>
+                          <FormItem><FormLabel>Máx. de Seleções</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>
                       )} />
 
                      <FormField name="expirationDate" control={form.control} render={({ field }) => (
-                        <FormItem><FormLabel>Data de Expiração (Opcional)</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel>Expiração (Opcional)</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem>
                     )} />
 
                      <FormField name="extraPhotoCost" control={form.control} render={({ field }) => (
@@ -189,7 +190,7 @@ export function CreateAlbumDialog({ children }: { children: React.ReactNode }) {
                     )}
                     
                     <FormField name="giftPhotos" control={form.control} render={({ field }) => (
-                          <FormItem><FormLabel>Fotos de Cortesia</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>
+                          <FormItem className="md:col-span-2"><FormLabel>Fotos de Cortesia</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>
                       )} />
                   </div>
                 </div>
