@@ -199,7 +199,7 @@ export function AlbumDetailClient({ albumId }: { albumId: string }) {
               <PhotoUploader onUploadComplete={addPhoto} albumId={albumId} />
             </div>
 
-            {photos.length > 0 && album?.status === 'Pendente' && (
+            {photos.length > 0 && album && album.status !== 'Aguardando Seleção' && album.status !== 'Entregue' && (
                  <Alert>
                     <Send className="h-4 w-4" />
                     <AlertTitle className="font-headline">Tudo pronto para o cliente?</AlertTitle>
