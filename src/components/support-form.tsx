@@ -6,7 +6,6 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import {
@@ -20,6 +19,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { FileImage, Loader2, Send, UploadCloud, X } from 'lucide-react';
 import Image from 'next/image';
+import { sendSupportEmail } from '@/app/actions';
 
 const supportSchema = z.object({
   contactReason: z.enum(["problem", "suggestion"], {
@@ -31,6 +31,7 @@ const supportSchema = z.object({
 
 export function SupportForm() {
   const { toast } = useToast();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -74,16 +75,33 @@ export function SupportForm() {
     }
   }
 
-  function onSubmit(values: z.infer<typeof supportSchema>) {
-    console.log(values);
-    
-    toast({
-      title: "Mensagem Enviada!",
-      description: "Obrigado pelo seu contato. Nossa equipe responderá em breve.",
+  async function onSubmit(values: z.infer<typeof supportSchema>) {
+    setIsSubmitting(true);
+    const formData = new FormData();
+    Object.entries(values).forEach(([key, value]) => {
+      if (value) {
+        formData.append(key, value);
+      }
     });
+
+    const result = await sendSupportEmail(formData);
+
+    if (result.error) {
+       toast({
+        title: "Erro ao Enviar",
+        description: result.error,
+        variant: "destructive",
+      });
+    } else {
+       toast({
+        title: "Mensagem Enviada!",
+        description: "Obrigado pelo seu contato. Nossa equipe responderá em breve.",
+      });
+      form.reset();
+      handleRemoveFile();
+    }
     
-    form.reset();
-    handleRemoveFile();
+    setIsSubmitting(false);
   }
 
   return (
@@ -167,17 +185,18 @@ export function SupportForm() {
                     )}
                      {preview && (
                         <div className="relative h-full w-full p-2">
-                             <Image src={preview} alt="Pré-visualização" layout="fill" className="object-contain rounded-md" />
+                             <Image src={preview} alt="Pré-visualização" fill className="object-contain rounded-md" />
                         </div>
                      )}
                   </div>
                 </FormControl>
-                <Input
+                <input
                     ref={fileInputRef}
                     type="file"
                     className="hidden"
                     accept="image/png, image/jpeg"
                     onChange={handleFileChange}
+                    name="screenshot"
                   />
                  {file && (
                     <div className="mt-2">
@@ -198,13 +217,13 @@ export function SupportForm() {
         )}
 
         <div className="flex justify-end">
-          <Button type="submit" disabled={!contactReason || form.formState.isSubmitting}>
-            {form.formState.isSubmitting ? (
+          <Button type="submit" disabled={!contactReason || isSubmitting}>
+            {isSubmitting ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin"/>
             ) : (
                 <Send className="mr-2 h-4 w-4" />
             )}
-            Enviar Mensagem
+            {isSubmitting ? 'Enviando...' : 'Enviar Mensagem'}
           </Button>
         </div>
       </form>
