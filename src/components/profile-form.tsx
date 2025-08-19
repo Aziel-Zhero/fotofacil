@@ -224,9 +224,9 @@ export function ProfileForm({ user, onSave }: { user: User, onSave?: () => void 
             
             if (onSave) {
               onSave();
-            } else {
-              router.refresh(); 
             }
+
+            router.refresh(); 
 
         } catch (error: any) {
              toast({
@@ -376,3 +376,5 @@ export function ProfileForm({ user, onSave }: { user: User, onSave?: () => void 
     </>
   );
 }
+
+    
