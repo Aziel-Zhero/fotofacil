@@ -9,8 +9,8 @@ const plans = [
     {
         name: "Mensal",
         price: "32,00",
-        period: "/mês",
-        billingInfo: "Cobrado R$ 32,00 por mês",
+        period: "Pagamento Único",
+        billingInfo: "Cobrado uma vez, sem assinatura.",
         description: "Ideal para começar com o pé direito.",
         features: [
             "10 álbuns",
