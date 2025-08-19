@@ -1,33 +1,44 @@
 
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { SupportForm } from "@/components/support-form";
+import { Button } from "@/components/ui/button";
+import { LifeBuoy, Mail } from "lucide-react";
+import Link from "next/link";
 
 export default function HelpPage() {
   return (
     <div className="container mx-auto py-8 max-w-3xl">
       <div className="mb-8 text-center">
-        <h1 className="text-4xl font-bold font-headline">Central de Ajuda</h1>
+        <LifeBuoy className="mx-auto h-12 w-12 text-primary" />
+        <h1 className="text-4xl font-bold font-headline mt-4">Central de Ajuda</h1>
         <p className="text-muted-foreground mt-2">
-          Tem alguma dúvida? Estamos aqui para ajudar!
+          Tem alguma dúvida? Encontre respostas e dicas aqui.
         </p>
       </div>
 
-      <Card className="mb-8">
+      <Card className="mb-8 text-center">
         <CardHeader>
-          <CardTitle className="font-headline">Fale Conosco</CardTitle>
+          <CardTitle className="font-headline">Precisa Falar Conosco?</CardTitle>
           <CardDescription>
-            Selecione o motivo do seu contato e preencha o formulário abaixo.
+            Nossa equipe está pronta para ajudar com qualquer problema ou sugestão.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <SupportForm />
+          <Button asChild>
+            <Link href="/dashboard/contact">
+              <Mail className="mr-2 h-4 w-4" />
+              Ir para a Página de Contato
+            </Link>
+          </Button>
         </CardContent>
       </Card>
 
-      <Card className="mb-8">
+      <Card>
         <CardHeader>
           <CardTitle className="font-headline">FAQ - Perguntas Frequentes</CardTitle>
+           <CardDescription>
+            Dicas e instruções sobre as principais funcionalidades da ferramenta.
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <Accordion type="single" collapsible className="w-full">
@@ -49,12 +60,6 @@ export default function HelpPage() {
                     É uma forma de surpreender seu cliente! Você pode adicionar algumas fotos extras como um presente. Elas serão reveladas ao cliente no final da seleção, como um bônus.
                 </AccordionContent>
             </AccordionItem>
-             <AccordionItem value="item-4">
-                <AccordionTrigger>Como a marcação por IA pode me ajudar?</AccordionTrigger>
-                <AccordionContent>
-                    Nossa inteligência artificial analisa o conteúdo de cada foto e sugere tags (palavras-chave) automaticamente. Isso economiza seu tempo e torna muito mais fácil encontrar fotos específicas dentro de um grande álbum.
-                </AccordionContent>
-            </AccordionItem>
             <AccordionItem value="item-5">
                 <AccordionTrigger>Meus dados e fotos estão seguros?</AccordionTrigger>
                 <AccordionContent>
@@ -62,9 +67,9 @@ export default function HelpPage() {
                 </AccordionContent>
             </AccordionItem>
              <AccordionItem value="item-6">
-                <AccordionTrigger>Por que um novo usuário às vezes não aparece em outras tabelas?</AccordionTrigger>
+                <AccordionTrigger>Dica: Como garantir que novos usuários sejam criados corretamente?</AccordionTrigger>
                 <AccordionContent>
-                    Em sistemas que sincronizam dados (por exemplo, criar um perfil de "usuário" a partir de uma conta de "autenticação"), usamos gatilhos de banco de dados. Às vezes, um novo registro de autenticação pode não criar o registro de perfil correspondente se o gatilho falhar silenciosamente. A causa mais comum é um problema de permissão: a função do gatilho pode não ter o nível de acesso necessário (como `service_role` em vez de `public`) para inserir dados em outra tabela. A solução é sempre garantir que a função do gatilho seja executada com as permissões corretas para realizar a operação desejada.
+                    Nossa plataforma usa gatilhos de banco de dados para criar perfis de fotógrafos e clientes automaticamente. Se um usuário não for criado, a causa mais comum é uma falha de permissão no gatilho do Supabase. Para evitar isso, sempre garanta que a função do gatilho (`on_auth_user_created`) tenha permissões de `service_role` para inserir dados nas tabelas `photographers` e `clients`.
                 </AccordionContent>
             </AccordionItem>
           </Accordion>
