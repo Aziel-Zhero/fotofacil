@@ -30,7 +30,7 @@ import IMask from 'imask';
 const checkoutSchema = z.object({
   fullName: z.string().min(1, 'Nome completo é obrigatório'),
   document: z.string().optional(),
-  cardNumber: z.string().min(16, 'O número do cartão deve ter pelo menos 16 dígitos.'),
+  cardNumber: z.string().min(19, 'O número do cartão deve ter pelo menos 16 dígitos.'), // 16 digits + 3 spaces
   cardHolder: z.string().min(1, 'O nome do titular é obrigatório.'),
   cardExpiry: z.string().length(5, 'A validade deve estar no formato MM/AA.'),
   cardCvc: z.string().length(3, 'O CVC deve ter 3 dígitos.'),
@@ -38,6 +38,24 @@ const checkoutSchema = z.object({
 });
 
 type Brand = 'visa' | 'mastercard' | 'amex' | 'discover' | 'unknown';
+
+const cardBrandRegex: Record<Brand, RegExp> = {
+    visa: /^4/,
+    mastercard: /^5[1-5]/,
+    amex: /^3[47]/,
+    discover: /^(6011|65|64[4-9])/,
+    unknown: /.*/
+};
+
+function getCardBrand(number: string): Brand {
+    for (const brand in cardBrandRegex) {
+        if (cardBrandRegex[brand as Brand].test(number)) {
+            return brand as Brand;
+        }
+    }
+    return 'unknown';
+}
+
 
 export function CheckoutForm() {
   const { toast } = useToast();
@@ -91,15 +109,6 @@ export function CheckoutForm() {
         description: "Use o código no seu aplicativo de banco para pagar.",
     })
   }
-  
-  const cardMasks = [
-    { mask: '0000 0000 0000 0000', regex: /^4/, cardtype: 'visa' },
-    { mask: '0000 0000 0000 0000', regex: /^5[1-5]/, cardtype: 'mastercard' },
-    { mask: '0000 000000 00000', regex: /^3[47]/, cardtype: 'amex' },
-    { mask: '0000 0000 0000 0000', regex: /^(6011|65|64[4-9])/, cardtype: 'discover' },
-    { mask: '0000 0000 0000 0000', cardtype: 'unknown' },
-  ];
-
 
   return (
     <div className="grid md:grid-cols-2 gap-12 items-start">
@@ -149,26 +158,21 @@ export function CheckoutForm() {
               <TabsContent value="credit-card">
                   <Card className="bg-transparent border-none shadow-none">
                       <CardContent className="space-y-4 pt-6 p-1">
-                           <Controller
+                            <Controller
                                 name="cardNumber"
                                 control={form.control}
                                 render={({ field: { onChange, value } }) => (
                                     <FormItem>
                                         <FormLabel>Número do Cartão</FormLabel>
                                         <FormControl>
-                                             <IMaskInput
-                                                mask={cardMasks.map(card => ({ mask: card.mask }))}
+                                            <IMaskInput
+                                                mask={'0000 0000 0000 0000'}
                                                 value={value}
                                                 unmask={false}
-                                                onAccept={(val: any, mask: any) => {
+                                                onAccept={(val: string, mask: any) => {
                                                     onChange(val);
-                                                    const card = cardMasks[mask.resolveIndex(val)];
-                                                    setCardBrand((card?.cardtype as Brand) || 'unknown');
-                                                }}
-                                                dispatch={(appended, dynamicMasked) => {
-                                                  const number = (dynamicMasked.value + appended).replace(/\D/g, '');
-                                                  const foundMask = cardMasks.find(({ regex }) => regex && number.match(regex));
-                                                  return foundMask ? new IMask.MaskedPattern(foundMask) : new IMask.MaskedPattern(cardMasks[cardMasks.length -1]);
+                                                    const unmaskedValue = mask.unmaskedValue;
+                                                    setCardBrand(getCardBrand(unmaskedValue));
                                                 }}
                                                 placeholder="0000 0000 0000 0000"
                                                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
@@ -194,10 +198,21 @@ export function CheckoutForm() {
                                             <FormLabel>Validade</FormLabel>
                                             <FormControl>
                                                 <IMaskInput
-                                                    mask="MM / YY"
+                                                    mask="MM/YY"
                                                     blocks={{
-                                                        MM: { mask: IMask.MaskedRange, from: 1, to: 12 },
-                                                        YY: { mask: IMask.MaskedRange, from: new Date().getFullYear() % 100, to: 99 },
+                                                        MM: {
+                                                            mask: IMask.MaskedRange,
+                                                            from: 1,
+                                                            to: 12,
+                                                            maxLength: 2,
+                                                            autofix: 'pad'
+                                                        },
+                                                        YY: {
+                                                            mask: IMask.MaskedRange,
+                                                            from: new Date().getFullYear() % 100,
+                                                            to: 99,
+                                                            maxLength: 2
+                                                        },
                                                     }}
                                                     value={value}
                                                     unmask={false}
