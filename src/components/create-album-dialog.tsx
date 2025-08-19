@@ -187,7 +187,7 @@ export function CreateAlbumDialog({ children }: { children: React.ReactNode }) {
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                        <FormField name="expirationDate" control={form.control} render={({ field }) => (
-                          <FormItem><FormLabel>Data de Expiração (Opcional)</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem>
+                          <FormItem><FormLabel>Expiração (Opcional)</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem>
                       )} />
                       <FormField name="maxPhotos" control={form.control} render={({ field }) => (
                           <FormItem><FormLabel>Máx. de Seleções</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>
@@ -204,6 +204,9 @@ export function CreateAlbumDialog({ children }: { children: React.ReactNode }) {
                 </div>
               </ScrollArea>
               <DialogFooter className="pt-6">
+                  <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={isSubmitting}>
+                    Cancelar
+                  </Button>
                   <Button type="submit" disabled={isSubmitting}>
                     {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     {isSubmitting ? 'Processando...' : 'Criar Álbum'}
