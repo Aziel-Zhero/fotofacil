@@ -1,7 +1,6 @@
-
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -19,10 +18,10 @@ import {
     FormDescription,
   } from '@/components/ui/form';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Instagram, Smartphone, Palette, Sun, Moon, Cloud, Bell } from 'lucide-react';
+import { Instagram, Smartphone, Palette, Sun, Moon, Cloud, Bell, Mail, Send } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { useTheme } from 'next-themes';
 import { Separator } from './ui/separator';
+import { useTheme } from 'next-themes';
 
 const settingsSchema = z.object({
     theme: z.string(),
@@ -37,7 +36,6 @@ const settingsSchema = z.object({
 export function SettingsForm() {
     const { toast } = useToast();
     const { theme, setTheme } = useTheme();
-    const [mounted, setMounted] = useState(false);
 
     const form = useForm<z.infer<typeof settingsSchema>>({
         resolver: zodResolver(settingsSchema),
@@ -52,16 +50,13 @@ export function SettingsForm() {
         },
     });
     
+    // Sincronizar o formulário com o tema atual no carregamento
     useEffect(() => {
-        setMounted(true);
-    }, []);
-    
-    useEffect(() => {
-        if (mounted && theme) {
+        if (theme) {
             form.setValue('theme', theme);
         }
-    }, [mounted, theme, form]);
-    
+    }, [theme, form]);
+
     function onSubmit(values: z.infer<typeof settingsSchema>) {
         setTheme(values.theme);
         console.log(values);
@@ -69,10 +64,6 @@ export function SettingsForm() {
             title: "Configurações Salvas",
             description: "Suas preferências foram atualizadas com sucesso.",
         });
-    }
-    
-    if (!mounted) {
-        return null;
     }
 
     return (
