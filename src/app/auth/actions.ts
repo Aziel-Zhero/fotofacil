@@ -179,5 +179,5 @@ export async function resetPassword(formData: FormData) {
         return { error: "Não foi possível redefinir a senha. O link pode ter expirado." };
     }
 
-    redirect('/login?message=Sua senha foi redefinida com sucesso. Você já pode fazer login.');
+    return { success: true, redirect: '/login?message=Sua senha foi redefinida com sucesso. Você já pode fazer login.' };
 }
