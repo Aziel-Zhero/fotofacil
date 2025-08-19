@@ -19,7 +19,7 @@ import {
     FormDescription,
   } from '@/components/ui/form';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Instagram, Smartphone, Palette, Sun, Moon, Cloud, Bell, Mail, Send } from 'lucide-react';
+import { Instagram, Smartphone, Palette, Sun, Moon, Cloud, Bell, Mail, Send, Facebook, Link as LinkIcon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Separator } from './ui/separator';
 
@@ -27,11 +27,21 @@ const settingsSchema = z.object({
     theme: z.string().default('light'),
     instagram: z.string().optional(),
     whatsapp: z.string().optional(),
+    facebook: z.string().optional(),
+    tiktok: z.string().optional(),
+    website: z.string().optional(),
     notificationsEnabled: z.boolean().default(true),
     emailNotifications: z.boolean().default(true),
     whatsappNotifications: z.boolean().default(false),
     telegramNotifications: z.boolean().default(false),
 });
+
+const TikTokIcon = (props: React.SVGProps<SVGSVGElement>) => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
+        <path d="M22.28 8.43a5.86 5.86 0 0 1-1.34.62 3 3 0 0 0-2.3-2.73v-.1a.3.3 0 0 0-.3-.3h-3.4a.3.3 0 0 0-.3.3v9.85a4.3 4.3 0 0 1-4.3 4.3h-.09a4.32 4.32 0 0 1-4.3-4.3V6.22a.3.3 0 0 0-.3-.3H2.82a.3.3 0 0 0-.3.3v5.1a5.68 5.68 0 0 0 4.14 5.54 5.52 5.52 0 0 0 6 0A5.86 5.86 0 0 0 21 13.75v-1.9a.3.3 0 0 0-.3-.3h-3.4a.3.3 0 0 0-.3.3v1.36a2.86 2.86 0 0 1-2.48 2.83 2.76 2.76 0 0 1-3.07-2.83V8.89a.3.3 0 0 0-.3-.3h-2.1a.3.3 0 0 0-.3.3v.1a3 3 0 0 0 2.3 2.73A5.86 5.86 0 0 1 12 13.06a5.52 5.52 0 0 1-5.52-5.52V2.42a.3.3 0 0 0-.3-.3H2.82a.3.3 0 0 0-.3.3v9.12A8.68 8.68 0 0 0 9.8 21a8.52 8.52 0 0 0 9-8.41v-1.36a.3.3 0 0 0-.3-.3h-3.4a.3.3 0 0 0-.3.3v1.9a2.86 2.86 0 0 1-5.34.62 2.76 2.76 0 0 1 .4-4.24V2.42a.3.3 0 0 0-.3-.3h-2.1a.3.3 0 0 0-.3.3V6.5a6 6 0 0 0 4.78 5.9 2.86 2.86 0 0 1-2.48-2.83v-1.9a.3.3 0 0 0-.3-.3h-2.1a.3.3 0 0 0-.3.3v.1A5.86 5.86 0 0 0 12 11.23a5.52 5.52 0 0 0 5.52-5.52V2.42a.3.3 0 0 0-.3-.3H13.8a.3.3 0 0 0-.3.3v9.12a2.76 2.76 0 0 1-2.76 2.76h-.09a2.76 2.76 0 0 1-2.76-2.76V8.89a.3.3 0 0 0-.3-.3H5.42a.3.3 0 0 0-.3.3v1.9a5.86 5.86 0 0 0 5.86 5.86h.09a5.86 5.86 0 0 0 5.86-5.86v-1.9a.3.3 0 0 0-.3-.3H13.8a.3.3 0 0 0-.3.3v1.36A2.76 2.76 0 0 1 10.74 17a2.76 2.76 0 0 1-2.76-2.76V2.42a.3.3 0 0 0-.3-.3H5.42a.3.3 0 0 0-.3.3v4.08a2.76 2.76 0 0 1-2.76 2.76h-.09A2.76 2.76 0 0 1 0 6.5V2.42A2.42 2.42 0 0 1 2.42 0h3.4a2.42 2.42 0 0 1 2.42 2.42v6.43a2.76 2.76 0 0 1-2.76 2.76h-.09A2.76 2.76 0 0 1 2.67 8.89V6.5a2.42 2.42 0 0 1 2.42-2.42h2.1a2.42 2.42 0 0 1 2.42 2.42v4.08a5.52 5.52 0 0 0 5.52 5.52h.09a5.52 5.52 0 0 0 5.52-5.52V8.89a2.42 2.42 0 0 1 2.42-2.42h2.1a2.42 2.42 0 0 1 2.42 2.42v1.9a2.76 2.76 0 0 1-2.76 2.76h-.09a2.76 2.76 0 0 1-2.76-2.76V8.89a2.42 2.42 0 0 1 2.42-2.42h2.1a2.42 2.42 0 0 1 2.42 2.42v4.08A5.52 5.52 0 0 0 24 17.58v-4.08a2.42 2.42 0 0 1-2.42-2.42V8.89a2.42 2.42 0 0 1 2.42-2.42h2.1a2.42 2.42 0 0 1 2.42 2.42v4.08a5.52 5.52 0 0 0 5.52 5.52h.09a5.52 5.52 0 0 0 5.52-5.52V8.43Z" />
+    </svg>
+);
+
 
 export function SettingsForm() {
     const { toast } = useToast();
@@ -41,6 +51,9 @@ export function SettingsForm() {
             theme: 'light',
             instagram: "https://instagram.com/seu-perfil",
             whatsapp: "5511999998888",
+            facebook: "https://facebook.com/seu-perfil",
+            tiktok: "https://tiktok.com/@seu-perfil",
+            website: "https://seusite.com",
             notificationsEnabled: true,
             emailNotifications: true,
             whatsappNotifications: false,
@@ -53,7 +66,7 @@ export function SettingsForm() {
         const currentTheme = document.documentElement.classList.contains('dark') ? 'dark' : 
                              document.documentElement.classList.contains('theme-blue') ? 'blue' : 'light';
         form.setValue('theme', currentTheme);
-    }, []);
+    }, [form]);
     
     const theme = form.watch('theme');
 
@@ -201,7 +214,52 @@ export function SettingsForm() {
                                     <div className="relative">
                                         <Instagram className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                                         <FormControl>
-                                            <Input placeholder="Seu usuário do Instagram" className="pl-10" {...field} />
+                                            <Input placeholder="https://instagram.com/seu-perfil" className="pl-10" {...field} />
+                                        </FormControl>
+                                    </div>
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="facebook"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Facebook</FormLabel>
+                                    <div className="relative">
+                                        <Facebook className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                                        <FormControl>
+                                            <Input placeholder="https://facebook.com/seu-perfil" className="pl-10" {...field} />
+                                        </FormControl>
+                                    </div>
+                                </FormItem>
+                            )}
+                        />
+                         <FormField
+                            control={form.control}
+                            name="tiktok"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>TikTok</FormLabel>
+                                    <div className="relative">
+                                        <TikTokIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                                        <FormControl>
+                                            <Input placeholder="https://tiktok.com/@seu-perfil" className="pl-10" {...field} />
+                                        </FormControl>
+                                    </div>
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="website"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Site</FormLabel>
+                                     <div className="relative">
+                                        <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                                        <FormControl>
+                                            <Input placeholder="https://seusite.com" className="pl-10" {...field} />
                                         </FormControl>
                                     </div>
                                 </FormItem>
