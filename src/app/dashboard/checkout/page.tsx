@@ -1,3 +1,4 @@
+
 import { CheckoutForm } from "@/components/checkout-form";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { ArrowLeft } from "lucide-react";
@@ -14,7 +15,7 @@ export default function CheckoutPage() {
   };
 
   return (
-    <div className="container mx-auto py-8 max-w-4xl">
+    <div className="container mx-auto py-8 max-w-lg">
        <div className="mb-8">
             <Button variant="ghost" asChild className="mb-4">
                 <Link href="/dashboard/subscription">
@@ -24,37 +25,13 @@ export default function CheckoutPage() {
             </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div>
-            <h1 className="font-headline text-3xl font-bold mb-4">Finalizar Assinatura</h1>
-            <Card>
-                <CardHeader>
-                    <CardTitle>Resumo do Pedido</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <div className="space-y-4">
-                        <div className="flex justify-between">
-                            <span className="text-muted-foreground">Plano</span>
-                            <span className="font-semibold">{selectedPlan.name}</span>
-                        </div>
-                         <div className="flex justify-between">
-                            <span className="text-muted-foreground">Período</span>
-                            <span className="font-semibold">{selectedPlan.period}</span>
-                        </div>
-                        <div className="flex justify-between text-lg font-bold">
-                            <span>Total</span>
-                            <span>R$ {selectedPlan.price}</span>
-                        </div>
-                    </div>
-                </CardContent>
-            </Card>
-        </div>
+      <div className="grid grid-cols-1 gap-8">
         <div>
           <Card>
             <CardHeader>
-              <CardTitle className="font-headline">Pagamento</CardTitle>
+              <CardTitle className="font-headline">Finalizar Assinatura</CardTitle>
               <CardDescription>
-                Preencha seus dados de pagamento abaixo.
+                Plano Selecionado: <span className="font-bold text-primary">{selectedPlan.name}</span>
               </CardDescription>
             </CardHeader>
             <CardContent>
