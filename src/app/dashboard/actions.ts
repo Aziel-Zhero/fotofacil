@@ -363,7 +363,6 @@ export async function deleteAlbum(albumId: string) {
     return { error: 'Fotógrafo não autenticado.' };
   }
   
-  // Primeiro, verifique se o álbum pertence ao fotógrafo logado.
   const { data: album, error: fetchError } = await supabase
     .from('albums')
     .select('id')
@@ -375,8 +374,6 @@ export async function deleteAlbum(albumId: string) {
     return { error: 'Álbum não encontrado ou você não tem permissão para excluí-lo.' };
   }
 
-  // Se a verificação for bem-sucedida, prossiga com a exclusão.
-  // O ON DELETE CASCADE no banco cuidará da exclusão das fotos associadas.
   const { error: deleteError } = await supabase
     .from('albums')
     .delete()
@@ -388,7 +385,7 @@ export async function deleteAlbum(albumId: string) {
   }
   
   revalidatePath('/dashboard');
-  redirect('/dashboard');
+  return { success: true };
 }
 
 

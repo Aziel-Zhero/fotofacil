@@ -1,6 +1,8 @@
+
 "use client";
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { PhotoUploader } from "@/components/photo-uploader";
 import { PhotoGrid } from "@/components/photo-grid";
 import { ArrowLeft, Grid3x3, ImageIcon, Rows, Square, Send, Settings, Trash2, Edit } from "lucide-react";
@@ -33,6 +35,7 @@ export function AlbumDetailClient({ albumId }: { albumId: string }) {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const router = useRouter();
 
   useEffect(() => {
     const fetchAlbumData = async () => {
@@ -99,12 +102,12 @@ export function AlbumDetailClient({ albumId }: { albumId: string }) {
         description: result.error,
         variant: "destructive"
       });
-    } else {
+    } else if (result?.success) {
       toast({
         title: "Álbum excluído",
         description: "O álbum foi excluído com sucesso.",
       });
-      // O redirect é feito na server action
+      router.push('/dashboard');
     }
   }
 
