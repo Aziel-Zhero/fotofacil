@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect } from 'react';
@@ -29,7 +30,7 @@ const settingsSchema = z.object({
     whatsapp: z.string().optional(),
     notifyOnAlbumShare: z.boolean().default(true),
     notifyOnSelectionComplete: z.boolean().default(true),
-    notifyOnAlbumDelivered: z.boolean().default(true),
+    notifyOnAlbumDelivered: z.boolean().default(false),
     notifyOnExpiration: z.boolean().default(true),
 });
 

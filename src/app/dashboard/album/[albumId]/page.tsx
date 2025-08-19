@@ -120,29 +120,31 @@ export default function AlbumDetailPage() {
             )}
         </div>
         
-        <div className="space-y-12">
-            {album?.status === 'Pendente' && albumId && (
-                 <div>
-                    <PhotoUploader albumId={albumId} />
-                </div>
-            )}
-            
-            {photos.length > 0 && album?.status === 'Pendente' && (
-                 <Alert>
-                    <Send className="h-4 w-4" />
-                    <AlertTitle className="font-headline">Tudo pronto para o cliente?</AlertTitle>
-                    <AlertDescription className="flex justify-between items-center">
-                       Quando terminar de enviar as fotos, notifique seu cliente para que ele possa começar a seleção.
-                        <Button onClick={handleNotifyClient} disabled={isNotifying}>
-                            {isNotifying && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
-                            <Send className="mr-2 h-4 w-4" />
-                            Notificar Cliente para Seleção
-                        </Button>
-                    </AlertDescription>
-                </Alert>
-            )}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+            <div className="lg:col-span-1 space-y-12">
+                {album?.status === 'Pendente' && albumId && (
+                     <div>
+                        <PhotoUploader albumId={albumId} />
+                    </div>
+                )}
+                
+                {photos.length > 0 && album?.status === 'Pendente' && (
+                     <Alert>
+                        <Send className="h-4 w-4" />
+                        <AlertTitle className="font-headline">Tudo pronto para o cliente?</AlertTitle>
+                        <AlertDescription className="flex flex-col gap-4 items-start">
+                           <span>Quando terminar de enviar as fotos, notifique seu cliente para que ele possa começar a seleção.</span>
+                            <Button onClick={handleNotifyClient} disabled={isNotifying}>
+                                {isNotifying && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
+                                <Send className="mr-2 h-4 w-4" />
+                                Notificar Cliente
+                            </Button>
+                        </AlertDescription>
+                    </Alert>
+                )}
+            </div>
            
-            <div id="gallery-section">
+            <div id="gallery-section" className="lg:col-span-2">
                 <div className="flex justify-between items-center mb-4">
                     <div className="flex items-center gap-4">
                         <h2 className="text-xl font-bold font-headline text-textDark">Galeria</h2>

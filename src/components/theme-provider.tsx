@@ -20,11 +20,14 @@ function ThemeInjector() {
 
     React.useEffect(() => {
         const body = document.body;
+        // Remove all theme classes first to avoid conflicts
+        body.classList.remove('theme-blue');
+        
+        // Add the correct class based on the current theme
         if (theme === 'blue') {
             body.classList.add('theme-blue');
-        } else {
-            body.classList.remove('theme-blue');
         }
+        // The 'dark' class is handled by next-themes automatically
     }, [theme]);
 
     return null;
