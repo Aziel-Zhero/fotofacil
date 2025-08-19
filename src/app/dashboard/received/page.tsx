@@ -6,7 +6,6 @@ import Image from 'next/image';
 import { GalleryThumbnails } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
-// A RPC retornará objetos com esta estrutura.
 type SelectedPhoto = {
     id: string;
     url: string;
@@ -23,22 +22,64 @@ export default async function ReceivedPage() {
     return redirect('/login');
   }
 
-  // A lógica de busca agora é simplificada para uma única chamada de RPC.
-  const { data: photos, error } = await supabase
-    .rpc('get_selected_photos_for_photographer', { p_photographer_id: user.id });
+  // Etapa 1: Buscar os álbuns do fotógrafo com 'Seleção Completa'
+  const { data: albumsWithSelection, error: albumsError } = await supabase
+    .from('albums')
+    .select('id, name')
+    .eq('photographer_id', user.id)
+    .eq('status', 'Seleção Completa');
 
-  if (error) {
-    console.error('Error fetching received photos:', error);
-    return (
+  if (albumsError) {
+    console.error('Error fetching albums with selection:', albumsError);
+     return (
       <div className="container mx-auto py-8">
-        <h1 className="text-destructive">Erro ao carregar as fotos recebidas.</h1>
+        <h1 className="text-destructive">Erro ao carregar os álbuns com seleção.</h1>
         <p className="text-muted-foreground">Por favor, tente novamente mais tarde.</p>
-        <pre className="mt-4 text-xs bg-muted p-2 rounded">{JSON.stringify(error, null, 2)}</pre>
       </div>
     );
   }
-  
-  const formattedPhotos: SelectedPhoto[] = photos || [];
+
+  let formattedPhotos: SelectedPhoto[] = [];
+
+  if (albumsWithSelection && albumsWithSelection.length > 0) {
+      const albumIds = albumsWithSelection.map(a => a.id);
+      
+      // Etapa 2: Buscar as seleções e as fotos correspondentes
+      const { data: selections, error: selectionsError } = await supabase
+          .from('album_selections')
+          .select(`
+              photos (
+                  id,
+                  url,
+                  name,
+                  tags
+              )
+          `)
+          .in('album_id', albumIds);
+
+      if (selectionsError) {
+          console.error('Error fetching selections:', selectionsError);
+           return (
+              <div className="container mx-auto py-8">
+                <h1 className="text-destructive">Erro ao carregar as fotos selecionadas.</h1>
+                <p className="text-muted-foreground">Por favor, tente novamente mais tarde.</p>
+              </div>
+            );
+      }
+      
+      // Mapear os dados para o formato esperado
+      formattedPhotos = selections.map((selection: any) => {
+          const album = albumsWithSelection.find(a => a.id === selection.album_id);
+          return {
+              id: selection.photos.id,
+              url: selection.photos.url,
+              name: selection.photos.name,
+              tags: selection.photos.tags,
+              album_name: album?.name || 'Álbum desconhecido'
+          };
+      }).filter(Boolean); // Filtra nulos se a foto for deletada
+  }
+
 
   return (
     <div className="container mx-auto py-8">
