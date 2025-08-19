@@ -4,7 +4,7 @@ import { autoImageTagging, type AutoImageTaggingInput } from "@/ai/flows/image-t
 import { Resend } from 'resend';
 import { SupportRequestEmail } from "@/emails/support-request";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resendApiKey = process.env.RESEND_API_KEY;
 const supportEmailTo = process.env.SUPPORT_EMAIL_TO || 'eduarda.blue03@gmail.com';
 const supportEmailFrom = process.env.SUPPORT_EMAIL_FROM || 'onboarding@resend.dev';
 
@@ -13,7 +13,7 @@ export async function generateTagsForImage(
   input: AutoImageTaggingInput
 ): Promise<string[]> {
   try {
-    const output = await autoImageTagging(input);
+    const output = await autoImagetagging(input);
     return output.tags;
   } catch (error) {
     // Em um app real, seria bom ter um sistema de log de erros mais robusto aqui.
@@ -22,6 +22,12 @@ export async function generateTagsForImage(
 }
 
 export async function sendSupportEmail(formData: FormData) {
+  if (!resendApiKey) {
+    console.error("Resend API key is missing.");
+    return { error: 'O serviço de envio de email não está configurado. Por favor, contate o administrador do sistema.' };
+  }
+
+  const resend = new Resend(resendApiKey);
   const reason = formData.get('contactReason') as string;
   const description = formData.get('description') as string;
   // O anexo não é tratado nesta versão para simplificar, 
