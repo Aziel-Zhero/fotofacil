@@ -16,7 +16,8 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { CardContent, CardFooter } from '@/components/ui/card';
-import { useState } from 'react';
+import { useToast } from '@/hooks/use-toast';
+import { useEffect, useState } from 'react';
 import { Loader2 } from 'lucide-react';
 import { login } from '@/app/auth/actions';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -26,13 +27,12 @@ const formSchema = z.object({
   password: z.string().min(1, { message: 'Senha é obrigatória.' }),
 });
 
-export function LoginForm({ error, message }: { error: string | null, message: string | null }) {
+export function LoginForm({ message, error }: { message?: string, error?: string }) {
+  const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  // O estado inicial agora é definido pelas props recebidas do Server Component.
-  const [formError, setFormError] = useState<string | null>(error);
-  const [successMessage, setSuccessMessage] = useState<string | null>(message);
+  const [formError, setFormError] = useState<string | null>(error || null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(message || null);
 
-  // O useEffect para ler searchParams foi removido, pois não é mais necessário.
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),

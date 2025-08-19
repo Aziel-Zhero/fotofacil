@@ -22,50 +22,60 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Instagram, Smartphone, Palette, Sun, Moon, Cloud, Bell, Mail, Send } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Separator } from './ui/separator';
-import { useTheme } from 'next-themes';
 
 const settingsSchema = z.object({
-    theme: z.string(),
+    theme: z.string().default('light'),
     instagram: z.string().optional(),
     whatsapp: z.string().optional(),
-    notifyOnAlbumShare: z.boolean().default(true),
-    notifyOnSelectionComplete: z.boolean().default(true),
-    notifyOnAlbumDelivered: z.boolean().default(false),
-    notifyOnExpiration: z.boolean().default(true),
+    notificationsEnabled: z.boolean().default(true),
+    emailNotifications: z.boolean().default(true),
+    whatsappNotifications: z.boolean().default(false),
+    telegramNotifications: z.boolean().default(false),
 });
 
 export function SettingsForm() {
     const { toast } = useToast();
-    const { theme, setTheme } = useTheme();
-
     const form = useForm<z.infer<typeof settingsSchema>>({
         resolver: zodResolver(settingsSchema),
         defaultValues: {
-            theme: theme || 'light',
+            theme: 'light',
             instagram: "https://instagram.com/seu-perfil",
             whatsapp: "5511999998888",
-            notifyOnAlbumShare: true,
-            notifyOnSelectionComplete: true,
-            notifyOnAlbumDelivered: false,
-            notifyOnExpiration: true,
+            notificationsEnabled: true,
+            emailNotifications: true,
+            whatsappNotifications: false,
+            telegramNotifications: false,
         },
     });
-    
+
     // Sincronizar o formulário com o tema atual no carregamento
     useEffect(() => {
-        if (theme) {
-            form.setValue('theme', theme);
+        const currentTheme = document.documentElement.classList.contains('dark') ? 'dark' : 
+                             document.documentElement.classList.contains('theme-blue') ? 'blue' : 'light';
+        form.setValue('theme', currentTheme);
+    }, []);
+    
+    const theme = form.watch('theme');
+
+    useEffect(() => {
+        const root = window.document.documentElement;
+        root.classList.remove('dark', 'theme-blue');
+        if (theme === 'dark') {
+            root.classList.add('dark');
+        } else if (theme === 'blue') {
+            root.classList.add('theme-blue');
         }
-    }, [theme, form]);
+    }, [theme]);
 
     function onSubmit(values: z.infer<typeof settingsSchema>) {
-        setTheme(values.theme);
         console.log(values);
         toast({
             title: "Configurações Salvas",
             description: "Suas preferências foram atualizadas com sucesso.",
         });
     }
+
+    const notificationsEnabled = form.watch('notificationsEnabled');
 
     return (
         <Form {...form}>
@@ -121,69 +131,58 @@ export function SettingsForm() {
                 <Card>
                     <CardHeader>
                         <CardTitle className="font-headline">Notificações</CardTitle>
-                        <CardDescription>Escolha como você deseja ser notificado por e-mail e na plataforma.</CardDescription>
+                        <CardDescription>Escolha como e quando você quer ser notificado.</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-6">
                         <FormField
                             control={form.control}
-                            name="notifyOnAlbumShare"
+                            name="notificationsEnabled"
                             render={({ field }) => (
                                 <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                                <div className="space-y-0.5">
-                                    <FormLabel className="text-base">Novo Álbum Compartilhado</FormLabel>
-                                    <FormDescription>Receber um alerta quando um cliente visualizar um álbum pela primeira vez.</FormDescription>
-                                </div>
-                                <FormControl>
-                                    <Switch checked={field.value} onCheckedChange={field.onChange} />
-                                </FormControl>
+                                    <div className="space-y-0.5">
+                                        <FormLabel className="text-base flex items-center gap-2"><Bell />Ativar Notificações</FormLabel>
+                                        <FormDescription>Receba alertas sobre atividades importantes na sua conta.</FormDescription>
+                                    </div>
+                                    <FormControl>
+                                        <Switch checked={field.value} onCheckedChange={field.onChange} />
+                                    </FormControl>
                                 </FormItem>
                             )}
                         />
-                        <FormField
-                            control={form.control}
-                            name="notifyOnSelectionComplete"
-                            render={({ field }) => (
-                                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                                <div className="space-y-0.5">
-                                    <FormLabel className="text-base">Seleção do Cliente Finalizada</FormLabel>
-                                    <FormDescription>Receber um alerta quando um cliente enviar a seleção de fotos.</FormDescription>
-                                </div>
-                                <FormControl>
-                                    <Switch checked={field.value} onCheckedChange={field.onChange} />
-                                </FormControl>
+                        <Separator />
+                         <div className={`space-y-4 ${!notificationsEnabled ? 'opacity-50 pointer-events-none' : ''}`}>
+                            <h3 className="mb-4 text-base font-medium text-muted-foreground">Canais de Notificação</h3>
+                             <FormField
+                                control={form.control}
+                                name="emailNotifications"
+                                render={({ field }) => (
+                                <FormItem className="flex flex-row items-center justify-between">
+                                    <FormLabel className="flex items-center gap-3"><Mail /> Email</FormLabel>
+                                    <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} disabled={!notificationsEnabled}/></FormControl>
                                 </FormItem>
-                            )}
-                        />
-                         <FormField
-                            control={form.control}
-                            name="notifyOnAlbumDelivered"
-                            render={({ field }) => (
-                                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                                <div className="space-y-0.5">
-                                    <FormLabel className="text-base">Download do Cliente</FormLabel>
-                                    <FormDescription>Receber um alerta quando o cliente baixar o álbum final.</FormDescription>
-                                </div>
-                                <FormControl>
-                                    <Switch checked={field.value} onCheckedChange={field.onChange} />
-                                </FormControl>
+                                )}
+                            />
+                             <FormField
+                                control={form.control}
+                                name="whatsappNotifications"
+                                render={({ field }) => (
+                                <FormItem className="flex flex-row items-center justify-between">
+                                     <FormLabel className="flex items-center gap-3"><Smartphone /> WhatsApp</FormLabel>
+                                     <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} disabled={!notificationsEnabled}/></FormControl>
                                 </FormItem>
-                            )}
-                        />
-                        <FormField
-                            control={form.control}
-                            name="notifyOnExpiration"
-                            render={({ field }) => (
-                                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                                <div className="space-y-0.5">
-                                    <FormLabel className="text-base">Lembretes de Expiração</FormLabel>
-                                    <FormDescription>Enviar lembretes automáticos para clientes antes de um álbum expirar.</FormDescription>
-                                </div>
-                                <FormControl>
-                                    <Switch checked={field.value} onCheckedChange={field.onChange} />
-                                </FormControl>
+                                )}
+                            />
+                             <FormField
+                                control={form.control}
+                                name="telegramNotifications"
+                                render={({ field }) => (
+                                <FormItem className="flex flex-row items-center justify-between">
+                                    <FormLabel className="flex items-center gap-3"><Send /> Telegram</FormLabel>
+                                    <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} disabled={!notificationsEnabled}/></FormControl>
                                 </FormItem>
-                            )}
-                        />
+                                )}
+                            />
+                        </div>
                     </CardContent>
                 </Card>
 

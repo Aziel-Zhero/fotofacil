@@ -102,6 +102,7 @@ export async function login(formData: FormData) {
     
     const userRole = user.user_metadata?.role;
 
+    // Apenas fotógrafos podem fazer login agora
     if (userRole === 'photographer') {
         const { data: profile, error: profileError } = await supabase
             .from('photographers')
@@ -110,24 +111,20 @@ export async function login(formData: FormData) {
             .single();
         
         if (profileError || !profile) {
-            await supabase.auth.signOut();
-            let errorMessage = 'Não foi possível encontrar seu perfil de fotógrafo. Contate o suporte.';
-            if (profileError) {
-                console.error("Profile fetch error:", profileError);
-                errorMessage = `Erro ao buscar perfil (${profileError.code}). Contate o suporte.`;
-            }
-            return { error: errorMessage };
+          await supabase.auth.signOut();
+          let errorMessage = 'Não foi possível encontrar seu perfil de fotógrafo. Contate o suporte.';
+          if (profileError) {
+            console.error("Profile fetch error:", profileError);
+            errorMessage = `Erro ao buscar perfil (${profileError.code}). Contate o suporte.`;
+          }
+           return redirect(`/login?error=${encodeURIComponent(errorMessage)}`);
         }
         redirect('/dashboard');
+    } else {
+        // Se um cliente tentar fazer login, ou role for desconhecida.
+        await supabase.auth.signOut();
+        redirect('/login?error=O acesso do cliente é feito através de um link seguro fornecido pelo fotógrafo.');
     }
-    
-    if (userRole === 'client') {
-        redirect('/gallery');
-    }
-
-    // Se não for nenhum dos roles esperados, desloga e avisa.
-    await supabase.auth.signOut();
-    return { error: 'Tipo de usuário não reconhecido. O acesso foi negado.' };
 }
 
 const forgotPasswordSchema = z.object({

@@ -16,10 +16,10 @@ export default async function AnalysisPage() {
     .select('*', { count: 'exact', head: true })
     .eq('photographer_id', user.id);
 
-  const { count: photoCount, error: photoError } = await supabase
-    .from('photos')
-    .select('id', { count: 'exact', head: true })
-    .in('album_id', (await supabase.from('albums').select('id').eq('photographer_id', user.id)).data?.map(a => a.id) || []);
+  // Consulta para contar fotos de um fotógrafo específico
+  const { data: photosData, error: photoError } = await supabase.rpc('get_photos_count_for_photographer', { p_photographer_id: user.id });
+
+  const photoCount = photosData ?? 0;
 
   const planDetails = {
     name: "Essencial Semestral", // Mock data, pode ser buscado do user_metadata ou de uma tabela de assinaturas
@@ -36,7 +36,7 @@ export default async function AnalysisPage() {
       </div>
       <DashboardStats 
         totalAlbums={albumCount ?? 0}
-        totalPhotos={photoCount ?? 0}
+        totalPhotos={photoCount}
         planName={planDetails.name}
         photoLimit={planDetails.limit}
       />

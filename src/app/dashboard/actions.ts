@@ -3,8 +3,8 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
+import { redirect } from 'next/navigation';
 import { z } from 'zod';
-import { Photo } from './album/[albumId]/page';
 
 const createClientSchema = z.object({
   fullName: z.string().min(1, 'Nome completo é obrigatório.'),
@@ -20,6 +20,16 @@ export async function createClientByUser(formData: FormData) {
         return { error: 'Fotógrafo não autenticado. Faça login novamente.' };
     }
 
+    const { data: photographer, error: photographerError } = await supabase
+        .from('photographers')
+        .select('id')
+        .eq('id', user.id)
+        .single();
+    
+    if (photographerError || !photographer) {
+        return { error: 'Perfil de fotógrafo não encontrado.' };
+    }
+
     const data = Object.fromEntries(formData.entries());
     const parsed = createClientSchema.safeParse(data);
 
@@ -32,25 +42,27 @@ export async function createClientByUser(formData: FormData) {
     }
 
     const { fullName, email, phone } = parsed.data;
-    
-    // Chamando a função RPC para criar o cliente.
-    // O createClient(true) usa a service_role key para ter permissão.
-    const { data: newClient, error } = await createClient(true)
+
+    const { data: newClient, error: rpcError } = await supabase
         .rpc('create_client', {
             p_full_name: fullName,
             p_email: email,
             p_phone: phone,
         });
 
-    if (error) {
-        if (error.code === '23505') { 
+    if (rpcError) {
+        if (rpcError.code === 'P0001') {
+             return { error: rpcError.message };
+        }
+        if (rpcError.code === '23505') { 
             return { error: 'Um cliente com este email já existe.' };
         }
-        console.error("Error creating client via RPC:", error);
-        return { error: `Não foi possível criar o cliente: ${error.message}` };
+        console.error("Error creating client via RPC:", rpcError);
+        return { error: `Não foi possível criar o cliente: ${rpcError.message}` };
     }
     
     revalidatePath('/dashboard/register-client');
+    revalidatePath('/dashboard/clients');
     return { success: true, message: `Cliente "${fullName}" criado com sucesso!` };
 }
 
@@ -82,7 +94,7 @@ export async function createAlbum(formData: FormData) {
   
   const { 
     albumName, 
-    clientUserId, 
+    clientUserId, // Este é o ID da tabela 'clients'
     pixKey,
     expirationDate, 
     maxPhotos, 
@@ -95,23 +107,25 @@ export async function createAlbum(formData: FormData) {
   if (!photographerUser) {
     return { error: 'Fotógrafo não autenticado.' };
   }
-  
+
+  // Verificar se o cliente selecionado realmente existe e pertence a este fotógrafo.
   const { data: clientData, error: clientError } = await supabase
     .from('clients')
     .select('id')
     .eq('id', clientUserId)
-    .eq('photographer_id', photographerUser.id) 
+    .eq('photographer_id', photographerUser.id) // Garante segurança
     .single();
 
   if (clientError || !clientData) {
       return { error: `O cliente selecionado não foi encontrado ou não pertence a você.` };
   }
   
+  // Inserir o novo álbum.
   const { error: albumError } = await supabase.from('albums').insert({
     photographer_id: photographerUser.id,
     client_id: clientUserId,
     name: albumName,
-    status: 'Pendente', // Novo status inicial
+    status: 'Pendente',
     selection_limit: maxPhotos,
     extra_photo_cost: extraPhotoCost,
     courtesy_photos: giftPhotos,
@@ -124,6 +138,7 @@ export async function createAlbum(formData: FormData) {
   }
 
   revalidatePath('/dashboard');
+  revalidatePath('/dashboard/clients');
   
   return { 
     success: true,
@@ -132,67 +147,31 @@ export async function createAlbum(formData: FormData) {
 }
 
 
+// Função para buscar os clientes de um fotógrafo (usado no diálogo)
 export async function getClientsForPhotographer() {
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
-        return { error: 'Usuário não autenticado', clients: [] };
+        return { error: 'Usuário não autenticado' };
     }
     
+    // Busca na tabela 'clients' os clientes que pertencem ao fotógrafo logado.
     const { data: clients, error } = await supabase
         .from('clients')
-        .select('id, full_name, email, phone')
-        .eq('photographer_id', user.id)
-        .order('created_at', { ascending: false });
-
-    if (error) {
-        console.error("Erro ao buscar clientes:", error);
-        return { error: 'Não foi possível carregar a lista de clientes.', clients: [] };
-    }
-
-    return { clients: clients || [] };
-}
-
-const updateClientSchema = z.object({
-    clientId: z.string().uuid(),
-    fullName: z.string().min(1, 'Nome completo é obrigatório.'),
-    email: z.string().email('Email inválido.'),
-    phone: z.string().min(1, 'Telefone é obrigatório.'),
-});
-
-export async function updateClient(formData: FormData) {
-    const supabase = createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-
-    if (!user) {
-        return { error: 'Fotógrafo não autenticado.' };
-    }
-
-    const data = Object.fromEntries(formData.entries());
-    const parsed = updateClientSchema.safeParse(data);
-
-    if (!parsed.success) {
-        return { error: 'Dados inválidos.' };
-    }
-
-    const { clientId, fullName, email, phone } = parsed.data;
-
-    const { error } = await supabase
-        .from('clients')
-        .update({ full_name: fullName, email, phone })
-        .eq('id', clientId)
+        .select('id, full_name, email')
         .eq('photographer_id', user.id);
 
     if (error) {
-        console.error("Erro ao atualizar cliente:", error);
-        return { error: 'Não foi possível atualizar o cliente.' };
+        console.error("Erro ao buscar clientes:", error);
+        return { error: 'Não foi possível carregar a lista de clientes.' };
     }
 
-    revalidatePath('/dashboard/clients');
-    return { success: true, message: 'Cliente atualizado com sucesso!' };
+    return { clients };
 }
 
+
+// Função para buscar os dados de uso de fotos dos últimos 6 meses.
 export async function getMonthlyPhotoUsage() {
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
@@ -214,8 +193,9 @@ export async function getMonthlyPhotoUsage() {
         return { error: "Não foi possível carregar os dados do gráfico.", data: [] };
     }
 
+    // Formata os dados para o gráfico
     const monthNames = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
-    const formattedData = (data || []).map(item => ({
+    const formattedData = data.map((item: any) => ({
         month: monthNames[new Date(item.month).getMonth()],
         photos: item.photo_count
     }));
@@ -223,164 +203,219 @@ export async function getMonthlyPhotoUsage() {
     return { data: formattedData };
 }
 
+export async function resetClientPassword(clientId: string) {
+    const supabase = createClient(true); 
 
-export async function getAlbumDetails(albumId: string) {
-    const supabase = createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return { error: 'Não autenticado' };
-    
-    const { data: album, error } = await supabase
-        .from('albums')
-        .select('*, clients (full_name)')
-        .eq('id', albumId)
-        .eq('photographer_id', user.id)
+    const { data: client, error: clientError } = await supabase.from('clients')
+        .select('auth_user_id, email')
+        .eq('id', clientId)
         .single();
-        
-    if (error) return { error: 'Álbum não encontrado ou sem permissão.' };
     
-    const { data: photos, error: photosError } = await supabase
-        .from('photos')
-        .select('*')
-        .eq('album_id', albumId)
-        .order('created_at', { ascending: false });
+    if (clientError || !client) {
+        return { error: "Cliente não encontrado." };
+    }
+    
+    if (!client.auth_user_id) {
+        return { error: "Este cliente ainda não ativou uma conta de login e não pode ter a senha redefinida." };
+    }
+    
+    if (!client.email) {
+        return { error: "Cliente não possui um email cadastrado para o envio da redefinição." };
+    }
 
-    if (photosError) return { error: 'Erro ao buscar fotos.' };
+    const { error } = await supabase.auth.admin.resetPasswordForEmail(client.email);
 
-    return { album, photos: (photos as Photo[]) || [] };
+    if (error) {
+        console.error("Admin reset password error:", error);
+        return { error: `Erro do servidor ao redefinir a senha: ${error.message}` };
+    }
+    
+    revalidatePath('/dashboard/clients');
+    return { success: true, message: `Um e-mail para redefinição de senha foi enviado para ${client.email}.` };
 }
 
+const updateClientSchema = z.object({
+  clientId: z.string().uuid(),
+  fullName: z.string().min(1, 'Nome completo é obrigatório.'),
+  email: z.string().email('Email inválido.'),
+  phone: z.string().min(1, 'Telefone é obrigatório.'),
+});
 
-export async function uploadPhotos(albumId: string, files: FormData) {
+export async function updateClient(formData: FormData) {
     const supabase = createClient();
+    const data = Object.fromEntries(formData.entries());
+
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return { error: 'Não autenticado' };
+    if (!user) {
+        return { error: 'Fotógrafo não autenticado. Faça login novamente.' };
+    }
 
-    const photoFiles = files.getAll('photos') as File[];
-    if (!photoFiles.length) return { error: 'Nenhum arquivo enviado.' };
+    const parsed = updateClientSchema.safeParse(data);
+    if (!parsed.success) {
+        return { error: 'Dados inválidos.' };
+    }
 
-    const photoEntries = [];
+    const { clientId, fullName, email, phone } = parsed.data;
 
-    for (const file of photoFiles) {
-        const filePath = `${user.id}/${albumId}/${file.name}`;
-        const { error: uploadError } = await supabase.storage.from('album-photos').upload(filePath, file);
+    const { error } = await supabase
+        .from('clients')
+        .update({ full_name: fullName, email, phone })
+        .eq('id', clientId)
+        .eq('photographer_id', user.id); // Security check
 
-        if (uploadError) {
-            console.error('Erro no upload:', uploadError);
-            return { error: `Falha ao enviar ${file.name}.` };
+    if (error) {
+        console.error("Error updating client:", error);
+        if (error.code === '23505') { // unique_violation on email
+            return { error: 'Este e-mail já está em uso por outro cliente.' };
         }
-
-        const { data: { publicUrl } } = supabase.storage.from('album-photos').getPublicUrl(filePath);
-        
-        photoEntries.push({
-            album_id: albumId,
-            photographer_id: user.id,
-            url: publicUrl,
-            name: file.name
-        });
+        return { error: 'Não foi possível atualizar o cliente.' };
     }
 
-    const { error: insertError } = await supabase.from('photos').insert(photoEntries);
+    revalidatePath('/dashboard/clients');
+    return { success: true, message: `Cliente "${fullName}" atualizado com sucesso!` };
+}
 
-    if (insertError) {
-        console.error('Erro ao inserir no BD:', insertError);
-        return { error: 'Falha ao salvar fotos no banco de dados.' };
-    }
+const updateClientPasswordSchema = z.object({
+  clientId: z.string().uuid(),
+  password: z.string().min(8, 'A nova senha deve ter pelo menos 8 caracteres.'),
+});
 
-    revalidatePath(`/dashboard/album/${albumId}`);
-    return { success: true };
+export async function updateClientPassword(formData: FormData) {
+  const supabase = createClient(true); // admin client
+  const data = Object.fromEntries(formData.entries());
+
+  const parsed = updateClientPasswordSchema.safeParse(data);
+  if (!parsed.success) {
+      return { error: 'A senha deve ter pelo menos 8 caracteres.' };
+  }
+
+  const { clientId, password } = parsed.data;
+  
+  const { data: client, error: clientError } = await supabase
+    .from('clients')
+    .select('auth_user_id')
+    .eq('id', clientId)
+    .single();
+
+  if (clientError || !client) {
+      return { error: 'Cliente não encontrado.' };
+  }
+
+  if (!client.auth_user_id) {
+    return { error: 'Este cliente ainda não ativou a conta e não pode ter a senha alterada.' };
+  }
+
+  const { error: updateUserError } = await supabase.auth.admin.updateUserById(
+    client.auth_user_id,
+    { password: password }
+  );
+
+  if (updateUserError) {
+    console.error('Error updating client password:', updateUserError);
+    return { error: `Não foi possível atualizar a senha: ${updateUserError.message}` };
+  }
+
+  return { success: true, message: 'Senha do cliente atualizada com sucesso!' };
+}
+
+const updateAlbumSchema = z.object({
+  albumId: z.string().uuid(),
+  name: z.string().min(1, 'O nome do álbum é obrigatório.'),
+  selection_limit: z.coerce.number().min(1, 'O limite de seleção deve ser de pelo menos 1.'),
+});
+
+export async function updateAlbum(formData: FormData) {
+  const supabase = createClient();
+  const data = Object.fromEntries(formData.entries());
+  
+  const parsed = updateAlbumSchema.safeParse(data);
+  if (!parsed.success) {
+    return { error: 'Dados inválidos.' };
+  }
+
+  const { albumId, ...updateData } = parsed.data;
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return { error: 'Fotógrafo não autenticado.' };
+  }
+
+  const { error } = await supabase
+    .from('albums')
+    .update(updateData)
+    .eq('id', albumId)
+    .eq('photographer_id', user.id); // Security check
+
+  if (error) {
+    console.error("Error updating album:", error);
+    return { error: `Não foi possível atualizar o álbum: ${error.message}` };
+  }
+
+  revalidatePath(`/dashboard/album/${albumId}`);
+  return { success: true, message: 'Álbum atualizado com sucesso!' };
+}
+
+export async function deleteAlbum(albumId: string) {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: 'Fotógrafo não autenticado.' };
+  }
+  
+  // Primeiro, verifique se o álbum pertence ao fotógrafo logado.
+  const { data: album, error: fetchError } = await supabase
+    .from('albums')
+    .select('id')
+    .eq('id', albumId)
+    .eq('photographer_id', user.id)
+    .single();
+
+  if (fetchError || !album) {
+    return { error: 'Álbum não encontrado ou você não tem permissão para excluí-lo.' };
+  }
+
+  // Se a verificação for bem-sucedida, prossiga com a exclusão.
+  // O ON DELETE CASCADE no banco cuidará da exclusão das fotos associadas.
+  const { error: deleteError } = await supabase
+    .from('albums')
+    .delete()
+    .eq('id', albumId);
+
+  if (deleteError) {
+    console.error("Error deleting album:", deleteError);
+    return { error: `Não foi possível excluir o álbum: ${deleteError.message}` };
+  }
+  
+  revalidatePath('/dashboard');
+  redirect('/dashboard');
 }
 
 
 export async function notifyClient(albumId: string) {
-    const supabase = createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return { error: 'Não autenticado' };
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
 
-    const { error } = await supabase
-        .from('albums')
-        .update({ status: 'Aguardando Seleção' })
-        .eq('id', albumId)
-        .eq('photographer_id', user.id);
+  if (!user) {
+    return { error: 'Fotógrafo não autenticado.' };
+  }
 
-    if (error) {
-        console.error('Erro ao notificar cliente:', error);
-        return { error: 'Não foi possível atualizar o status do álbum.' };
-    }
+  // Aqui iria a lógica de envio de e-mail para o cliente.
+  // Como é um mock, vamos apenas atualizar o status do álbum.
+  const { error } = await supabase
+    .from('albums')
+    .update({ status: 'Aguardando Seleção' })
+    .eq('id', albumId)
+    .eq('photographer_id', user.id);
 
-    revalidatePath(`/dashboard/album/${albumId}`);
-    revalidatePath('/dashboard');
-    return { success: true, message: 'Cliente notificado! O álbum agora está aguardando a seleção.' };
-}
+  if (error) {
+    console.error("Error updating album status:", error);
+    return { error: 'Não foi possível atualizar o status do álbum.' };
+  }
 
+  revalidatePath(`/dashboard/album/${albumId}`);
+  revalidatePath('/dashboard');
+  revalidatePath('/dashboard/sent');
 
-export async function getAlbumsForDashboard() {
-    const supabase = createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-
-    if (!user) {
-        return { error: 'Usuário não autenticado.', albums: [] };
-    }
-
-    // Tenta primeiro a consulta otimizada com a VIEW.
-    const { data: albumsFromView, error: viewError } = await supabase
-        .from('albums_with_counts')
-        .select('*')
-        .eq('photographer_id', user.id)
-        .order('created_at', { ascending: false });
-
-    if (!viewError) {
-        // Sucesso com a VIEW! Retorna os dados formatados.
-        const formattedAlbums = albumsFromView.map((album: any) => ({
-            id: album.id,
-            name: album.name,
-            photoCount: album.photo_count,
-            maxPhotos: album.selection_limit,
-            status: album.status,
-            client: album.client_name || 'Cliente não vinculado',
-            createdAt: album.created_at,
-            clientUserId: album.client_id || null,
-        }));
-        return { albums: formattedAlbums, error: null };
-    }
-    
-    // Se a VIEW falhou (provavelmente porque não existe), registra o erro e tenta o método antigo.
-    console.warn("Could not fetch from 'albums_with_counts' view. Falling back to unoptimized query. Please run the SQL migration script. Error: ", viewError.message);
-
-    // Fallback: Consulta antiga e ineficiente (N+1)
-    const { data: albums, error: albumsError } = await supabase
-        .from('albums')
-        .select('*, clients(full_name)')
-        .eq('photographer_id', user.id)
-        .order('created_at', { ascending: false });
-
-    if (albumsError) {
-        console.error('Error fetching albums (fallback):', albumsError);
-        return { error: 'Falha grave ao carregar os dados dos álbuns.', albums: [] };
-    }
-
-    // Mapeamento manual dos dados, já que a consulta de fallback é diferente
-    const formattedAlbumsWithFallback = await Promise.all(
-        (albums || []).map(async (album: any) => {
-            const { count, error: countError } = await supabase
-                .from('photos')
-                .select('id', { count: 'exact', head: true })
-                .eq('album_id', album.id);
-
-            return {
-                id: album.id,
-                name: album.name,
-                photoCount: countError ? 0 : count,
-                maxPhotos: album.selection_limit,
-                status: album.status,
-                client: album.clients?.full_name || 'Cliente não vinculado',
-                createdAt: album.created_at,
-                clientUserId: album.client_id || null,
-            };
-        })
-    );
-
-    return { 
-        albums: formattedAlbumsWithFallback, 
-        error: "Atenção: A aplicação está operando em modo de baixa performance. Execute o script SQL no painel do Supabase para otimizar o carregamento."
-    };
+  return { success: true };
 }

@@ -11,53 +11,49 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { type ClientData } from '@/app/dashboard/clients/page';
-import { updateClient } from '@/app/dashboard/actions';
+import { updateAlbum } from '@/app/dashboard/actions';
+import type { AlbumData } from '@/app/dashboard/album/[albumId]/page';
 
 const formSchema = z.object({
-  fullName: z.string().min(1, 'Nome completo é obrigatório.'),
-  email: z.string().email('Email inválido.'),
-  phone: z.string().min(1, 'Telefone é obrigatório.'),
+  name: z.string().min(1, 'O nome do álbum é obrigatório.'),
+  selection_limit: z.coerce.number().min(1, 'O limite de seleção deve ser de pelo menos 1.'),
 });
 
-interface EditClientDialogProps {
-  client: ClientData;
+interface EditAlbumDialogProps {
+  album: AlbumData;
   isOpen: boolean;
   setIsOpen: (open: boolean) => void;
 }
 
-export function EditClientDialog({ client, isOpen, setIsOpen }: EditClientDialogProps) {
+export function EditAlbumDialog({ album, isOpen, setIsOpen }: EditAlbumDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      fullName: client.full_name ?? '',
-      email: client.email ?? '',
-      phone: client.phone ?? '',
+      name: album.name,
+      selection_limit: album.selection_limit,
     },
   });
 
   useEffect(() => {
     if (isOpen) {
       form.reset({
-        fullName: client.full_name ?? '',
-        email: client.email ?? '',
-        phone: client.phone ?? '',
+        name: album.name,
+        selection_limit: album.selection_limit,
       });
     }
-  }, [isOpen, client, form]);
+  }, [isOpen, album, form]);
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true);
     const formData = new FormData();
-    formData.append('clientId', client.id);
-    formData.append('fullName', values.fullName);
-    formData.append('email', values.email);
-    formData.append('phone', values.phone);
+    formData.append('albumId', album.id);
+    formData.append('name', values.name);
+    formData.append('selection_limit', String(values.selection_limit));
 
-    const result = await updateClient(formData);
+    const result = await updateAlbum(formData);
 
     if (result?.error) {
       toast({
@@ -77,33 +73,26 @@ export function EditClientDialog({ client, isOpen, setIsOpen }: EditClientDialog
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogContent className="sm:max-w-md" onInteractOutside={(e) => e.preventDefault()}>
+      <DialogContent className="sm:max-w-md" onInteractOutside={(e) => isSubmitting && e.preventDefault()}>
         <DialogHeader>
-          <DialogTitle className="font-headline">Editar Cliente</DialogTitle>
+          <DialogTitle className="font-headline">Editar Detalhes do Álbum</DialogTitle>
           <DialogDescription>
-            Atualize as informações de {client.full_name}.
+            Atualize as informações do álbum "{album.name}".
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
-            <FormField name="fullName" control={form.control} render={({ field }) => (
+            <FormField name="name" control={form.control} render={({ field }) => (
               <FormItem>
-                <FormLabel>Nome Completo</FormLabel>
+                <FormLabel>Nome do Álbum</FormLabel>
                 <FormControl><Input {...field} /></FormControl>
                 <FormMessage />
               </FormItem>
             )} />
-            <FormField name="email" control={form.control} render={({ field }) => (
+            <FormField name="selection_limit" control={form.control} render={({ field }) => (
               <FormItem>
-                <FormLabel>Email</FormLabel>
-                <FormControl><Input type="email" {...field} /></FormControl>
-                <FormMessage />
-              </FormItem>
-            )} />
-            <FormField name="phone" control={form.control} render={({ field }) => (
-              <FormItem>
-                <FormLabel>Telefone</FormLabel>
-                <FormControl><Input {...field} /></FormControl>
+                <FormLabel>Limite de Seleção de Fotos</FormLabel>
+                <FormControl><Input type="number" {...field} /></FormControl>
                 <FormMessage />
               </FormItem>
             )} />

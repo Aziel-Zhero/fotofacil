@@ -1,101 +1,126 @@
 
 "use client";
 
-import { useState, useCallback } from "react";
-import { useDropzone } from 'react-dropzone';
+import { useState, useRef, type ChangeEvent } from "react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { Card, CardContent } from "@/components/ui/card";
-import { UploadCloud, FileImage, X, Loader2, CheckCircle, AlertCircle } from "lucide-react";
+import { UploadCloud, FileImage, X, Loader2 } from "lucide-react";
 import Image from "next/image";
 import { useToast } from "@/hooks/use-toast";
+import { Photo } from "@/app/dashboard/album/[albumId]/page";
 import { ScrollArea } from "./ui/scroll-area";
-import { uploadPhotos } from "@/app/dashboard/actions";
-import { cn } from "@/lib/utils";
-
-interface PhotoUploaderProps {
-    albumId: string;
-}
-
-type UploadStatus = 'pending' | 'uploading' | 'success' | 'error';
+import { uploadPhoto } from "@/app/dashboard/album/[albumId]/actions";
 
 interface UploadFile {
-    file: File;
-    preview: string;
-    status: UploadStatus;
-    error?: string;
+  file: File;
+  preview: string;
 }
 
-export function PhotoUploader({ albumId }: PhotoUploaderProps) {
+interface PhotoUploaderProps {
+  onUploadComplete: (photo: Photo) => void;
+  albumId: string;
+}
+
+export function PhotoUploader({ onUploadComplete, albumId }: PhotoUploaderProps) {
   const [files, setFiles] = useState<UploadFile[]>([]);
   const [progress, setProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
-  const onDrop = useCallback((acceptedFiles: File[]) => {
-    const newFiles: UploadFile[] = acceptedFiles.map(file => ({
-        file,
-        preview: URL.createObjectURL(file),
-        status: 'pending',
-    }));
-    setFiles(prev => [...prev, ...newFiles]);
-  }, []);
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const selectedFiles = e.target.files;
+    if (selectedFiles && selectedFiles.length > 0) {
+      const newUploadFiles: UploadFile[] = [];
+      const filePromises = Array.from(selectedFiles).map((file) => {
+        return new Promise<void>((resolve) => {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            newUploadFiles.push({ file, preview: reader.result as string });
+            resolve();
+          };
+          reader.readAsDataURL(file);
+        });
+      });
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop,
-    accept: { 'image/*': ['.jpeg', '.png', '.jpg', '.webp'] },
-    disabled: isUploading,
-  });
+      Promise.all(filePromises).then(() => {
+        const allFiles = [...files, ...newUploadFiles];
+        setFiles(allFiles);
+        handleUpload(allFiles); 
+      });
+    }
+  };
 
-  const handleUpload = async () => {
-    const filesToUpload = files.filter(f => f.status === 'pending');
-    if (filesToUpload.length === 0) return;
-    
+  const handleUpload = async (filesToUpload: UploadFile[]) => {
+    if (isUploading) return;
     setIsUploading(true);
     setProgress(0);
 
-    const formData = new FormData();
-    filesToUpload.forEach(f => formData.append('photos', f.file));
-    
-    setFiles(prev => prev.map(f => f.status === 'pending' ? {...f, status: 'uploading'} : f));
+    const totalFiles = filesToUpload.length;
+    let filesUploaded = 0;
 
-    const result = await uploadPhotos(albumId, formData);
-    
-    if (result.error) {
-        toast({ title: "Erro no Upload", description: result.error, variant: "destructive" });
-        setFiles(prev => prev.map(f => f.status === 'uploading' ? {...f, status: 'error', error: result.error} : f));
-    } else {
-        setFiles(prev => prev.map(f => f.status === 'uploading' ? {...f, status: 'success'} : f));
-        toast({ title: "Upload Concluído!", description: `${filesToUpload.length} fotos foram enviadas com sucesso.` });
+    for (let i = 0; i < totalFiles; i++) {
+      const { file, preview } = filesToUpload[i];
+      
+      const formData = new FormData();
+      formData.append('albumId', albumId);
+      formData.append('photoName', file.name);
+      formData.append('photoDataUri', preview);
+
+      const result = await uploadPhoto(formData);
+
+      if (result.error || !result.data) {
+        toast({
+            title: `Erro ao enviar ${file.name}`,
+            description: result.error,
+            variant: "destructive"
+        });
+      } else {
+         onUploadComplete(result.data);
+      }
+
+      filesUploaded++;
+      setProgress((filesUploaded / totalFiles) * 100);
     }
 
-    setIsUploading(false);
-    setProgress(100);
+    toast({
+      title: "Upload Concluído!",
+      description: `${totalFiles} foto(s) foram processadas.`,
+    });
+
+    setTimeout(() => {
+      setIsUploading(false);
+      setFiles([]);
+      setProgress(0);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }, 1500);
+  };
+
+  const handleRemoveFile = (indexToRemove: number) => {
+    setFiles(files.filter((_, index) => index !== indexToRemove));
   };
   
-  const FileStatusIcon = ({ status }: { status: UploadStatus }) => {
-    switch(status) {
-        case 'uploading': return <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />;
-        case 'success': return <CheckCircle className="h-5 w-5 text-green-500" />;
-        case 'error': return <AlertCircle className="h-5 w-5 text-destructive" />;
-        default: return <FileImage className="h-5 w-5 text-muted-foreground" />;
+  const handleClearAll = () => {
+    setFiles([]);
+    setProgress(0);
+    setIsUploading(false);
+    if(fileInputRef.current) {
+        fileInputRef.current.value = "";
     }
   }
 
-  const filesToUploadCount = files.filter(f => f.status === 'pending').length;
-
   return (
     <Card>
-      <CardContent className="p-6 space-y-4">
+      <CardContent className="p-6">
         <div
-            {...getRootProps()}
-            className={cn(
-                "flex justify-center items-center w-full h-32 border-2 border-dashed rounded-lg transition-colors",
-                isDragActive ? "border-primary bg-primary/10" : "hover:bg-muted/50",
-                isUploading ? "cursor-not-allowed opacity-50" : "cursor-pointer"
-            )}
+          className="flex justify-center items-center w-full h-48 border-2 border-dashed rounded-lg cursor-pointer hover:bg-muted/50 transition-colors"
+          onClick={() => fileInputRef.current?.click()}
         >
-          <input {...getInputProps()} />
+          {files.length === 0 && !isUploading && (
             <div className="text-center">
               <UploadCloud className="mx-auto h-12 w-12 text-muted-foreground" />
               <p className="mt-2 text-sm text-muted-foreground">
@@ -103,42 +128,58 @@ export function PhotoUploader({ albumId }: PhotoUploaderProps) {
               </p>
               <p className="text-xs text-muted-foreground">PNG, JPG, WEBP (múltiplos arquivos permitidos)</p>
             </div>
+          )}
+          {files.length > 0 && !isUploading && (
+             <ScrollArea className="h-full w-full p-4">
+                <div className="flex flex-wrap justify-center gap-4">
+                    {files.map(({ preview }, index) => (
+                      <div key={index} className="relative group">
+                          <Image src={preview} alt={`Pré-visualização ${index}`} width={100} height={100} className="object-cover h-24 w-24 rounded-md border" />
+                          <Button
+                            variant="destructive"
+                            size="icon"
+                            className="absolute -top-2 -right-2 h-6 w-6 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleRemoveFile(index);
+                            }}
+                           >
+                            <X className="h-4 w-4" />
+                           </Button>
+                      </div>
+                    ))}
+                </div>
+            </ScrollArea>
+          )}
+           {isUploading && (
+              <div className="flex flex-col items-center justify-center gap-2 text-sm text-muted-foreground">
+                  <Loader2 className="h-8 w-8 animate-spin"/>
+                  <span>Enviando {files.length} fotos...</span>
+              </div>
+          )}
+          <Input
+            ref={fileInputRef}
+            type="file"
+            className="hidden"
+            accept="image/png, image/jpeg, image/webp"
+            onChange={handleFileChange}
+            disabled={isUploading}
+            multiple
+          />
         </div>
 
         {files.length > 0 && (
-          <div className="space-y-4">
-            <h3 className="font-semibold text-textDark">Fila de Upload ({files.length})</h3>
-            {(isUploading || progress > 0) && <Progress value={progress} className="w-full" />}
-            <ScrollArea className="h-60 w-full pr-4">
-              <div className="space-y-3">
-                {files.map((upload, index) => (
-                    <div key={index} className="flex items-center gap-4 p-2 border rounded-md">
-                       <Image src={upload.preview} alt={upload.file.name} width={40} height={40} className="rounded-md object-cover h-10 w-10" />
-                       <div className="flex-grow truncate">
-                            <p className="text-sm font-medium truncate">{upload.file.name}</p>
-                            <p className="text-xs text-muted-foreground">
-                                {upload.error ? (
-                                    <span className="text-destructive">{upload.error}</span>
-                                ) : (
-                                    `${(upload.file.size / 1024).toFixed(2)} KB`
-                                )}
-                            </p>
-                       </div>
-                       <FileStatusIcon status={upload.status} />
-                    </div>
-                ))}
-              </div>
-            </ScrollArea>
-            
-            <div className="flex justify-end gap-2">
-                {filesToUploadCount > 0 && (
-                    <Button onClick={handleUpload} disabled={isUploading}>
-                        {isUploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <UploadCloud className="mr-2 h-4 w-4"/>}
-                        Enviar {filesToUploadCount} {filesToUploadCount > 1 ? 'arquivos' : 'arquivo'}
-                    </Button>
-                )}
-            </div>
-
+          <div className="mt-4">
+              {isUploading ? (
+                <>
+                  <Progress value={progress} className="w-full" />
+                   <p className="text-center text-sm text-muted-foreground mt-2">Enviando... {Math.round(progress)}%</p>
+                </>
+              ) : (
+                <div className="flex items-center justify-end">
+                    <Button variant="ghost" onClick={handleClearAll}>Limpar tudo</Button>
+                </div>
+              )}
           </div>
         )}
       </CardContent>

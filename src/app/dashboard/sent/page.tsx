@@ -1,36 +1,110 @@
 
-import { AlbumCard } from '@/components/album-card';
-import { Send } from 'lucide-react';
+import { createClient } from '@/lib/supabase/server';
+import { redirect } from 'next/navigation';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { Send, Clock } from 'lucide-react';
+import { format, isValid } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
 
-const mockSentAlbums = [
-  { id: '1', name: 'Casamento Ana e Bruno', photoCount: 850, status: 'Aguardando Seleção', client: 'Ana e Bruno' },
-  { id: '4', name: 'Evento Corporativo ACME', photoCount: 400, status: 'Aguardando Seleção', client: 'ACME Inc' },
-  { id: '5', name: 'Ensaio de Família Oliveira', photoCount: 250, status: 'Expirado', client: 'Família Oliveira' },
-];
+export default async function SentPage() {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
 
-export default function DashboardSentPage() {
+  if (!user) {
+    return redirect('/login');
+  }
+
+  const { data: sentAlbums, error } = await supabase
+    .from('albums')
+    .select(`
+      id,
+      name,
+      status,
+      created_at,
+      clients (full_name)
+    `)
+    .eq('photographer_id', user.id)
+    .in('status', ['Aguardando Seleção', 'Seleção Completa'])
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching sent albums:', error);
+    return <div>Erro ao carregar os álbuns enviados.</div>
+  }
+
+  const getStatusVariant = (status: string) => {
+    switch (status) {
+      case 'Aguardando Seleção':
+        return 'default';
+      case 'Seleção Completa':
+        return 'secondary';
+      default:
+        return 'outline';
+    }
+  };
+
+
   return (
     <div className="container mx-auto py-8">
       <div className="mb-8">
         <h1 className="text-3xl font-bold font-headline">Álbuns Enviados</h1>
-        <p className="text-muted-foreground">Acompanhe o status dos álbuns que você enviou para a seleção dos clientes.</p>
+        <p className="text-muted-foreground">
+          Acompanhe o status dos álbuns que seus clientes estão selecionando.
+        </p>
       </div>
 
-      {mockSentAlbums.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {mockSentAlbums.map((album) => (
-            <AlbumCard key={album.id} album={album} />
-            ))}
-        </div>
-      ) : (
-        <div className="flex flex-col items-center justify-center h-64 text-center border-2 border-dashed rounded-lg">
-            <Send className="h-12 w-12 text-muted-foreground mb-4" />
-            <h2 className="text-xl font-semibold">Nenhum álbum enviado ainda</h2>
-            <p className="text-muted-foreground mt-2">
-                Quando você criar um álbum e o compartilhar, ele aparecerá aqui para acompanhamento.
-            </p>
-        </div>
-      )}
+      <Card>
+        <CardHeader>
+          <CardTitle>Status de Seleção ({sentAlbums.length})</CardTitle>
+          <CardDescription>
+            Lista de álbuns aguardando a seleção do cliente ou com seleção já finalizada.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Álbum</TableHead>
+                <TableHead>Cliente</TableHead>
+                <TableHead>Data de Envio</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead><span className="sr-only">Ações</span></TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {sentAlbums.length > 0 ? (
+                sentAlbums.map((album) => (
+                  <TableRow key={album.id}>
+                    <TableCell className="font-medium">{album.name}</TableCell>
+                    <TableCell>{album.clients?.full_name || 'N/A'}</TableCell>
+                    <TableCell>
+                      {isValid(new Date(album.created_at)) ? format(new Date(album.created_at), "dd 'de' MMM, yyyy", { locale: ptBR }) : 'Data inválida'}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={getStatusVariant(album.status)}>{album.status}</Badge>
+                    </TableCell>
+                     <TableCell>
+                      <Button variant="outline" size="sm" asChild>
+                        <Link href={`/dashboard/album/${album.id}`}>Ver Álbum</Link>
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={5} className="h-24 text-center">
+                    Nenhum álbum aguardando seleção no momento.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
     </div>
   );
 }

@@ -45,6 +45,9 @@ const LandingHeader = () => {
                 <Button asChild>
                     <Link href="/register">Criar Conta de Fotógrafo</Link>
                 </Button>
+                 <Button variant="outline" asChild>
+                    <Link href="/teste">Página de Teste</Link>
+                </Button>
             </nav>
             </div>
         </header>
@@ -156,8 +159,6 @@ export default function Home() {
                 src="https://placehold.co/600x400.png"
                 alt="Portfólio de fotógrafo"
                 fill
-                priority
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 className="object-cover rounded-xl shadow-2xl"
                 data-ai-hint="photography portfolio"
              />

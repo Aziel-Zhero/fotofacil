@@ -83,7 +83,7 @@ export async function getAlbumDetails(albumId: string) {
 
     const { data, error } = await supabase
         .from('albums')
-        .select('id, name, selection_limit')
+        .select('id, name, selection_limit, status')
         .eq('id', albumId)
         .eq('photographer_id', user.id)
         .single();
@@ -115,4 +115,3 @@ export async function getPhotosForAlbum(albumId: string) {
 
     return { data, error: null };
 }
-
