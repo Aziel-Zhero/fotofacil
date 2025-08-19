@@ -13,7 +13,7 @@ export async function generateTagsForImage(
   input: AutoImageTaggingInput
 ): Promise<string[]> {
   try {
-    const output = await autoImagetagging(input);
+    const output = await autoImageTagging(input);
     return output.tags;
   } catch (error) {
     // Em um app real, seria bom ter um sistema de log de erros mais robusto aqui.
@@ -28,17 +28,30 @@ export async function sendSupportEmail(formData: FormData) {
   }
 
   const resend = new Resend(resendApiKey);
+
+  const name = formData.get('name') as string;
+  const email = formData.get('email') as string;
   const reason = formData.get('contactReason') as string;
   const description = formData.get('description') as string;
-  // O anexo não é tratado nesta versão para simplificar, 
-  // mas poderia ser adicionado aqui com `formData.get('screenshot')`.
+
+  if (!name || !email || !reason || !description) {
+      return { error: 'Todos os campos são obrigatórios.' };
+  }
+  
+  const subject = `FotoFácil - ${reason === 'problem' ? 'Relato de Problema' : 'Sugestão de Melhoria'}`;
 
   try {
     const { data, error } = await resend.emails.send({
       from: `Suporte FotoFácil <${supportEmailFrom}>`,
       to: [supportEmailTo],
-      subject: `Nova Mensagem de Suporte: ${reason === 'problem' ? 'Problema' : 'Sugestão'}`,
-      react: SupportRequestEmail({ reason, description }),
+      reply_to: email,
+      subject: subject,
+      react: SupportRequestEmail({ 
+          reason, 
+          description,
+          userName: name,
+          userEmail: email,
+      }),
     });
 
     if (error) {

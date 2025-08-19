@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useRef, ChangeEvent } from 'react';
+import { useState, useRef, ChangeEvent, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -20,8 +20,13 @@ import { useToast } from '@/hooks/use-toast';
 import { FileImage, Loader2, Send, UploadCloud, X } from 'lucide-react';
 import Image from 'next/image';
 import { sendSupportEmail } from '@/app/actions';
+import { Input } from './ui/input';
+import { createClient } from '@/lib/supabase/client';
+import { type User } from '@supabase/supabase-js';
 
 const supportSchema = z.object({
+  name: z.string().min(1, "Seu nome é obrigatório."),
+  email: z.string().email("Por favor, insira um e-mail válido."),
   contactReason: z.enum(["problem", "suggestion"], {
     required_error: "Você precisa selecionar um motivo para o contato.",
   }),
@@ -35,13 +40,29 @@ export function SupportForm() {
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [user, setUser] = useState<User | null>(null);
 
   const form = useForm<z.infer<typeof supportSchema>>({
     resolver: zodResolver(supportSchema),
     defaultValues: {
+      name: "",
+      email: "",
       description: "",
     },
   });
+
+  useEffect(() => {
+    const supabase = createClient();
+    const fetchUser = async () => {
+        const { data: { user } } = await supabase.auth.getUser();
+        setUser(user);
+        if (user) {
+            form.setValue('name', user.user_metadata?.fullName || '');
+            form.setValue('email', user.email || '');
+        }
+    }
+    fetchUser();
+  }, [form]);
 
   const contactReason = form.watch('contactReason');
 
@@ -97,7 +118,12 @@ export function SupportForm() {
         title: "Mensagem Enviada!",
         description: "Obrigado pelo seu contato. Nossa equipe responderá em breve.",
       });
-      form.reset();
+      form.reset({
+        name: user?.user_metadata?.fullName || '',
+        email: user?.email || '',
+        description: '',
+        contactReason: undefined
+      });
       handleRemoveFile();
     }
     
@@ -107,6 +133,34 @@ export function SupportForm() {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Seu Nome</FormLabel>
+                        <FormControl>
+                            <Input placeholder="João da Silva" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                    </FormItem>
+                )}
+            />
+             <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Seu Email</FormLabel>
+                        <FormControl>
+                            <Input type="email" placeholder="joao.silva@example.com" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                    </FormItem>
+                )}
+            />
+        </div>
         <FormField
           control={form.control}
           name="contactReason"
