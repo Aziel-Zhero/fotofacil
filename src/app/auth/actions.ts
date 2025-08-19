@@ -5,12 +5,11 @@ import { createClient } from '@/lib/supabase/server';
 import { z } from 'zod';
 import { headers } from 'next/headers';
 
-// Schema agora EXCLUSIVO para fotógrafos.
 const signupSchema = z.object({
   email: z.string().email('Email inválido.'),
   password: z.string().min(8, 'A senha deve ter pelo menos 8 caracteres.'),
   fullName: z.string().min(1, 'Nome completo é obrigatório.'),
-  username: z.string().min(3, 'O nome de usuário deve ter pelo menos 3 caracteres'),
+  username: z.string().min(3, 'O nome de usuário deve ter pelo menos 3 caracteres.'),
   companyName: z.string().min(1, 'Nome da empresa é obrigatório.'),
   phone: z.string().min(10, 'Telefone inválido'),
 });
@@ -74,11 +73,8 @@ export async function login(formData: FormData) {
   const parsed = loginSchema.safeParse(data);
 
   if (!parsed.success) {
-    let errorMessages = '';
-    parsed.error.issues.forEach(issue => {
-      errorMessages += issue.message + '\n';
-    });
-    return { error: errorMessages.trim() };
+    const errors = parsed.error.issues.map(i => i.message).join('\n');
+    return { error: errors };
   }
 
   const { email, password } = parsed.data;
@@ -90,33 +86,28 @@ export async function login(formData: FormData) {
 
   if (error) {
     if (error.message.includes('Email not confirmed')) {
-      return { error: "Seu email ainda não foi confirmado. Por favor, verifique sua caixa de entrada." };
+      return { error: 'Seu email ainda não foi confirmado. Verifique sua caixa de entrada.' };
     }
-    return { error: "Credenciais inválidas. Por favor, tente novamente." };
+    return { error: 'Credenciais inválidas. Tente novamente.' };
   }
 
   if (!user) {
-    return { error: "Usuário não encontrado após o login." };
+    return { error: 'Usuário não encontrado após login.' };
   }
-  
-  // Como apenas fotógrafos fazem login por esta tela, verificamos o perfil deles.
+
+  // Verifica perfil fotógrafo (assumindo tabela 'photographers' com PK user.id)
   const { data: profile, error: profileError } = await supabase
     .from('photographers')
     .select('id')
     .eq('id', user.id)
     .single();
-  
+
   if (profileError || !profile) {
     await supabase.auth.signOut();
-    let errorMessage = 'Não foi possível encontrar seu perfil de fotógrafo. Contate o suporte.';
-    if (profileError) {
-      console.error("Profile fetch error:", profileError);
-      errorMessage = `Erro ao buscar perfil (${profileError.code}). Contate o suporte.`;
-    }
-    return { error: errorMessage };
+    console.error('Perfil fotógrafo não encontrado ou erro:', profileError);
+    return { error: 'Perfil de fotógrafo não encontrado. Contate o suporte.' };
   }
 
-  // Retorna um objeto de sucesso com a URL de redirecionamento.
   return { success: true, redirect: '/dashboard' };
 }
 

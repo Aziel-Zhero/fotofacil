@@ -19,7 +19,7 @@ import {
 import { CardContent, CardFooter } from '@/components/ui/card';
 import { useState } from 'react';
 import { forgotPassword } from '@/app/auth/actions';
-import { Loader2, Mail } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
 const formSchema = z.object({

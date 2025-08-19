@@ -23,6 +23,7 @@ import { Loader2 } from 'lucide-react';
 import PhoneInput from 'react-phone-number-input';
 import 'react-phone-number-input/style.css'
 import { useRouter } from 'next/navigation';
+import { Alert, AlertDescription } from '../ui/alert';
 
 
 const formSchema = z.object({
@@ -36,7 +37,7 @@ const formSchema = z.object({
 
 export function PhotographerRegisterForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { toast } = useToast();
+  const [formError, setFormError] = useState<string | null>(null);
   const router = useRouter();
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -53,20 +54,16 @@ export function PhotographerRegisterForm() {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true);
+    setFormError(null);
     const formData = new FormData();
     Object.entries(values).forEach(([key, value]) => {
       formData.append(key, value);
     });
     
-    // A ação signup agora é apenas para fotógrafos.
     const result = await signup(formData);
 
     if (result?.error) {
-      toast({
-        title: "Erro no Cadastro",
-        description: result.error,
-        variant: "destructive",
-      });
+      setFormError(result.error);
     } else if (result?.redirect) {
       router.push(result.redirect);
     }
@@ -77,6 +74,11 @@ export function PhotographerRegisterForm() {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)}>
         <CardContent className="space-y-4">
+          {formError && (
+              <Alert variant="destructive">
+                  <AlertDescription>{formError}</AlertDescription>
+              </Alert>
+          )}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField name="fullName" control={form.control} render={({ field }) => (
                 <FormItem><FormLabel>Nome Completo</FormLabel><FormControl><Input placeholder="João da Silva" {...field} /></FormControl><FormMessage /></FormItem>

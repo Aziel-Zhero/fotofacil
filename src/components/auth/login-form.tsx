@@ -22,9 +22,9 @@ import { login } from '@/app/auth/actions';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useRouter } from 'next/navigation';
 
-const formSchema = z.object({
-  email: z.string().email({ message: 'Email inválido.' }),
-  password: z.string().min(1, { message: 'Senha é obrigatória.' }),
+const loginSchema = z.object({
+  email: z.string().email('Email inválido.'),
+  password: z.string().min(1, 'Senha é obrigatória.'),
 });
 
 export function LoginForm({ message, error }: { message?: string, error?: string }) {
@@ -33,21 +33,23 @@ export function LoginForm({ message, error }: { message?: string, error?: string
   const [formError, setFormError] = useState<string | null>(error || null);
   const [successMessage, setSuccessMessage] = useState<string | null>(message || null);
 
-  // Limpa as mensagens quando o usuário começa a digitar
-  useEffect(() => {
-    if (formError) setFormError(null);
-    if (successMessage) setSuccessMessage(null);
-  }, [formError, successMessage]);
-
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<z.infer<typeof loginSchema>>({
+    resolver: zodResolver(loginSchema),
     defaultValues: {
       email: '',
       password: '',
     },
   });
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
+  useEffect(() => {
+    if (error) setFormError(error);
+  }, [error]);
+
+  useEffect(() => {
+    if (message) setSuccessMessage(message);
+  }, [message]);
+
+  async function onSubmit(values: z.infer<typeof loginSchema>) {
     setIsSubmitting(true);
     setFormError(null);
     setSuccessMessage(null);
@@ -62,7 +64,6 @@ export function LoginForm({ message, error }: { message?: string, error?: string
     if (result?.error) {
       setFormError(result.error);
     } else if (result?.redirect) {
-      // Redirecionamento seguro no lado do cliente
       router.push(result.redirect);
     }
     
