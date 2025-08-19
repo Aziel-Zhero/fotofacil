@@ -118,7 +118,11 @@ export async function createAlbum(formData: FormData) {
       .eq('photographer_id', photographerUser.id)
       .single();
 
-    if (clientError || !clientData) {
+    if (clientError) {
+        console.error('Erro ao buscar cliente:', clientError);
+        return { error: 'Ocorreu um erro ao verificar o cliente.' };
+    }
+    if (!clientData) {
         return { error: 'O cliente selecionado não foi encontrado ou não pertence a você.' };
     }
     
@@ -422,5 +426,3 @@ export async function notifyClient(albumId: string) {
     return { error: 'Erro interno no servidor ao notificar o cliente.' };
   }
 }
-
-    

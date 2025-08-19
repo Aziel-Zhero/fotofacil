@@ -158,7 +158,9 @@ export default function Home() {
              <Image
                 src="https://placehold.co/600x400.png"
                 alt="Portfólio de fotógrafo"
-                fill
+ width={600}
+ height={400}
+ priority
                 className="object-cover rounded-xl shadow-2xl"
                 data-ai-hint="photography portfolio"
              />
