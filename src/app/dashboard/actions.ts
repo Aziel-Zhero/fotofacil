@@ -284,6 +284,11 @@ export async function updateClientPassword(formData: FormData) {
   const supabase = createClient(true); // admin client
   const data = Object.fromEntries(formData.entries());
 
+  const { data: { user: photographerUser } } = await supabase.auth.getUser();
+    if (!photographerUser) {
+        return { error: 'Fotógrafo não autenticado. Faça login novamente.' };
+    }
+
   const parsed = updateClientPasswordSchema.safeParse(data);
   if (!parsed.success) {
       return { error: 'A senha deve ter pelo menos 8 caracteres.' };
@@ -291,14 +296,16 @@ export async function updateClientPassword(formData: FormData) {
 
   const { clientId, password } = parsed.data;
   
+  // CRITICAL SECURITY CHECK: Ensure the client belongs to the authenticated photographer.
   const { data: client, error: clientError } = await supabase
     .from('clients')
     .select('auth_user_id')
     .eq('id', clientId)
+    .eq('photographer_id', photographerUser.id) // This line is crucial
     .single();
 
   if (clientError || !client) {
-      return { error: 'Cliente não encontrado.' };
+      return { error: 'Cliente não encontrado ou não pertence a você.' };
   }
 
   if (!client.auth_user_id) {
