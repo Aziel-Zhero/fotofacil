@@ -1,12 +1,12 @@
 
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { useDropzone } from 'react-dropzone';
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { UploadCloud, FileImage, X, Loader2, CheckCircle, AlertCircle, ArrowRight } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { UploadCloud, FileImage, X, Loader2, CheckCircle, AlertCircle } from "lucide-react";
 import Image from "next/image";
 import { useToast } from "@/hooks/use-toast";
 import { ScrollArea } from "./ui/scroll-area";
@@ -30,7 +30,6 @@ export function PhotoUploader({ albumId }: PhotoUploaderProps) {
   const [files, setFiles] = useState<UploadFile[]>([]);
   const [progress, setProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
-  const [totalFilesUploaded, setTotalFilesUploaded] = useState(0);
   const { toast } = useToast();
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
@@ -48,20 +47,9 @@ export function PhotoUploader({ albumId }: PhotoUploaderProps) {
     disabled: isUploading,
   });
 
-  useEffect(() => {
-    // Inicia o upload automaticamente quando novos arquivos são adicionados
-    if (files.some(f => f.status === 'pending') && !isUploading) {
-        handleUpload();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [files]);
-
-
   const handleUpload = async () => {
     const filesToUpload = files.filter(f => f.status === 'pending');
-    if (filesToUpload.length === 0) {
-        return;
-    }
+    if (filesToUpload.length === 0) return;
     
     setIsUploading(true);
     setProgress(0);
@@ -69,7 +57,6 @@ export function PhotoUploader({ albumId }: PhotoUploaderProps) {
     const formData = new FormData();
     filesToUpload.forEach(f => formData.append('photos', f.file));
     
-    // Marca arquivos como 'uploading'
     setFiles(prev => prev.map(f => f.status === 'pending' ? {...f, status: 'uploading'} : f));
 
     const result = await uploadPhotos(albumId, formData);
@@ -77,25 +64,15 @@ export function PhotoUploader({ albumId }: PhotoUploaderProps) {
     if (result.error) {
         toast({ title: "Erro no Upload", description: result.error, variant: "destructive" });
         setFiles(prev => prev.map(f => f.status === 'uploading' ? {...f, status: 'error', error: result.error} : f));
-        setIsUploading(false);
-        return;
+    } else {
+        setFiles(prev => prev.map(f => f.status === 'uploading' ? {...f, status: 'success'} : f));
+        toast({ title: "Upload Concluído!", description: `${filesToUpload.length} fotos foram enviadas com sucesso.` });
     }
-
-    // Sucesso
-    setFiles(prev => prev.map(f => f.status === 'uploading' ? {...f, status: 'success'} : f));
-    setTotalFilesUploaded(prev => prev + filesToUpload.length);
-    toast({ title: "Upload Concluído!", description: `${filesToUpload.length} fotos foram enviadas.`, variant: 'default' });
 
     setIsUploading(false);
     setProgress(100);
   };
-
-  const clearCompleted = () => {
-    setFiles(prev => prev.filter(f => f.status !== 'success' && f.status !== 'error'));
-    setTotalFilesUploaded(0);
-    setProgress(0);
-  }
-
+  
   const FileStatusIcon = ({ status }: { status: UploadStatus }) => {
     switch(status) {
         case 'uploading': return <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />;
@@ -104,16 +81,11 @@ export function PhotoUploader({ albumId }: PhotoUploaderProps) {
         default: return <FileImage className="h-5 w-5 text-muted-foreground" />;
     }
   }
-  
-  const filesPending = files.filter(f => f.status === 'pending' || f.status === 'uploading').length;
-  const filesDone = files.filter(f => f.status === 'success' || f.status === 'error').length;
-  const successfullyUploadedCount = files.filter(f => f.status === 'success').length;
+
+  const filesToUploadCount = files.filter(f => f.status === 'pending').length;
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle className="font-headline text-textDark">Enviar Fotos</CardTitle>
-      </CardHeader>
       <CardContent className="p-6 space-y-4">
         <div
             {...getRootProps()}
@@ -136,7 +108,7 @@ export function PhotoUploader({ albumId }: PhotoUploaderProps) {
         {files.length > 0 && (
           <div className="space-y-4">
             <h3 className="font-semibold text-textDark">Fila de Upload ({files.length})</h3>
-            {(isUploading || progress > 0) && <Progress value={isUploading ? (successfullyUploadedCount / files.length) * 100 : progress} className="w-full" />}
+            {(isUploading || progress > 0) && <Progress value={progress} className="w-full" />}
             <ScrollArea className="h-60 w-full pr-4">
               <div className="space-y-3">
                 {files.map((upload, index) => (
@@ -159,13 +131,10 @@ export function PhotoUploader({ albumId }: PhotoUploaderProps) {
             </ScrollArea>
             
             <div className="flex justify-end gap-2">
-                {filesDone > 0 && !isUploading && (
-                     <Button variant="secondary" onClick={clearCompleted}>Limpar Lista</Button>
-                )}
-                {successfullyUploadedCount > 0 && !isUploading && (
-                    <Button onClick={() => document.getElementById('gallery-section')?.scrollIntoView({ behavior: 'smooth' })}>
-                        Ir para a Galeria
-                        <ArrowRight className="ml-2 h-4 w-4"/>
+                {filesToUploadCount > 0 && (
+                    <Button onClick={handleUpload} disabled={isUploading}>
+                        {isUploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <UploadCloud className="mr-2 h-4 w-4"/>}
+                        Enviar {filesToUploadCount} {filesToUploadCount > 1 ? 'arquivos' : 'arquivo'}
                     </Button>
                 )}
             </div>

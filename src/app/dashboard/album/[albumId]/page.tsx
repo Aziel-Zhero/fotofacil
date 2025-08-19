@@ -14,6 +14,7 @@ import { getAlbumDetails, notifyClient } from '../../actions';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
 export type ViewMode = 'grid' | 'masonry' | 'carousel';
 
@@ -125,6 +126,21 @@ export default function AlbumDetailPage() {
                     <PhotoUploader albumId={albumId} />
                 </div>
             )}
+            
+            {photos.length > 0 && album?.status === 'Pendente' && (
+                 <Alert>
+                    <Send className="h-4 w-4" />
+                    <AlertTitle className="font-headline">Tudo pronto para o cliente?</AlertTitle>
+                    <AlertDescription className="flex justify-between items-center">
+                       Quando terminar de enviar as fotos, notifique seu cliente para que ele possa começar a seleção.
+                        <Button onClick={handleNotifyClient} disabled={isNotifying}>
+                            {isNotifying && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
+                            <Send className="mr-2 h-4 w-4" />
+                            Notificar Cliente para Seleção
+                        </Button>
+                    </AlertDescription>
+                </Alert>
+            )}
            
             <div id="gallery-section">
                 <div className="flex justify-between items-center mb-4">
@@ -132,14 +148,7 @@ export default function AlbumDetailPage() {
                         <h2 className="text-xl font-bold font-headline text-textDark">Galeria</h2>
                         {album?.status && <Badge>{album.status}</Badge>}
                     </div>
-                    <div className="flex items-center gap-4">
-                        {photos.length > 0 && album?.status === 'Pendente' && (
-                            <Button onClick={handleNotifyClient} disabled={isNotifying}>
-                                {isNotifying && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
-                                <Send className="mr-2 h-4 w-4" />
-                                Enviar para Cliente
-                            </Button>
-                        )}
+                    {photos.length > 0 && (
                         <ToggleGroup type="single" value={viewMode} onValueChange={(value: ViewMode) => value && setViewMode(value)} aria-label="Modo de Visualização">
                             <ToggleGroupItem value="grid" aria-label="Grade">
                                 <Grid3x3 className="h-4 w-4" />
@@ -151,7 +160,7 @@ export default function AlbumDetailPage() {
                                 <Square className="h-4 w-4" />
                             </ToggleGroupItem>
                         </ToggleGroup>
-                    </div>
+                    )}
                  </div>
                 {renderGallery()}
             </div>
