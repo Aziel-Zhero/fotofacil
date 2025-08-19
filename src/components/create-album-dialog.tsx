@@ -174,37 +174,39 @@ export function CreateAlbumDialog({ children }: { children: React.ReactNode }) {
                   
                   <Separator />
 
-                  <h3 className="text-lg font-medium font-headline text-textDark">Configurações do Álbum</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                     <FormField name="maxPhotos" control={form.control} render={({ field }) => (
-                            <FormItem><FormLabel>Máx. de Seleções</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>
+                  <div className='space-y-4'>
+                    <h3 className="text-lg font-medium font-headline text-textDark">Configurações do Álbum</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <FormField name="maxPhotos" control={form.control} render={({ field }) => (
+                                <FormItem><FormLabel>Máx. de Seleções</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>
+                            )} />
+
+                        <FormField name="giftPhotos" control={form.control} render={({ field }) => (
+                                <FormItem><FormLabel>Fotos de Cortesia</FormLabel><FormControl><Input type="number" placeholder="0" {...field} /></FormControl><FormMessage /></FormItem>
+                            )} />
+
+                        <FormField name="expirationDate" control={form.control} render={({ field }) => (
+                            <FormItem><FormLabel>Expiração (Opcional)</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem>
                         )} />
-
-                       <FormField name="giftPhotos" control={form.control} render={({ field }) => (
-                              <FormItem><FormLabel>Fotos de Cortesia</FormLabel><FormControl><Input type="number" placeholder="0" {...field} /></FormControl><FormMessage /></FormItem>
-                          )} />
-
-                       <FormField name="expirationDate" control={form.control} render={({ field }) => (
-                          <FormItem><FormLabel>Expiração (Opcional)</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem>
-                      )} />
+                    </div>
                   </div>
                   
                   <Separator />
 
-                  <h3 className="text-lg font-medium font-headline text-textDark">Configuração Financeira</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                     <FormField name="extraPhotoCost" control={form.control} render={({ field }) => (
-                            <FormItem><FormLabel>Preço por Foto Extra (R$)</FormLabel><FormControl><Input type="number" step="0.01" placeholder="ex: 8.50" {...field} /></FormControl><FormMessage /></FormItem>
-                        )} />
+                  <div className='space-y-4'>
+                    <h3 className="text-lg font-medium font-headline text-textDark">Configuração Financeira</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <FormField name="extraPhotoCost" control={form.control} render={({ field }) => (
+                                <FormItem><FormLabel>Preço por Foto Extra (R$)</FormLabel><FormControl><Input type="number" step="0.01" placeholder="ex: 8.50" {...field} /></FormControl><FormMessage /></FormItem>
+                            )} />
 
-                      {(extraPhotoCost || 0) > 0 && (
-                            <FormField name="pixKey" control={form.control} render={({ field }) => (
-                              <FormItem><FormLabel>Sua Chave PIX</FormLabel><FormControl><Input placeholder="Email, CPF, Telefone ou Aleatória" {...field} /></FormControl><FormMessage /></FormItem>
-                          )} />
-                      )}
+                        {(extraPhotoCost || 0) > 0 && (
+                                <FormField name="pixKey" control={form.control} render={({ field }) => (
+                                <FormItem><FormLabel>Sua Chave PIX</FormLabel><FormControl><Input placeholder="Email, CPF, Telefone ou Aleatória" {...field} /></FormControl><FormMessage /></FormItem>
+                            )} />
+                        )}
+                    </div>
                   </div>
-
-
                 </div>
               </ScrollArea>
               <DialogFooter className="pt-6">
@@ -222,3 +224,5 @@ export function CreateAlbumDialog({ children }: { children: React.ReactNode }) {
     </Dialog>
   );
 }
+
+    
