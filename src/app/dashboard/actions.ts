@@ -125,7 +125,7 @@ export async function createAlbum(formData: FormData) {
     photographer_id: photographerUser.id,
     client_id: clientUserId,
     name: albumName,
-    status: 'Pendente',
+    status: 'Aguardando Seleção',
     selection_limit: maxPhotos,
     extra_photo_cost: extraPhotoCost,
     courtesy_photos: giftPhotos,
