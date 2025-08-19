@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { PhotoUploader } from "@/components/photo-uploader";
 import { PhotoGrid } from "@/components/photo-grid";
-import { ArrowLeft, Grid3x3, ImageIcon, Rows, Square, Send, Settings, Trash2, Edit } from "lucide-react";
+import { ArrowLeft, Grid3x3, ImageIcon, Rows, Square, Send, Settings, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { PhotoCarousel } from '@/components/photo-carousel';
@@ -31,7 +31,6 @@ export function AlbumDetailClient({ albumId }: { albumId: string }) {
   const [album, setAlbum] = useState<AlbumData | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [photos, setPhotos] = useState<Photo[]>([]);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
   const router = useRouter();
