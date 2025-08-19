@@ -24,7 +24,7 @@ import { InteractiveCreditCard } from './interactive-credit-card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { createClient } from '@/lib/supabase/client';
 import type { User } from '@supabase/supabase-js';
-import { useIMask } from 'react-imask';
+import { IMask, useIMask } from 'react-imask';
 
 const checkoutSchema = z.object({
   fullName: z.string().min(1, 'Nome completo é obrigatório'),
@@ -36,7 +36,7 @@ const checkoutSchema = z.object({
   installments: z.string().min(1, "Selecione o número de parcelas"),
 });
 
-type Brand = 'visa' | 'mastercard' | 'discover' | 'amex' | 'unknown';
+type Brand = 'visa' | 'mastercard' | 'amex' | 'discover' | 'unknown';
 
 export function CheckoutForm() {
   const { toast } = useToast();
@@ -58,7 +58,7 @@ export function CheckoutForm() {
     },
   });
   
-  const { ref: cardNumberRef } = useIMask({
+  const { ref: cardNumberRef, mask: cardNumberMask } = useIMask({
     mask: [
         { mask: '0000 0000 0000 0000', regex: /^4/, cardtype: 'visa' },
         { mask: '0000 0000 0000 0000', regex: /^5[1-5]/, cardtype: 'mastercard' },
@@ -66,25 +66,25 @@ export function CheckoutForm() {
         { mask: '0000 0000 0000 0000', regex: /^(6011|65|64[4-9])/, cardtype: 'discover' },
         { mask: '0000 0000 0000 0000', cardtype: 'unknown' },
     ],
-    onAccept: (value, mask) => {
-        const cardType = (mask as any).cardtype;
-        setCardBrand(cardType || 'unknown');
-        // Manually trigger react-hook-form update
-        form.setValue('cardNumber', value as string, { shouldValidate: true });
+    dispatch: function (appended, dynamicMasked) {
+        const number = (dynamicMasked.value + appended).replace(/\D/g, '');
+        const foundMask = dynamicMasked.compiledMasks.find(function (item: any) {
+            return number.match(item.regex);
+        });
+        if (foundMask) {
+            setCardBrand(foundMask.cardtype || 'unknown');
+        }
+        return foundMask || this.dynamicMasks[this.dynamicMasks.length - 1];
     },
   });
 
-  const { ref: expiryRef } = useIMask({
+  const { ref: expiryRef, mask: expiryMask } = useIMask({
     mask: 'MM/YY',
     blocks: {
-        MM: { mask: IMask.MaskedRange, from: 1, to: 12 },
-        YY: { mask: IMask.MaskedRange, from: new Date().getFullYear() % 100, to: 99 },
+        MM: { mask: IMask.MaskedRange, from: 1, to: 12, placeholderChar: 'M' },
+        YY: { mask: IMask.MaskedRange, from: new Date().getFullYear() % 100, to: 99, placeholderChar: 'A' },
     },
-     onAccept: (value) => {
-        form.setValue('cardExpiry', value as string, { shouldValidate: true });
-    }
   });
-
 
   useEffect(() => {
     const supabase = createClient();
@@ -118,6 +118,21 @@ export function CheckoutForm() {
         description: "Use o código no seu aplicativo de banco para pagar.",
     })
   }
+
+  const handleCardNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (cardNumberMask) {
+      cardNumberMask.value = e.target.value;
+      form.setValue('cardNumber', cardNumberMask.value, { shouldValidate: true });
+    }
+  };
+
+  const handleExpiryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (expiryMask) {
+      expiryMask.value = e.target.value;
+      form.setValue('cardExpiry', expiryMask.value, { shouldValidate: true });
+    }
+  };
+
 
   return (
     <div className="grid md:grid-cols-2 gap-12 items-start">
@@ -170,7 +185,7 @@ export function CheckoutForm() {
                           <FormField name="cardNumber" control={form.control} render={({ field }) => (
                               <FormItem>
                                   <FormLabel>Número do Cartão</FormLabel>
-                                  <FormControl><Input placeholder="0000 0000 0000 0000" {...field} ref={cardNumberRef} /></FormControl>
+                                  <FormControl><Input placeholder="0000 0000 0000 0000" {...field} ref={cardNumberRef} onChange={handleCardNumberChange} /></FormControl>
                                   <FormMessage />
                               </FormItem>
                           )} />
@@ -185,7 +200,7 @@ export function CheckoutForm() {
                                 <FormField name="cardExpiry" control={form.control} render={({ field }) => (
                                     <FormItem className="col-span-2">
                                         <FormLabel>Validade</FormLabel>
-                                        <FormControl><Input placeholder="MM/AA" {...field} ref={expiryRef} /></FormControl>
+                                        <FormControl><Input placeholder="MM/AA" {...field} ref={expiryRef} onChange={handleExpiryChange} /></FormControl>
                                         <FormMessage />
                                     </FormItem>
                                 )} />
@@ -218,9 +233,11 @@ export function CheckoutForm() {
                                     </SelectTrigger>
                                   </FormControl>
                                   <SelectContent>
-                                    <SelectItem value="1">1x sem juros</SelectItem>
-                                    <SelectItem value="2">2x sem juros</SelectItem>
-                                    <SelectItem value="3">3x sem juros</SelectItem>
+                                    {Array.from({ length: 12 }, (_, i) => (
+                                      <SelectItem key={i + 1} value={`${i + 1}`}>
+                                        {i + 1}x sem juros
+                                      </SelectItem>
+                                    ))}
                                   </SelectContent>
                                 </Select>
                                 <FormMessage />
