@@ -22,6 +22,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import PhoneInput from 'react-phone-number-input';
 import 'react-phone-number-input/style.css'
+import { useRouter } from 'next/navigation';
 
 
 const formSchema = z.object({
@@ -36,6 +37,7 @@ const formSchema = z.object({
 export function PhotographerRegisterForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  const router = useRouter();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -65,8 +67,9 @@ export function PhotographerRegisterForm() {
         description: result.error,
         variant: "destructive",
       });
+    } else if (result?.redirect) {
+      router.push(result.redirect);
     }
-    // O redirecionamento em caso de sucesso é tratado pela server action
     setIsSubmitting(false);
   }
 

@@ -16,11 +16,11 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { CardContent, CardFooter } from '@/components/ui/card';
-import { useToast } from '@/hooks/use-toast';
 import { useEffect, useState } from 'react';
 import { Loader2 } from 'lucide-react';
 import { login } from '@/app/auth/actions';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useRouter } from 'next/navigation';
 
 const formSchema = z.object({
   email: z.string().email({ message: 'Email inválido.' }),
@@ -28,7 +28,7 @@ const formSchema = z.object({
 });
 
 export function LoginForm({ message, error }: { message?: string, error?: string }) {
-  const { toast } = useToast();
+  const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(error || null);
   const [successMessage, setSuccessMessage] = useState<string | null>(message || null);
@@ -56,8 +56,10 @@ export function LoginForm({ message, error }: { message?: string, error?: string
 
     if (result?.error) {
         setFormError(result.error);
+    } else if (result?.redirect) {
+        router.push(result.redirect);
     }
-    // O redirecionamento em caso de sucesso é feito pela server action
+    
     setIsSubmitting(false);
   }
 
