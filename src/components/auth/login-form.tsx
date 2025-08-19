@@ -19,7 +19,7 @@ import { CardContent, CardFooter } from '@/components/ui/card';
 import { useState, useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
 import { login } from '@/app/auth/actions';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useRouter } from 'next/navigation';
 
 const loginSchema = z.object({
@@ -27,13 +27,15 @@ const loginSchema = z.object({
   password: z.string().min(1, 'Senha é obrigatória.'),
 });
 
+type LoginData = z.infer<typeof loginSchema>;
+
 export function LoginForm({ message, error }: { message?: string, error?: string }) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(error || null);
   const [successMessage, setSuccessMessage] = useState<string | null>(message || null);
 
-  const form = useForm<z.infer<typeof loginSchema>>({
+  const form = useForm<LoginData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
       email: '',
@@ -49,7 +51,7 @@ export function LoginForm({ message, error }: { message?: string, error?: string
     if (message) setSuccessMessage(message);
   }, [message]);
 
-  async function onSubmit(values: z.infer<typeof loginSchema>) {
+  async function onSubmit(values: LoginData) {
     setIsSubmitting(true);
     setFormError(null);
     setSuccessMessage(null);
@@ -76,11 +78,13 @@ export function LoginForm({ message, error }: { message?: string, error?: string
         <CardContent className="space-y-4">
           {successMessage && (
             <Alert variant="default" className="bg-green-100 border-green-300 text-green-800">
+                <AlertTitle>Sucesso!</AlertTitle>
               <AlertDescription>{successMessage}</AlertDescription>
             </Alert>
           )}
           {formError && (
             <Alert variant="destructive">
+               <AlertTitle>Erro no Login</AlertTitle>
               <AlertDescription>{formError}</AlertDescription>
             </Alert>
           )}
@@ -106,7 +110,7 @@ export function LoginForm({ message, error }: { message?: string, error?: string
                 <FormControl>
                   <Input type="password" placeholder="••••••••" {...field} />
                 </FormControl>
-                <div className="text-right">
+                <div className="text-right pt-2">
                   <Link href="/forgot-password" passHref>
                     <Button variant="link" className="text-xs p-0 h-auto">Esqueceu a senha?</Button>
                   </Link>
@@ -119,7 +123,7 @@ export function LoginForm({ message, error }: { message?: string, error?: string
         <CardFooter className="flex-col gap-4">
           <Button type="submit" className="w-full" disabled={isSubmitting}>
             {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Login
+            {isSubmitting ? 'Entrando...' : 'Login'}
           </Button>
           <div className="text-sm text-muted-foreground">
             <Link href="/register" className="underline">

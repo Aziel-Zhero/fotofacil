@@ -22,24 +22,27 @@ import { Loader2 } from 'lucide-react';
 import PhoneInput from 'react-phone-number-input';
 import 'react-phone-number-input/style.css'
 import { useRouter } from 'next/navigation';
-import { Alert, AlertDescription } from '../ui/alert';
+import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 
 
 const formSchema = z.object({
   fullName: z.string().min(1, 'Nome completo é obrigatório'),
   email: z.string().email('Endereço de email inválido'),
-  username: z.string().min(3, 'O nome de usuário deve ter pelo menos 3 caracteres'),
+  username: z.string().min(3, 'O nome de usuário deve ter pelo menos 3 caracteres').regex(/^[a-z0-9_]+$/, 'Use apenas letras minúsculas, números e underscores.'),
   password: z.string().min(8, 'A senha deve ter pelo menos 8 caracteres'),
   companyName: z.string().min(1, 'Nome da empresa é obrigatório'),
   phone: z.string().min(10, 'Telefone inválido'),
 });
+
+type SignupData = z.infer<typeof formSchema>;
+
 
 export function PhotographerRegisterForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const router = useRouter();
 
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<SignupData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       fullName: '',
@@ -51,7 +54,7 @@ export function PhotographerRegisterForm() {
     },
   });
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: SignupData) {
     setIsSubmitting(true);
     setFormError(null);
     const formData = new FormData();
@@ -75,6 +78,7 @@ export function PhotographerRegisterForm() {
         <CardContent className="space-y-4">
           {formError && (
               <Alert variant="destructive">
+                  <AlertTitle>Erro no Cadastro</AlertTitle>
                   <AlertDescription>{formError}</AlertDescription>
               </Alert>
           )}
@@ -124,7 +128,7 @@ export function PhotographerRegisterForm() {
         <CardFooter className="flex-col gap-4">
           <Button type="submit" className="w-full" disabled={isSubmitting}>
              {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Criar Conta
+            {isSubmitting ? 'Criando conta...' : 'Criar Conta'}
           </Button>
            <div className="text-sm text-muted-foreground">
             Já tem uma conta? <Link href="/login" className="underline">Login</Link>
