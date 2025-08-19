@@ -1,13 +1,13 @@
 
 "use client";
 
-import { useState, useRef, ChangeEvent, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { useState, useRef, ChangeEvent, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   Form,
   FormControl,
@@ -15,14 +15,20 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form';
-import { useToast } from '@/hooks/use-toast';
-import { FileImage, Loader2, Send, UploadCloud, X } from 'lucide-react';
-import Image from 'next/image';
-import { sendSupportEmail } from '@/app/actions';
-import { Input } from './ui/input';
-import { createClient } from '@/lib/supabase/client';
-import { type User } from '@supabase/supabase-js';
+} from "@/components/ui/form";
+import { useToast } from "@/hooks/use-toast";
+import {
+  FileImage,
+  Loader2,
+  Send,
+  UploadCloud,
+  X,
+} from "lucide-react";
+import Image from "next/image";
+import { sendSupportEmail } from "@/app/actions";
+import { Input } from "@/components/ui/input";
+import { createClient } from "@/lib/supabase/client";
+import { type User } from "@supabase/supabase-js";
 
 const supportSchema = z.object({
   name: z.string().min(1, "Seu nome é obrigatório."),
@@ -30,7 +36,9 @@ const supportSchema = z.object({
   contactReason: z.enum(["problem", "suggestion"], {
     required_error: "Você precisa selecionar um motivo para o contato.",
   }),
-  description: z.string().min(10, "Por favor, forneça uma descrição com pelo menos 10 caracteres."),
+  description: z
+    .string()
+    .min(10, "Por favor, forneça uma descrição com pelo menos 10 caracteres."),
   screenshot: z.any().optional(),
 });
 
@@ -54,22 +62,22 @@ export function SupportForm() {
   useEffect(() => {
     const supabase = createClient();
     const fetchUser = async () => {
-        const { data: { user } } = await supabase.auth.getUser();
-        setUser(user);
-        if (user) {
-            form.setValue('name', user.user_metadata?.fullName || '');
-            form.setValue('email', user.email || '');
-        }
-    }
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+      if (user) {
+        form.setValue("name", user.user_metadata?.fullName || "");
+        form.setValue("email", user.email || "");
+      }
+    };
     fetchUser();
   }, [form]);
 
-  const contactReason = form.watch('contactReason');
+  const contactReason = form.watch("contactReason");
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
     if (selectedFile) {
-      if (selectedFile.size > 2 * 1024 * 1024) { // 2MB limit
+      if (selectedFile.size > 2 * 1024 * 1024) {
         toast({
           title: "Arquivo muito grande",
           description: "Por favor, selecione um arquivo com menos de 2MB.",
@@ -83,111 +91,111 @@ export function SupportForm() {
         setPreview(reader.result as string);
       };
       reader.readAsDataURL(selectedFile);
-      form.setValue('screenshot', selectedFile);
+      form.setValue("screenshot", selectedFile);
     }
   };
 
   const handleRemoveFile = () => {
     setFile(null);
     setPreview(null);
-    form.setValue('screenshot', null);
-    if(fileInputRef.current) {
-        fileInputRef.current.value = "";
+    form.setValue("screenshot", null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
     }
-  }
+  };
 
   async function onSubmit(values: z.infer<typeof supportSchema>) {
     setIsSubmitting(true);
     const formData = new FormData();
     Object.entries(values).forEach(([key, value]) => {
       if (value) {
-        formData.append(key, value);
+        formData.append(key, value as string | Blob);
       }
     });
 
     const result = await sendSupportEmail(formData);
 
     if (result.error) {
-       toast({
+      toast({
         title: "Erro ao Enviar",
         description: result.error,
         variant: "destructive",
       });
     } else {
-       toast({
+      toast({
         title: "Mensagem Enviada!",
-        description: "Obrigado pelo seu contato. Nossa equipe responderá em breve.",
+        description: "Obrigado pelo seu contato. Responderemos em breve.",
       });
       form.reset({
-        name: user?.user_metadata?.fullName || '',
-        email: user?.email || '',
-        description: '',
-        contactReason: undefined
+        name: user?.user_metadata?.fullName || "",
+        email: user?.email || "",
+        description: "",
+        contactReason: undefined,
       });
       handleRemoveFile();
     }
-    
+
     setIsSubmitting(false);
   }
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="space-y-8 animate-in fade-in"
+      >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                    <FormItem>
-                        <FormLabel>Seu Nome</FormLabel>
-                        <FormControl>
-                            <Input placeholder="João da Silva" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                    </FormItem>
-                )}
-            />
-             <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                    <FormItem>
-                        <FormLabel>Seu Email</FormLabel>
-                        <FormControl>
-                            <Input type="email" placeholder="joao.silva@example.com" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                    </FormItem>
-                )}
-            />
+          <FormField
+            control={form.control}
+            name="name"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Nome</FormLabel>
+                <FormControl>
+                  <Input placeholder="Seu nome" {...field} readOnly disabled />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Email</FormLabel>
+                <FormControl>
+                  <Input type="email" placeholder="seu@email.com" {...field} readOnly disabled />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </div>
+
         <FormField
           control={form.control}
           name="contactReason"
           render={({ field }) => (
-            <FormItem className="space-y-3">
-              <FormLabel>Qual o motivo do seu contato?</FormLabel>
+            <FormItem>
+              <FormLabel>Motivo do Contato</FormLabel>
               <FormControl>
                 <RadioGroup
                   onValueChange={field.onChange}
                   defaultValue={field.value}
-                  className="flex flex-col space-y-1"
+                  className="flex flex-col gap-3 mt-2"
                 >
-                  <FormItem className="flex items-center space-x-3 space-y-0">
+                  <FormItem className="flex items-center space-x-2">
                     <FormControl>
-                      <RadioGroupItem value="problem" />
+                        <RadioGroupItem value="problem" />
                     </FormControl>
-                    <FormLabel className="font-normal">
-                      Relatar um Problema
-                    </FormLabel>
+                    <FormLabel className="font-normal">Relatar um Problema</FormLabel>
                   </FormItem>
-                  <FormItem className="flex items-center space-x-3 space-y-0">
+                  <FormItem className="flex items-center space-x-2">
                     <FormControl>
-                      <RadioGroupItem value="suggestion" />
+                        <RadioGroupItem value="suggestion" />
                     </FormControl>
-                    <FormLabel className="font-normal">
-                      Sugerir uma Melhoria
-                    </FormLabel>
+                    <FormLabel className="font-normal">Sugerir uma Melhoria</FormLabel>
                   </FormItem>
                 </RadioGroup>
               </FormControl>
@@ -203,13 +211,13 @@ export function SupportForm() {
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{contactReason === 'problem' ? 'Descreva o problema' : 'Descreva sua sugestão'}</FormLabel>
+                  <FormLabel>{contactReason === "problem" ? "Descreva o problema" : "Descreva a melhoria"}</FormLabel>
                   <FormControl>
                     <Textarea
                       placeholder={
-                        contactReason === 'problem'
-                          ? "Tente detalhar o máximo possível: o que você estava fazendo, o que aconteceu e o que você esperava que acontecesse."
-                          : "Qual funcionalidade você gostaria de ver ou como podemos melhorar a plataforma?"
+                        contactReason === "problem"
+                          ? "Explique o que estava fazendo, o que deu errado e o que esperava."
+                          : "Como podemos melhorar? Deixe sua sugestão aqui."
                       }
                       rows={5}
                       {...field}
@@ -220,50 +228,46 @@ export function SupportForm() {
               )}
             />
 
-            {contactReason === 'problem' && (
+            {contactReason === "problem" && (
               <FormItem>
-                <FormLabel>Anexar uma imagem (Opcional)</FormLabel>
+                <FormLabel>Captura de Tela (opcional)</FormLabel>
                 <FormControl>
                   <div
-                    className="flex justify-center items-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer hover:bg-muted/50 transition-colors"
+                    className="flex justify-center items-center w-full h-36 border-2 border-dashed border-muted rounded-lg cursor-pointer hover:bg-muted/20 transition"
                     onClick={() => fileInputRef.current?.click()}
                   >
-                    {!preview && (
-                        <div className="text-center">
-                            <UploadCloud className="mx-auto h-8 w-8 text-muted-foreground" />
-                            <p className="mt-2 text-sm text-muted-foreground">
-                                <span className="font-semibold text-primary">Clique para enviar</span>
-                            </p>
-                             <p className="text-xs text-muted-foreground">PNG ou JPG (Máx. 2MB)</p>
-                        </div>
+                    {!preview ? (
+                      <div className="text-center text-muted-foreground">
+                        <UploadCloud className="mx-auto h-8 w-8" />
+                        <p className="text-sm mt-1">
+                          <span className="font-medium text-primary">Clique ou arraste para enviar</span>
+                        </p>
+                        <p className="text-xs">PNG ou JPG até 2MB</p>
+                      </div>
+                    ) : (
+                      <div className="relative h-full w-full p-2">
+                        <Image src={preview} alt="Preview" fill className="object-contain rounded-md" />
+                      </div>
                     )}
-                     {preview && (
-                        <div className="relative h-full w-full p-2">
-                             <Image src={preview} alt="Pré-visualização" fill className="object-contain rounded-md" />
-                        </div>
-                     )}
                   </div>
                 </FormControl>
                 <input
-                    ref={fileInputRef}
-                    type="file"
-                    className="hidden"
-                    accept="image/png, image/jpeg"
-                    onChange={handleFileChange}
-                    name="screenshot"
-                  />
-                 {file && (
-                    <div className="mt-2">
-                        <div className="flex items-center justify-between text-sm p-2 bg-muted rounded-md">
-                            <div className="flex items-center gap-2 truncate">
-                                <FileImage className="h-5 w-5 flex-shrink-0 text-muted-foreground" />
-                                <span className="truncate font-medium">{file.name}</span>
-                            </div>
-                             <Button variant="ghost" size="icon" className="h-6 w-6" onClick={handleRemoveFile}>
-                                <X className="h-4 w-4" />
-                            </Button>
-                        </div>
+                  ref={fileInputRef}
+                  type="file"
+                  className="hidden"
+                  accept="image/png, image/jpeg"
+                  onChange={handleFileChange}
+                />
+                {file && (
+                  <div className="mt-2 flex items-center justify-between p-2 bg-muted rounded-md text-sm">
+                    <div className="flex items-center gap-2 truncate">
+                      <FileImage className="w-5 h-5 text-muted-foreground" />
+                      <span className="truncate">{file.name}</span>
                     </div>
+                    <Button variant="ghost" size="icon" className="h-6 w-6" onClick={handleRemoveFile}>
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
                 )}
               </FormItem>
             )}
@@ -271,13 +275,16 @@ export function SupportForm() {
         )}
 
         <div className="flex justify-end">
-          <Button type="submit" disabled={!contactReason || isSubmitting}>
+          <Button type="submit" disabled={!contactReason || isSubmitting} className="gap-2">
             {isSubmitting ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin"/>
+              <>
+                <Loader2 className="animate-spin h-4 w-4" /> Enviando...
+              </>
             ) : (
-                <Send className="mr-2 h-4 w-4" />
+              <>
+                <Send className="h-4 w-4" /> Enviar Mensagem
+              </>
             )}
-            {isSubmitting ? 'Enviando...' : 'Enviar Mensagem'}
           </Button>
         </div>
       </form>
