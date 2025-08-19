@@ -98,7 +98,7 @@ export function CheckoutForm() {
     { mask: '0000 000000 00000', regex: /^3[47]/, cardtype: 'amex' },
     { mask: '0000 0000 0000 0000', regex: /^(6011|65|64[4-9])/, cardtype: 'discover' },
     { mask: '0000 0000 0000 0000', cardtype: 'unknown' },
-  ].map(card => ({...card, mask: IMask.MaskedPattern, ...card}));
+  ];
 
 
   return (
@@ -157,15 +157,18 @@ export function CheckoutForm() {
                                         <FormLabel>Número do Cartão</FormLabel>
                                         <FormControl>
                                              <IMaskInput
-                                                mask={cardMasks}
+                                                mask={cardMasks.map(card => ({ mask: card.mask }))}
                                                 value={value}
                                                 unmask={false}
-                                                onAccept={(val: any) => onChange(val)}
+                                                onAccept={(val: any, mask: any) => {
+                                                    onChange(val);
+                                                    const card = cardMasks[mask.resolveIndex(val)];
+                                                    setCardBrand((card?.cardtype as Brand) || 'unknown');
+                                                }}
                                                 dispatch={(appended, dynamicMasked) => {
                                                   const number = (dynamicMasked.value + appended).replace(/\D/g, '');
-                                                  const foundMask = cardMasks.find(({ regex }) => number.match(regex!));
-                                                  setCardBrand((foundMask?.cardtype as Brand) || 'unknown');
-                                                  return foundMask || cardMasks[cardMasks.length - 1];
+                                                  const foundMask = cardMasks.find(({ regex }) => regex && number.match(regex));
+                                                  return foundMask ? new IMask.MaskedPattern(foundMask) : new IMask.MaskedPattern(cardMasks[cardMasks.length -1]);
                                                 }}
                                                 placeholder="0000 0000 0000 0000"
                                                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
@@ -266,4 +269,3 @@ export function CheckoutForm() {
     </div>
   );
 }
-
