@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -143,7 +142,7 @@ export function AlbumDetailClient({ albumId }: { albumId: string }) {
   return (
     <div className="container mx-auto py-8">
         <div className="mb-8">
-            <Button variant="ghost" asChild className="mb-4 text-white">
+            <Button variant="ghost" asChild className="mb-4 text-textDark">
                 <Link href="/dashboard">
                     <ArrowLeft className="mr-2 h-4 w-4" />
                     Voltar para Álbuns
@@ -151,7 +150,7 @@ export function AlbumDetailClient({ albumId }: { albumId: string }) {
             </Button>
             <div className="flex justify-between items-center">
                 <div>
-                    <h1 className="text-3xl font-bold font-headline text-white">Gerenciar Álbum: {album?.name || "Carregando..."}</h1>
+                    <h1 className="text-3xl font-bold font-headline text-textDark">Gerenciar Álbum: {album?.name || "Carregando..."}</h1>
                     <p className="text-muted-foreground">Faça upload de novas fotos e veja a galeria atual.</p>
                 </div>
                  <DropdownMenu>
@@ -195,13 +194,27 @@ export function AlbumDetailClient({ albumId }: { albumId: string }) {
         
         <div className="space-y-12">
             <div>
-              <h2 className="text-xl font-bold font-headline mb-4 text-white">Enviar Fotos</h2>
+              <h2 className="text-xl font-bold font-headline mb-4 text-textDark">Enviar Fotos</h2>
               <PhotoUploader onUploadComplete={addPhoto} albumId={albumId} />
             </div>
 
+            {photos.length > 0 && album?.status === 'Pendente' && (
+                 <Alert>
+                    <Send className="h-4 w-4" />
+                    <AlertTitle className="font-headline">Tudo pronto para o cliente?</AlertTitle>
+                    <AlertDescription className="flex justify-between items-center">
+                       Quando terminar de enviar as fotos, notifique seu cliente para que ele possa começar a seleção.
+                       <Button onClick={handleNotifyClient}>
+                         <Send className="mr-2 h-4 w-4" />
+                         Notificar Cliente para Seleção
+                       </Button>
+                    </AlertDescription>
+                </Alert>
+            )}
+
             <div>
               <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-xl font-bold font-headline text-white">Galeria ({photos.length} fotos)</h2>
+                  <h2 className="text-xl font-bold font-headline text-textDark">Galeria ({photos.length} fotos)</h2>
                   {photos.length > 0 && (
                       <ToggleGroup type="single" value={viewMode} onValueChange={(value: ViewMode) => value && setViewMode(value)} aria-label="Modo de Visualização">
                           <ToggleGroupItem value="grid" aria-label="Grade">
@@ -218,21 +231,6 @@ export function AlbumDetailClient({ albumId }: { albumId: string }) {
               </div>
               {renderGallery()}
             </div>
-            
-            {photos.length > 0 && album?.status === 'Pendente' && (
-                 <Alert>
-                    <Send className="h-4 w-4" />
-                    <AlertTitle className="font-headline">Tudo pronto para o cliente?</AlertTitle>
-                    <AlertDescription className="flex justify-between items-center">
-                       Quando terminar de enviar as fotos, notifique seu cliente para que ele possa começar a seleção.
-                       <Button onClick={handleNotifyClient}>
-                         <Send className="mr-2 h-4 w-4" />
-                         Notificar Cliente para Seleção
-                       </Button>
-                    </AlertDescription>
-                </Alert>
-            )}
-
         </div>
     </div>
   );
