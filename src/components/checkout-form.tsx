@@ -24,7 +24,7 @@ import { InteractiveCreditCard } from './interactive-credit-card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { createClient } from '@/lib/supabase/client';
 import type { User } from '@supabase/supabase-js';
-import { IMask, useIMask } from 'react-imask';
+import { IMaskInput } from 'react-imask';
 
 const checkoutSchema = z.object({
   fullName: z.string().min(1, 'Nome completo é obrigatório'),
@@ -58,34 +58,6 @@ export function CheckoutForm() {
     },
   });
   
-  const { ref: cardNumberRef, mask: cardNumberMask } = useIMask({
-    mask: [
-        { mask: '0000 0000 0000 0000', regex: /^4/, cardtype: 'visa' },
-        { mask: '0000 0000 0000 0000', regex: /^5[1-5]/, cardtype: 'mastercard' },
-        { mask: '0000 000000 00000', regex: /^3[47]/, cardtype: 'amex' },
-        { mask: '0000 0000 0000 0000', regex: /^(6011|65|64[4-9])/, cardtype: 'discover' },
-        { mask: '0000 0000 0000 0000', cardtype: 'unknown' },
-    ],
-    dispatch: function (appended, dynamicMasked) {
-        const number = (dynamicMasked.value + appended).replace(/\D/g, '');
-        const foundMask = dynamicMasked.compiledMasks.find(function (item: any) {
-            return number.match(item.regex);
-        });
-        if (foundMask) {
-            setCardBrand(foundMask.cardtype || 'unknown');
-        }
-        return foundMask || this.dynamicMasks[this.dynamicMasks.length - 1];
-    },
-  });
-
-  const { ref: expiryRef, mask: expiryMask } = useIMask({
-    mask: 'MM/YY',
-    blocks: {
-        MM: { mask: IMask.MaskedRange, from: 1, to: 12, placeholderChar: 'M' },
-        YY: { mask: IMask.MaskedRange, from: new Date().getFullYear() % 100, to: 99, placeholderChar: 'A' },
-    },
-  });
-
   useEffect(() => {
     const supabase = createClient();
     const fetchUser = async () => {
@@ -118,20 +90,21 @@ export function CheckoutForm() {
         description: "Use o código no seu aplicativo de banco para pagar.",
     })
   }
+  
+  const cardMasks = [
+    { mask: '0000 0000 0000 0000', regex: /^4/, cardtype: 'visa' },
+    { mask: '0000 0000 0000 0000', regex: /^5[1-5]/, cardtype: 'mastercard' },
+    { mask: '0000 000000 00000', regex: /^3[47]/, cardtype: 'amex' },
+    { mask: '0000 0000 0000 0000', regex: /^(6011|65|64[4-9])/, cardtype: 'discover' },
+    { mask: '0000 0000 0000 0000', cardtype: 'unknown' },
+  ];
 
-  const handleCardNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (cardNumberMask) {
-      cardNumberMask.value = e.target.value;
-      form.setValue('cardNumber', cardNumberMask.value, { shouldValidate: true });
-    }
-  };
-
-  const handleExpiryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (expiryMask) {
-      expiryMask.value = e.target.value;
-      form.setValue('cardExpiry', expiryMask.value, { shouldValidate: true });
-    }
-  };
+  const dispatchCardType = (value: string) => {
+    const number = (value || '').replace(/\D/g, '');
+    const foundMask = cardMasks.find(({ regex }) => number.match(regex));
+    setCardBrand((foundMask?.cardtype as Brand) || 'unknown');
+    return foundMask || cardMasks[cardMasks.length - 1];
+  }
 
 
   return (
@@ -182,13 +155,27 @@ export function CheckoutForm() {
               <TabsContent value="credit-card">
                   <Card className="bg-transparent border-none shadow-none">
                       <CardContent className="space-y-4 pt-6 p-1">
-                          <FormField name="cardNumber" control={form.control} render={({ field }) => (
-                              <FormItem>
-                                  <FormLabel>Número do Cartão</FormLabel>
-                                  <FormControl><Input placeholder="0000 0000 0000 0000" {...field} ref={cardNumberRef} onChange={handleCardNumberChange} /></FormControl>
-                                  <FormMessage />
-                              </FormItem>
-                          )} />
+                           <Controller
+                                name="cardNumber"
+                                control={form.control}
+                                render={({ field: { onChange, value } }) => (
+                                    <FormItem>
+                                        <FormLabel>Número do Cartão</FormLabel>
+                                        <FormControl>
+                                             <IMaskInput
+                                                mask={cardMasks}
+                                                value={value}
+                                                unmask={false}
+                                                onAccept={(val) => onChange(val)}
+                                                dispatch={(appended: any, dynamicMasked: any) => dispatchCardType(dynamicMasked.value + appended)}
+                                                placeholder="0000 0000 0000 0000"
+                                                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
                            <FormField name="cardHolder" control={form.control} render={({ field }) => (
                               <FormItem>
                                   <FormLabel>Nome do Titular</FormLabel>
@@ -197,13 +184,30 @@ export function CheckoutForm() {
                               </FormItem>
                           )} />
                           <div className="grid grid-cols-3 gap-4">
-                                <FormField name="cardExpiry" control={form.control} render={({ field }) => (
-                                    <FormItem className="col-span-2">
-                                        <FormLabel>Validade</FormLabel>
-                                        <FormControl><Input placeholder="MM/AA" {...field} ref={expiryRef} onChange={handleExpiryChange} /></FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )} />
+                                <Controller
+                                    name="cardExpiry"
+                                    control={form.control}
+                                    render={({ field: { onChange, value } }) => (
+                                        <FormItem className="col-span-2">
+                                            <FormLabel>Validade</FormLabel>
+                                            <FormControl>
+                                                <IMaskInput
+                                                    mask="MM / YY"
+                                                    blocks={{
+                                                        MM: { mask: IMask.MaskedRange, from: 1, to: 12 },
+                                                        YY: { mask: IMask.MaskedRange, from: new Date().getFullYear() % 100, to: 99 },
+                                                    }}
+                                                    value={value}
+                                                    unmask={false}
+                                                    onAccept={(val) => onChange(val)}
+                                                    placeholder="MM/AA"
+                                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+                                                />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
                                 <FormField name="cardCvc" control={form.control} render={({ field }) => (
                                     <FormItem className="col-span-1">
                                         <FormLabel>CVC</FormLabel>
