@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useRef, ChangeEvent, useEffect } from "react";
@@ -30,6 +29,9 @@ import { Input } from "@/components/ui/input";
 import { createClient } from "@/lib/supabase/client";
 import { type User } from "@supabase/supabase-js";
 
+const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
+const MAX_DESCRIPTION_LENGTH = 2500;
+
 const supportSchema = z.object({
   name: z.string().min(1, "Seu nome é obrigatório."),
   email: z.string().email("Por favor, insira um e-mail válido."),
@@ -38,7 +40,8 @@ const supportSchema = z.object({
   }),
   description: z
     .string()
-    .min(10, "Por favor, forneça uma descrição com pelo menos 10 caracteres."),
+    .min(10, "Por favor, forneça uma descrição com pelo menos 10 caracteres.")
+    .max(MAX_DESCRIPTION_LENGTH, `A descrição não pode exceder ${MAX_DESCRIPTION_LENGTH} caracteres.`),
   screenshot: z.any().optional(),
 });
 
@@ -59,6 +62,8 @@ export function SupportForm() {
     },
   });
 
+  const descriptionValue = form.watch("description", "");
+
   useEffect(() => {
     const supabase = createClient();
     const fetchUser = async () => {
@@ -77,10 +82,10 @@ export function SupportForm() {
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
     if (selectedFile) {
-      if (selectedFile.size > 2 * 1024 * 1024) {
+      if (selectedFile.size > MAX_FILE_SIZE) {
         toast({
-          title: "Arquivo muito grande",
-          description: "Por favor, selecione um arquivo com menos de 2MB.",
+          title: "Arquivo Muito Grande",
+          description: `O arquivo excede o limite de 2MB. Por favor, selecione uma imagem menor.`,
           variant: "destructive",
         });
         return;
@@ -221,8 +226,12 @@ export function SupportForm() {
                       }
                       rows={5}
                       {...field}
+                      maxLength={MAX_DESCRIPTION_LENGTH}
                     />
                   </FormControl>
+                   <div className="flex justify-end text-xs text-muted-foreground">
+                    {descriptionValue.length} / {MAX_DESCRIPTION_LENGTH}
+                  </div>
                   <FormMessage />
                 </FormItem>
               )}
@@ -242,7 +251,7 @@ export function SupportForm() {
                         <p className="text-sm mt-1">
                           <span className="font-medium text-primary">Clique ou arraste para enviar</span>
                         </p>
-                        <p className="text-xs">PNG ou JPG até 2MB</p>
+                        <p className="text-xs">PNG ou JPG (Máx 2MB)</p>
                       </div>
                     ) : (
                       <div className="relative h-full w-full p-2">
