@@ -27,12 +27,14 @@
   border-radius: 1rem;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
-  background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)));
+  background: linear-gradient(135deg, hsla(var(--primary)/0.7), hsla(var(--accent)/0.7));
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid hsla(var(--border) / 0.2);
   position: absolute;
   color: hsl(var(--primary-foreground));
   font-family: 'Courier New', Courier, monospace;
-  text-shadow: 0 1px 1px hsla(0, 0, 0, 0.3);
-  box-shadow: 0 1px 6px hsla(0, 0, 0, 0.3);
+  box-shadow: 0 4px 12px hsla(0, 0, 0, 0.1);
   padding: 1.25rem;
   display: flex;
   flex-direction: column;
