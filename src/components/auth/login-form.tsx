@@ -16,7 +16,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { CardContent, CardFooter } from '@/components/ui/card';
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
 import { login } from '@/app/auth/actions';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -33,6 +33,11 @@ export function LoginForm({ message, error }: { message?: string, error?: string
   const [formError, setFormError] = useState<string | null>(error || null);
   const [successMessage, setSuccessMessage] = useState<string | null>(message || null);
 
+  // Limpa as mensagens quando o usuário começa a digitar
+  useEffect(() => {
+    if (formError) setFormError(null);
+    if (successMessage) setSuccessMessage(null);
+  }, [formError, successMessage]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -55,9 +60,10 @@ export function LoginForm({ message, error }: { message?: string, error?: string
     const result = await login(formData);
 
     if (result?.error) {
-        setFormError(result.error);
+      setFormError(result.error);
     } else if (result?.redirect) {
-        router.push(result.redirect);
+      // Redirecionamento seguro no lado do cliente
+      router.push(result.redirect);
     }
     
     setIsSubmitting(false);
@@ -67,16 +73,16 @@ export function LoginForm({ message, error }: { message?: string, error?: string
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)}>
         <CardContent className="space-y-4">
-            {successMessage && (
-                <Alert variant="default" className="bg-green-100 border-green-300 text-green-800">
-                    <AlertDescription>{successMessage}</AlertDescription>
-                </Alert>
-            )}
-            {formError && (
-                 <Alert variant="destructive">
-                    <AlertDescription>{formError}</AlertDescription>
-                </Alert>
-            )}
+          {successMessage && (
+            <Alert variant="default" className="bg-green-100 border-green-300 text-green-800">
+              <AlertDescription>{successMessage}</AlertDescription>
+            </Alert>
+          )}
+          {formError && (
+            <Alert variant="destructive">
+              <AlertDescription>{formError}</AlertDescription>
+            </Alert>
+          )}
           <FormField
             control={form.control}
             name="email"
@@ -100,9 +106,9 @@ export function LoginForm({ message, error }: { message?: string, error?: string
                   <Input type="password" placeholder="••••••••" {...field} />
                 </FormControl>
                 <div className="text-right">
-                    <Link href="/forgot-password" passHref>
-                        <Button variant="link" className="text-xs p-0 h-auto">Esqueceu a senha?</Button>
-                    </Link>
+                  <Link href="/forgot-password" passHref>
+                    <Button variant="link" className="text-xs p-0 h-auto">Esqueceu a senha?</Button>
+                  </Link>
                 </div>
                 <FormMessage />
               </FormItem>
@@ -116,7 +122,7 @@ export function LoginForm({ message, error }: { message?: string, error?: string
           </Button>
           <div className="text-sm text-muted-foreground">
             <Link href="/register" className="underline">
-              Não tem uma conta? Registre-se
+              Não tem uma conta de fotógrafo? Registre-se
             </Link>
           </div>
         </CardFooter>

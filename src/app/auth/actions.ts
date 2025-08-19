@@ -3,7 +3,6 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { z } from 'zod';
-import { redirect } from 'next/navigation';
 import { headers } from 'next/headers';
 
 // Schema agora EXCLUSIVO para fotógrafos.
@@ -69,62 +68,56 @@ const loginSchema = z.object({
 });
 
 export async function login(formData: FormData) {
-    const supabase = createClient();
-    const data = Object.fromEntries(formData.entries());
+  const supabase = createClient();
+  const data = Object.fromEntries(formData.entries());
 
-    const parsed = loginSchema.safeParse(data);
+  const parsed = loginSchema.safeParse(data);
 
-    if (!parsed.success) {
-        let errorMessages = '';
-        parsed.error.issues.forEach(issue => {
-            errorMessages += issue.message + '\n';
-        });
-        return { error: errorMessages.trim() };
-    }
-
-    const { email, password } = parsed.data;
-
-    const { data: { user }, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
+  if (!parsed.success) {
+    let errorMessages = '';
+    parsed.error.issues.forEach(issue => {
+      errorMessages += issue.message + '\n';
     });
+    return { error: errorMessages.trim() };
+  }
 
-    if (error) {
-        if (error.message.includes('Email not confirmed')) {
-            return { error: "Seu email ainda não foi confirmado. Por favor, verifique sua caixa de entrada." };
-        }
-        return { error: "Credenciais inválidas. Por favor, tente novamente." };
-    }
+  const { email, password } = parsed.data;
 
-    if (!user) {
-         return { error: "Usuário não encontrado após o login." };
-    }
-    
-    const userRole = user.user_metadata?.role;
+  const { data: { user }, error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
 
-    // Apenas fotógrafos podem fazer login agora
-    if (userRole === 'photographer') {
-        const { data: profile, error: profileError } = await supabase
-            .from('photographers')
-            .select('id')
-            .eq('id', user.id)
-            .single();
-        
-        if (profileError || !profile) {
-          await supabase.auth.signOut();
-          let errorMessage = 'Não foi possível encontrar seu perfil de fotógrafo. Contate o suporte.';
-          if (profileError) {
-            console.error("Profile fetch error:", profileError);
-            errorMessage = `Erro ao buscar perfil (${profileError.code}). Contate o suporte.`;
-          }
-           return { error: errorMessage };
-        }
-        return { success: true, redirect: '/dashboard' };
-    } else {
-        // Se um cliente tentar fazer login, ou role for desconhecida.
-        await supabase.auth.signOut();
-        return { error: 'O acesso do cliente é feito através de um link seguro fornecido pelo fotógrafo.' };
+  if (error) {
+    if (error.message.includes('Email not confirmed')) {
+      return { error: "Seu email ainda não foi confirmado. Por favor, verifique sua caixa de entrada." };
     }
+    return { error: "Credenciais inválidas. Por favor, tente novamente." };
+  }
+
+  if (!user) {
+    return { error: "Usuário não encontrado após o login." };
+  }
+  
+  // Como apenas fotógrafos fazem login por esta tela, verificamos o perfil deles.
+  const { data: profile, error: profileError } = await supabase
+    .from('photographers')
+    .select('id')
+    .eq('id', user.id)
+    .single();
+  
+  if (profileError || !profile) {
+    await supabase.auth.signOut();
+    let errorMessage = 'Não foi possível encontrar seu perfil de fotógrafo. Contate o suporte.';
+    if (profileError) {
+      console.error("Profile fetch error:", profileError);
+      errorMessage = `Erro ao buscar perfil (${profileError.code}). Contate o suporte.`;
+    }
+    return { error: errorMessage };
+  }
+
+  // Retorna um objeto de sucesso com a URL de redirecionamento.
+  return { success: true, redirect: '/dashboard' };
 }
 
 const forgotPasswordSchema = z.object({
@@ -132,28 +125,27 @@ const forgotPasswordSchema = z.object({
 });
 
 export async function forgotPassword(formData: FormData) {
-    const supabase = createClient();
-    const data = Object.fromEntries(formData.entries());
+  const supabase = createClient();
+  const data = Object.fromEntries(formData.entries());
+  const origin = headers().get('origin');
 
-    const parsed = forgotPasswordSchema.safeParse(data);
-
-    if (!parsed.success) {
-        return { error: 'Email inválido.' };
-    }
+  const parsed = forgotPasswordSchema.safeParse(data);
+  if (!parsed.success) {
+    return { error: 'Email inválido.' };
+  }
     
-    const { email } = parsed.data;
-    const origin = headers().get('origin');
+  const { email } = parsed.data;
 
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${origin}/reset-password`,
-    });
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${origin}/reset-password`,
+  });
 
-    if (error) {
-        console.error('Forgot Password Error:', error);
-        return { error: "Não foi possível enviar o link de redefinição de senha. Tente novamente." };
-    }
+  if (error) {
+    console.error('Forgot Password Error:', error);
+    return { error: "Não foi possível enviar o link de redefinição de senha. Tente novamente." };
+  }
 
-    return { message: 'Se um usuário com este email existir, um link de redefinição de senha foi enviado.' };
+  return { message: 'Se um usuário com este email existir, um link de redefinição de senha foi enviado.' };
 }
 
 const resetPasswordSchema = z.object({
@@ -161,23 +153,22 @@ const resetPasswordSchema = z.object({
 });
 
 export async function resetPassword(formData: FormData) {
-    const supabase = createClient();
-    const data = Object.fromEntries(formData.entries());
+  const supabase = createClient();
+  const data = Object.fromEntries(formData.entries());
 
-    const parsed = resetPasswordSchema.safeParse(data);
+  const parsed = resetPasswordSchema.safeParse(data);
+  if (!parsed.success) {
+    return { error: 'A senha deve ter pelo menos 8 caracteres.' };
+  }
 
-    if (!parsed.success) {
-        return { error: 'A senha deve ter pelo menos 8 caracteres.' };
-    }
+  const { password } = parsed.data;
+  
+  const { error } = await supabase.auth.updateUser({ password });
 
-    const { password } = parsed.data;
-    
-    const { error } = await supabase.auth.updateUser({ password });
+  if (error) {
+    console.error('Reset Password Error:', error);
+    return { error: "Não foi possível redefinir a senha. O link pode ter expirado." };
+  }
 
-    if (error) {
-        console.error('Reset Password Error:', error);
-        return { error: "Não foi possível redefinir a senha. O link pode ter expirado." };
-    }
-
-    return { success: true, redirect: '/login?message=Sua senha foi redefinida com sucesso. Você já pode fazer login.' };
+  return { success: true, redirect: '/login?message=Sua senha foi redefinida com sucesso. Você já pode fazer login.' };
 }
