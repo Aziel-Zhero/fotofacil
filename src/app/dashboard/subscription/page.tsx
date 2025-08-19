@@ -7,10 +7,10 @@ import Link from "next/link";
 
 const plans = [
     {
-        name: "Essencial Mensal",
-        price: "25,00",
+        name: "Mensal",
+        price: "32,00",
         period: "/mês",
-        billingInfo: "Cobrado mensalmente",
+        billingInfo: "Cobrado R$ 32,00 por mês",
         description: "Ideal para começar com o pé direito.",
         features: [
             "10 álbuns",
@@ -19,12 +19,13 @@ const plans = [
             "Suporte via Email"
         ],
         isHighlighted: false,
+        discountInfo: null,
     },
     {
-        name: "Essencial Semestral",
-        price: "23,90",
+        name: "Semestral",
+        price: "29,99",
         period: "/mês",
-        billingInfo: "Cobrado R$ 143,40 a cada 6 meses",
+        billingInfo: "Cobrado R$ 179,94 a cada 6 meses",
         description: "Mais popular para um fluxo constante.",
         features: [
             "60 álbuns",
@@ -33,12 +34,13 @@ const plans = [
             "Suporte via Email"
         ],
         isHighlighted: true,
+        discountInfo: null,
     },
     {
-        name: "Estúdio Anual",
-        price: "34,99",
+        name: "Anual",
+        price: "35,99",
         period: "/mês",
-        billingInfo: "Cobrado R$ 419,88 anualmente",
+        billingInfo: "Cobrado R$ 431,88 anualmente no cartão",
         description: "A solução completa para estúdios.",
         features: [
             "Álbuns ilimitados",
@@ -47,6 +49,7 @@ const plans = [
             "Suporte Premium"
         ],
         isHighlighted: false,
+        discountInfo: "ou R$ 34,91/mês no PIX (3% de desconto)",
     }
 ]
 
@@ -90,7 +93,10 @@ export default function SubscriptionPage() {
                             <div className="text-center">
                                 <span className="text-4xl font-bold">R$ {plan.price}</span>
                                 <span className="text-lg font-normal text-muted-foreground">{plan.period}</span>
-                                {plan.billingInfo && <p className="text-xs text-muted-foreground mt-1">{plan.billingInfo}</p>}
+                                <p className="text-xs text-muted-foreground mt-1 h-8">
+                                    {plan.billingInfo}
+                                    {plan.discountInfo && <span className="block font-semibold text-destructive">{plan.discountInfo}</span>}
+                                </p>
                             </div>
                             <ul className="space-y-3 text-sm">
                             {plan.features.map(feature => (
