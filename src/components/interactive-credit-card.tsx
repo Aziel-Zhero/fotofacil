@@ -6,6 +6,7 @@ import './interactive-credit-card.css';
 
 interface InteractiveCreditCardProps {
   isFlipped: boolean;
+  brand: 'visa' | 'mastercard';
   cardNumber: string;
   cardHolder: string;
   cardExpiryMonth: string;
@@ -32,9 +33,18 @@ const VisaLogo = () => (
     </svg>
 );
 
+const MastercardLogo = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="64px" height="48px">
+        <path fill="#ff9800" d="M32 10A14 14 0 1 0 32 38A14 14 0 1 0 32 10Z" />
+        <path fill="#d50000" d="M16 10A14 14 0 1 0 16 38A14 14 0 1 0 16 10Z" />
+        <path fill="#ff3d00" d="M18,24c0,4.755,2.376,8.95,6,11.48c3.624-2.53,6-6.725,6-11.48s-2.376-8.95-6-11.48 C20.376,15.05,18,19.245,18,24z" />
+    </svg>
+);
+
 
 export function InteractiveCreditCard({ 
     isFlipped, 
+    brand,
     cardNumber, 
     cardHolder, 
     cardExpiryMonth, 
@@ -47,13 +57,20 @@ export function InteractiveCreditCard({
     return parts.join(' ');
   };
 
+  const CardLogo = () => {
+    if (brand === 'mastercard') {
+      return <MastercardLogo />;
+    }
+    return <VisaLogo />;
+  };
+
   return (
     <div className={cn("credit-card-box", isFlipped && "flipped")}>
       <div className="flip">
         <div className="front">
             <div className="flex justify-between items-start">
               <div className="chip"></div>
-              <div className="logo"><VisaLogo /></div>
+              <div className="logo"><CardLogo /></div>
             </div>
             <div className="number">{formatCardNumber(cardNumber)}</div>
             <div className="flex justify-between">
@@ -77,7 +94,7 @@ export function InteractiveCreditCard({
                     {cardCvc.padEnd(3, '*')}
                 </div>
             </div>
-            <div className="logo"><VisaLogo /></div>
+            <div className="logo"><CardLogo /></div>
         </div>
       </div>
     </div>

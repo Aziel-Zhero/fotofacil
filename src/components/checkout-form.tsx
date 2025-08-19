@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -22,10 +22,13 @@ import { Copy, CreditCard, Lock } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { InteractiveCreditCard } from './interactive-credit-card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { createClient } from '@/lib/supabase/client';
+import type { User } from '@supabase/supabase-js';
 
 const checkoutSchema = z.object({
   fullName: z.string().min(1, 'Nome completo é obrigatório'),
-  document: z.string().min(1, 'CPF/CNPJ é obrigatório'),
+  document: z.string().optional(),
+  cardBrand: z.string().min(1, "Selecione a bandeira"),
   cardNumber: z.string().length(16, 'O número do cartão deve ter 16 dígitos.'),
   cardHolder: z.string().min(1, 'O nome do titular é obrigatório.'),
   cardExpiryMonth: z.string().min(1, 'Mês obrigatório'),
@@ -36,12 +39,15 @@ const checkoutSchema = z.object({
 export function CheckoutForm() {
   const { toast } = useToast();
   const [isCardFlipped, setIsCardFlipped] = useState(false);
+  const [activeTab, setActiveTab] = useState('credit-card');
+  const [user, setUser] = useState<User | null>(null);
 
   const form = useForm<z.infer<typeof checkoutSchema>>({
     resolver: zodResolver(checkoutSchema),
     defaultValues: {
       fullName: '',
       document: '',
+      cardBrand: 'visa',
       cardNumber: '',
       cardHolder: '',
       cardExpiryMonth: '',
@@ -49,6 +55,19 @@ export function CheckoutForm() {
       cardCvc: '',
     },
   });
+
+  useEffect(() => {
+    const supabase = createClient();
+    const fetchUser = async () => {
+        const { data: { user } } = await supabase.auth.getUser();
+        setUser(user);
+        if (user) {
+            form.setValue('fullName', user.user_metadata?.fullName || '');
+            form.setValue('document', user.user_metadata?.document || '');
+        }
+    }
+    fetchUser();
+  }, [form]);
 
   const cardValues = form.watch();
 
@@ -76,14 +95,28 @@ export function CheckoutForm() {
   return (
     <div className="grid md:grid-cols-2 gap-12 items-start">
        <div className="md:sticky md:top-24">
-          <InteractiveCreditCard 
-            isFlipped={isCardFlipped}
-            cardNumber={cardValues.cardNumber}
-            cardHolder={cardValues.cardHolder}
-            cardExpiryMonth={cardValues.cardExpiryMonth}
-            cardExpiryYear={cardValues.cardExpiryYear.slice(-2)}
-            cardCvc={cardValues.cardCvc}
-          />
+            {activeTab === 'credit-card' ? (
+                 <InteractiveCreditCard 
+                    isFlipped={isCardFlipped}
+                    brand={cardValues.cardBrand as 'visa' | 'mastercard'}
+                    cardNumber={cardValues.cardNumber}
+                    cardHolder={cardValues.cardHolder}
+                    cardExpiryMonth={cardValues.cardExpiryMonth}
+                    cardExpiryYear={cardValues.cardExpiryYear.slice(-2)}
+                    cardCvc={cardValues.cardCvc}
+                />
+            ) : (
+                <Card>
+                    <CardContent className="flex flex-col items-center justify-center pt-6 space-y-4">
+                        <p className="text-sm text-center text-muted-foreground">Escaneie o QR Code ou copie o código abaixo para pagar via PIX.</p>
+                        <Image src="https://placehold.co/200x200.png" data-ai-hint="qr code" alt="QR Code PIX" width={200} height={200} className="rounded-md"/>
+                        <Button type="button" variant="outline" onClick={copyPixCode}>
+                            <Copy className="mr-2"/>
+                            Copiar Código PIX
+                        </Button>
+                    </CardContent>
+                </Card>
+            )}
       </div>
 
       <Form {...form}>
@@ -92,10 +125,10 @@ export function CheckoutForm() {
             <FormItem><FormLabel>Nome Completo</FormLabel><FormControl><Input placeholder="Seu nome completo" {...field} /></FormControl><FormMessage /></FormItem>
           )} />
           <FormField name="document" control={form.control} render={({ field }) => (
-            <FormItem><FormLabel>CPF / CNPJ</FormLabel><FormControl><Input placeholder="Seu documento" {...field} /></FormControl><FormMessage /></FormItem>
+            <FormItem><FormLabel>CPF / CNPJ</FormLabel><FormControl><Input placeholder="Seu documento (opcional)" {...field} /></FormControl><FormMessage /></FormItem>
           )} />
 
-          <Tabs defaultValue="credit-card" className="w-full">
+          <Tabs defaultValue="credit-card" className="w-full" onValueChange={setActiveTab}>
               <TabsList className="grid w-full grid-cols-2">
                   <TabsTrigger value="credit-card">Cartão</TabsTrigger>
                   <TabsTrigger value="pix">PIX</TabsTrigger>
@@ -103,6 +136,27 @@ export function CheckoutForm() {
               <TabsContent value="credit-card">
                   <Card className="bg-transparent border-none shadow-none">
                       <CardContent className="space-y-4 pt-6 p-1">
+                          <FormField
+                            control={form.control}
+                            name="cardBrand"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Bandeira do Cartão</FormLabel>
+                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                  <FormControl>
+                                    <SelectTrigger>
+                                      <SelectValue placeholder="Selecione a bandeira" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    <SelectItem value="visa">Visa</SelectItem>
+                                    <SelectItem value="mastercard">Mastercard</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
                           <FormField name="cardNumber" control={form.control} render={({ field }) => (
                               <FormItem>
                                   <FormLabel>Número do Cartão</FormLabel>
@@ -158,16 +212,9 @@ export function CheckoutForm() {
                   </Card>
               </TabsContent>
               <TabsContent value="pix">
-                   <Card>
-                      <CardContent className="flex flex-col items-center justify-center pt-6 space-y-4">
-                          <p className="text-sm text-center text-muted-foreground">Escaneie o QR Code ou copie o código abaixo para pagar via PIX.</p>
-                          <Image src="https://placehold.co/200x200.png" data-ai-hint="qr code" alt="QR Code PIX" width={200} height={200} className="rounded-md"/>
-                          <Button type="button" variant="outline" onClick={copyPixCode}>
-                              <Copy className="mr-2"/>
-                              Copiar Código PIX
-                          </Button>
-                      </CardContent>
-                  </Card>
+                 <div className="text-center text-muted-foreground p-8">
+                     <p>Selecione PIX e clique no botão abaixo para gerar o código.</p>
+                 </div>
               </TabsContent>
           </Tabs>
           
