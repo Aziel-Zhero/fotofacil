@@ -22,8 +22,8 @@ import PhoneInput from 'react-phone-number-input';
 import 'react-phone-number-input/style.css';
 import { createClientByUser } from '@/app/dashboard/actions';
 
-// Schema agora simplificado para refletir a criação direta na tabela 'clients'
-// sem a necessidade de criar um usuário de autenticação (auth.users).
+// O schema agora reflete os dados necessários para criar um usuário de autenticação
+// e um perfil de cliente. A senha será gerada no servidor.
 const formSchema = z.object({
   fullName: z.string().min(1, 'Nome completo é obrigatório'),
   email: z.string().email('Endereço de email inválido'),
@@ -51,7 +51,7 @@ export function ClientRegisterForm() {
       formData.append(key, value);
     });
     
-    // Chama a ação de servidor que agora usa a função RPC `create_client`.
+    // Chama a nova Server Action que cria o usuário no Auth
     const result = await createClientByUser(formData);
 
     if (result?.error) {

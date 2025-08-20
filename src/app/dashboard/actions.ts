@@ -4,6 +4,11 @@
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
+import { Resend } from 'resend';
+
+// Assume-se que estas variáveis de ambiente estão configuradas.
+const resendApiKey = process.env.RESEND_API_KEY;
+const emailFrom = process.env.SUPPORT_EMAIL_FROM || 'onboarding@resend.dev';
 
 const createClientSchema = z.object({
   fullName: z.string().min(1, 'Nome completo é obrigatório.'),
@@ -13,21 +18,11 @@ const createClientSchema = z.object({
 
 export async function createClientByUser(formData: FormData) {
   try {
-    const supabase = createClient();
+    const supabase = createClient(true); // Use admin client
     
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
         return { error: 'Fotógrafo não autenticado. Faça login novamente.' };
-    }
-
-    const { data: photographer, error: photographerError } = await supabase
-        .from('photographers')
-        .select('id')
-        .eq('id', user.id)
-        .single();
-    
-    if (photographerError || !photographer) {
-        return { error: 'Perfil de fotógrafo não encontrado.' };
     }
 
     const data = Object.fromEntries(formData.entries());
@@ -40,30 +35,58 @@ export async function createClientByUser(formData: FormData) {
         });
         return { error: errorMessages.trim() };
     }
-
-    const { fullName, email, phone } = parsed.data;
-
-    const { error: rpcError } = await supabase
-        .rpc('create_client', {
-            p_full_name: fullName,
-            p_email: email,
-            p_phone: phone,
-        });
-
-    if (rpcError) {
-        if (rpcError.code === 'P0001') {
-             return { error: rpcError.message };
-        }
-        if (rpcError.code === '23505') { 
-            return { error: 'Um cliente com este email já existe.' };
-        }
-        console.error("Error creating client via RPC:", rpcError);
-        return { error: 'Não foi possível criar o cliente: ' + rpcError.message };
-    }
     
+    const { fullName, email, phone } = parsed.data;
+    const randomPassword = Math.random().toString(36).slice(-10);
+
+    // 1. Criar o usuário no Supabase Auth
+    const { data: newUser, error: authError } = await supabase.auth.admin.createUser({
+        email,
+        password: randomPassword,
+        email_confirm: true, // Já marca o email como confirmado
+        user_metadata: {
+            role: 'client',
+            fullName,
+            phone,
+            photographer_id: user.id
+        }
+    });
+
+    if (authError) {
+        console.error("Error creating auth user:", authError);
+        if (authError.message.includes("User already registered")) {
+            return { error: "Um cliente com este email já existe." };
+        }
+        return { error: `Não foi possível criar o usuário de autenticação: ${authError.message}` };
+    }
+
+    // A trigger on_auth_user_created deve criar o perfil em 'clients'
+    // Não é mais necessário chamar o RPC 'create_client'.
+
+    // 2. Enviar email de boas-vindas com a senha
+    if (!resendApiKey) {
+        console.warn("Resend API key is missing. Cannot send welcome email to client.");
+        // Não retorna erro, mas avisa no console do servidor. O usuário foi criado.
+    } else {
+        const resend = new Resend(resendApiKey);
+        await resend.emails.send({
+            from: `FotoFácil <${emailFrom}>`,
+            to: [email],
+            subject: 'Bem-vindo(a) à sua Galeria de Fotos!',
+            html: `<h1>Olá ${fullName},</h1>
+                   <p>Seu fotógrafo criou uma conta para você no FotoFácil.</p>
+                   <p>Use as credenciais abaixo para fazer seu primeiro acesso:</p>
+                   <p><strong>Email:</strong> ${email}</p>
+                   <p><strong>Senha Temporária:</strong> ${randomPassword}</p>
+                   <p>Recomendamos que você altere sua senha após o primeiro login.</p>
+                   <a href="${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:9002'}/login">Acessar Plataforma</a>`
+        });
+    }
+
     revalidatePath('/dashboard/register-client');
     revalidatePath('/dashboard/clients');
-    return { success: true, message: `Cliente "${fullName}" criado com sucesso!` };
+    return { success: true, message: `Cliente "${fullName}" criado com sucesso! Um email com a senha de acesso foi enviado.` };
+
   } catch (e: any) {
     console.error('[ServerAction ERROR] createClientByUser:', e);
     return { error: 'Erro interno no servidor ao tentar criar cliente.' };
@@ -267,52 +290,49 @@ const updateClientPasswordSchema = z.object({
   password: z.string().min(8, 'A nova senha deve ter pelo menos 8 caracteres.'),
 });
 
-export async function updateClientPassword(formData: FormData) {
+// A melhor prática é enviar um link de redefinição de senha
+export async function resetClientPassword(clientId: string, clientEmail: string | null) {
   try {
     const supabase = createClient(true);
-    const data = Object.fromEntries(formData.entries());
-
     const { data: { user: photographerUser } } = await supabase.auth.getUser();
+    
     if (!photographerUser) {
         return { error: 'Fotógrafo não autenticado. Faça login novamente.' };
     }
 
-    const parsed = updateClientPasswordSchema.safeParse(data);
-    if (!parsed.success) {
-        return { error: 'A senha deve ter pelo menos 8 caracteres.' };
+    if (!clientEmail) {
+        return { error: "O cliente não possui um email para redefinição." };
     }
 
-    const { clientId, password } = parsed.data;
-    
     const { data: client, error: clientError } = await supabase
       .from('clients')
-      .select('auth_user_id')
+      .select('id, auth_user_id')
       .eq('id', clientId)
       .eq('photographer_id', photographerUser.id)
       .single();
 
     if (clientError || !client) {
-        return { error: 'Cliente não encontrado ou não pertence a você.' };
+      return { error: 'Cliente não encontrado ou não pertence a você.' };
     }
 
     if (!client.auth_user_id) {
-      return { error: 'Este cliente ainda não ativou a conta e não pode ter a senha alterada.' };
+      return { error: 'Este cliente ainda não tem uma conta de autenticação ativa.' };
     }
 
-    const { error: updateUserError } = await supabase.auth.admin.updateUserById(
-      client.auth_user_id,
-      { password: password }
-    );
+    const { error: resetError } = await supabase.auth.admin.generateLink({
+        type: 'recovery',
+        email: clientEmail
+    });
 
-    if (updateUserError) {
-      console.error('Error updating client password:', updateUserError);
-      return { error: 'Não foi possível atualizar a senha: ' + updateUserError.message };
+    if (resetError) {
+      console.error('Error generating recovery link:', resetError);
+      return { error: 'Não foi possível enviar o link de redefinição de senha.' };
     }
 
-    return { success: true, message: 'Senha do cliente atualizada com sucesso!' };
+    return { success: true, message: `Um link para redefinição de senha foi enviado para ${clientEmail}.` };
   } catch(e: any) {
-    console.error('[ServerAction ERROR] updateClientPassword:', e);
-    return { error: 'Erro interno no servidor ao alterar senha.' };
+    console.error('[ServerAction ERROR] resetClientPassword:', e);
+    return { error: 'Erro interno no servidor ao enviar link.' };
   }
 }
 

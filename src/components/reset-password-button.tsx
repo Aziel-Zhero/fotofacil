@@ -3,7 +3,7 @@
 
 import { DropdownMenuItem } from "./ui/dropdown-menu";
 import { resetClientPassword } from "@/app/dashboard/actions";
-import { useToast } from "./ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
 
@@ -37,8 +37,8 @@ export function ResetPasswordButton({ clientId, clientEmail }: ResetPasswordButt
             });
         } else {
             toast({
-                title: "Senha Redefinida!",
-                description: `Uma nova senha foi gerada e um e-mail de redefinição foi enviado para ${clientEmail}.`,
+                title: "Link Enviado!",
+                description: result.message || `Um e-mail de redefinição foi enviado para ${clientEmail}.`,
             });
         }
         setIsLoading(false);
@@ -47,7 +47,7 @@ export function ResetPasswordButton({ clientId, clientEmail }: ResetPasswordButt
     return (
         <DropdownMenuItem onSelect={(e) => { e.preventDefault(); handleResetPassword(); }} disabled={isLoading}>
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Redefinir Senha
+            Enviar Link de Redefinição de Senha
         </DropdownMenuItem>
     );
 }
