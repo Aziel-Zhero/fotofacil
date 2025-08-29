@@ -18,7 +18,8 @@ const createClientSchema = z.object({
 
 export async function createClientByUser(formData: FormData) {
   try {
-    const supabase = createClient(true); // Use admin client
+    const supabase = createClient();
+    const supabaseAdmin = createClient(true);
     
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
@@ -40,7 +41,7 @@ export async function createClientByUser(formData: FormData) {
     const randomPassword = Math.random().toString(36).slice(-10);
 
     // 1. Criar o usuário no Supabase Auth
-    const { data: newUser, error: authError } = await supabase.auth.admin.createUser({
+    const { data: newUser, error: authError } = await supabaseAdmin.auth.admin.createUser({
         email,
         password: randomPassword,
         email_confirm: true, // Já marca o email como confirmado
@@ -204,40 +205,45 @@ export async function getClientsForPhotographer() {
   }
 }
 
-export async function getMonthlyPhotoUsage() {
-  try {
-    const supabase = createClient();
-    const { data: { user } } = await supabase.auth.getUser();
+export async function getDashboardStats() {
+    try {
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
 
-    if (!user) {
-        return { error: 'Usuário não autenticado', data: [] };
+        if (!user) {
+            return { error: 'Usuário não autenticado', data: null };
+        }
+
+        const [albumCountResult, photoCountResult, monthlyUsageResult] = await Promise.all([
+            supabase.from('albums').select('*', { count: 'exact', head: true }).eq('photographer_id', user.id),
+            supabase.rpc('get_photos_count_for_photographer', { p_photographer_id: user.id }),
+            supabase.rpc('get_monthly_photo_usage', { p_photographer_id: user.id, p_start_date: new Date(new Date().setMonth(new Date().getMonth() - 6)).toISOString() })
+        ]);
+
+        if (albumCountResult.error) throw albumCountResult.error;
+        if (photoCountResult.error) throw photoCountResult.error;
+        if (monthlyUsageResult.error) throw monthlyUsageResult.error;
+
+        const monthNames = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+        const formattedMonthlyData = monthlyUsageResult.data.map((item: any) => ({
+            month: monthNames[new Date(item.month).getMonth()],
+            photos: item.photo_count
+        }));
+        
+        return {
+            data: {
+                totalAlbums: albumCountResult.count ?? 0,
+                totalPhotos: photoCountResult.data ?? 0,
+                monthlyUsage: formattedMonthlyData,
+            },
+            error: null,
+        };
+    } catch(e: any) {
+        console.error('[ServerAction ERROR] getDashboardStats:', e);
+        return { error: 'Erro interno no servidor ao buscar estatísticas.', data: null };
     }
-
-    const sixMonthsAgo = new Date();
-    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-
-    const { data, error } = await supabase.rpc('get_monthly_photo_usage', {
-        p_photographer_id: user.id,
-        p_start_date: sixMonthsAgo.toISOString()
-    });
-
-    if (error) {
-        console.error("Erro ao buscar uso mensal:", error);
-        return { error: "Não foi possível carregar os dados do gráfico.", data: [] };
-    }
-
-    const monthNames = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
-    const formattedData = data.map((item: any) => ({
-        month: monthNames[new Date(item.month).getMonth()],
-        photos: item.photo_count
-    }));
-
-    return { data: formattedData };
-  } catch(e: any) {
-    console.error('[ServerAction ERROR] getMonthlyPhotoUsage:', e);
-    return { error: 'Erro interno no servidor.', data: [] };
-  }
 }
+
 
 const updateClientSchema = z.object({
   clientId: z.string().uuid(),

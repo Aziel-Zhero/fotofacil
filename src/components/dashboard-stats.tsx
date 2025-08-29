@@ -6,42 +6,44 @@ import { MonthlyUsageChart } from "./monthly-usage-chart";
 import { Button } from "./ui/button";
 import Link from "next/link";
 import { Progress } from "./ui/progress";
-import { getMonthlyPhotoUsage } from "@/app/dashboard/actions";
+import { getDashboardStats } from "@/app/dashboard/actions";
 import { useEffect, useState } from "react";
 import { Skeleton } from "./ui/skeleton";
 
 interface DashboardStatsProps {
-    totalAlbums: number;
-    totalPhotos: number;
     planName: string;
     photoLimit: number;
 }
 
-interface MonthlyData {
-    month: string;
-    photos: number;
+interface StatsData {
+    totalAlbums: number;
+    totalPhotos: number;
+    monthlyUsage: { month: string; photos: number }[];
 }
 
-export function DashboardStats({ totalAlbums, totalPhotos, planName, photoLimit }: DashboardStatsProps) {
-    const usagePercentage = photoLimit > 0 ? (totalPhotos / photoLimit) * 100 : 0;
-    const renewsOn = "25 de Janeiro, 2025"; // Mock data
-    const [monthlyData, setMonthlyData] = useState<MonthlyData[]>([]);
+export function DashboardStats({ planName, photoLimit }: DashboardStatsProps) {
+    const [stats, setStats] = useState<StatsData | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         async function fetchData() {
             setIsLoading(true);
-            const { data, error } = await getMonthlyPhotoUsage();
+            const { data, error } = await getDashboardStats();
             if (data) {
-                setMonthlyData(data);
+                setStats(data);
             }
             if (error) {
                 console.error(error);
+                // Optionally set some error state to show in the UI
             }
             setIsLoading(false);
         }
         fetchData();
     }, []);
+    
+    const totalPhotos = stats?.totalPhotos ?? 0;
+    const usagePercentage = photoLimit > 0 ? (totalPhotos / photoLimit) * 100 : 0;
+    const renewsOn = "25 de Janeiro, 2025"; // Mock data
 
     return (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
@@ -51,7 +53,7 @@ export function DashboardStats({ totalAlbums, totalPhotos, planName, photoLimit 
                     <Folder className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                    <div className="text-2xl font-bold">{totalAlbums}</div>
+                    {isLoading ? <Skeleton className="h-8 w-1/2" /> : <div className="text-2xl font-bold">{stats?.totalAlbums}</div>}
                     <p className="text-xs text-muted-foreground">álbuns criados na plataforma</p>
                 </CardContent>
             </Card>
@@ -61,9 +63,9 @@ export function DashboardStats({ totalAlbums, totalPhotos, planName, photoLimit 
                     <ImageIcon className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                    <div className="text-2xl font-bold">{totalPhotos} / {photoLimit}</div>
+                    {isLoading ? <Skeleton className="h-8 w-3/4 mb-2" /> : <div className="text-2xl font-bold">{totalPhotos} / {photoLimit}</div>}
                     <p className="text-xs text-muted-foreground mb-2">fotos utilizadas no seu plano</p>
-                    <Progress value={usagePercentage} className="h-2" />
+                    {isLoading ? <Skeleton className="h-2 w-full" /> : <Progress value={usagePercentage} className="h-2" />}
                 </CardContent>
             </Card>
             <Card className="lg:col-span-2">
@@ -82,7 +84,7 @@ export function DashboardStats({ totalAlbums, totalPhotos, planName, photoLimit 
                             <Skeleton className="h-full w-1/6" />
                         </div>
                    ) : (
-                        <MonthlyUsageChart data={monthlyData} />
+                        <MonthlyUsageChart data={stats?.monthlyUsage ?? []} />
                    )}
                 </CardContent>
             </Card>

@@ -5,16 +5,18 @@ import AuthLayout from '@/components/layouts/auth-layout';
 
 // Wrapper para usar searchParams com Suspense
 function LoginPageContent({
-  searchParams,
+  message,
+  error,
 }: {
-  searchParams: { message?: string; error?: string };
+  message?: string;
+  error?: string;
 }) {
   return (
     <AuthLayout
       title="Acesse sua Conta"
-      description="Insira suas credenciais para acessar sua conta de fotógrafo."
+      description="Insira suas credenciais para acessar sua conta."
     >
-      <LoginForm message={searchParams.message} error={searchParams.error} />
+      <LoginForm message={message} error={error} />
     </AuthLayout>
   );
 }
@@ -26,7 +28,10 @@ export default function LoginPage({
 }) {
   return (
     <Suspense fallback={<div>Carregando...</div>}>
-      <LoginPageContent searchParams={searchParams} />
+      <LoginPageContent
+        message={searchParams.message}
+        error={searchParams.error}
+      />
     </Suspense>
   );
 }
