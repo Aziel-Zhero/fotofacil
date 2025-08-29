@@ -18,7 +18,6 @@ import {
 import { CardContent, CardFooter } from '@/components/ui/card';
 import { useState, useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
-import { login } from '@/app/auth/actions';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useRouter } from 'next/navigation';
 
@@ -56,19 +55,20 @@ export function LoginForm({ message, error }: { message?: string, error?: string
     setFormError(null);
     setSuccessMessage(null);
 
-    const formData = new FormData();
-    Object.entries(values).forEach(([key, value]) => {
-      formData.append(key, value);
+    const response = await fetch('/api/login', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(values),
     });
 
-    const result = await login(formData);
+    const result = await response.json();
 
-    if (result?.error) {
-      setFormError(result.error);
-    } else if (result?.redirect) {
+    if (!response.ok) {
+      setFormError(result.error || "Ocorreu um erro inesperado. Tente novamente.");
+    } else if (result.redirect) {
       router.push(result.redirect);
-    } else {
-      setFormError("Ocorreu um erro inesperado. Tente novamente.");
     }
     
     setIsSubmitting(false);

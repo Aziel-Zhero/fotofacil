@@ -4,6 +4,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { z } from 'zod';
 import { headers } from 'next/headers';
+import { redirect } from 'next/navigation';
 
 const signupSchema = z.object({
   email: z.string().email('Email inválido.'),
@@ -58,62 +59,9 @@ export async function signup(formData: FormData) {
     return { error: "Ocorreu um erro no servidor ao criar o usuário. Por favor, tente novamente." };
   }
   
-  return { success: true, redirect: `/login?message=Cadastro realizado com sucesso! Verifique seu email para confirmar sua conta.` };
+  redirect(`/login?message=Cadastro realizado com sucesso! Verifique seu email para confirmar sua conta.`);
 }
 
-const loginSchema = z.object({
-    email: z.string().email({ message: 'Email inválido.' }),
-    password: z.string().min(1, { message: 'Senha é obrigatória.' }),
-});
-
-export async function login(formData: FormData) {
-  try {
-    const supabase = createClient();
-    const data = Object.fromEntries(formData.entries());
-
-    const parsed = loginSchema.safeParse(data);
-
-    if (!parsed.success) {
-      const errors = parsed.error.issues.map(i => i.message).join('\n');
-      return { error: errors };
-    }
-
-    const { email, password } = parsed.data;
-
-    const { data: { user }, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (error) {
-      if (error.message.includes('Email not confirmed')) {
-        return { error: 'Seu email ainda não foi confirmado. Verifique sua caixa de entrada.' };
-      }
-      return { error: 'Credenciais inválidas. Tente novamente.' };
-    }
-
-    if (!user) {
-      return { error: 'Usuário não encontrado após login.' };
-    }
-
-    // Lógica de redirecionamento baseada no role do usuário
-    const userRole = user.user_metadata.role;
-
-    if (userRole === 'photographer') {
-      return { success: true, redirect: '/dashboard' };
-    } else if (userRole === 'client') {
-      return { success: true, redirect: '/gallery' };
-    } else {
-      // Fallback: se não tiver role, desloga e manda pro login
-      await supabase.auth.signOut();
-      return { error: 'Tipo de usuário desconhecido. Contate o suporte.' };
-    }
-
-  } catch(e: any) {
-    console.error('[ServerAction ERROR] login:', e);
-    return { error: 'Erro interno no servidor ao tentar fazer login.' };
-  }
-}
 
 const forgotPasswordSchema = z.object({
   email: z.string().email({ message: 'Email inválido.' }),
@@ -171,7 +119,7 @@ export async function resetPassword(formData: FormData) {
       return { error: "Não foi possível redefinir a senha. O link pode ter expirado." };
     }
 
-    return { success: true, redirect: '/login?message=Sua senha foi redefinida com sucesso. Você já pode fazer login.' };
+    redirect('/login?message=Sua senha foi redefinida com sucesso. Você já pode fazer login.');
   } catch(e: any) {
     console.error('[ServerAction ERROR] resetPassword:', e);
     return { error: 'Erro interno no servidor.' };
