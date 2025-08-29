@@ -96,19 +96,18 @@ export async function login(formData: FormData) {
       return { error: 'Usuário não encontrado após login.' };
     }
 
-    const { data: profile, error: profileError } = await supabase
-      .from('photographers')
-      .select('id')
-      .eq('id', user.id)
-      .single();
+    // Lógica de redirecionamento baseada no role do usuário
+    const userRole = user.user_metadata.role;
 
-    if (profileError || !profile) {
+    if (userRole === 'photographer') {
+      return { success: true, redirect: '/dashboard' };
+    } else if (userRole === 'client') {
+      return { success: true, redirect: '/gallery' };
+    } else {
+      // Fallback: se não tiver role, desloga e manda pro login
       await supabase.auth.signOut();
-      console.error('Perfil de fotógrafo não encontrado ou erro:', profileError);
-      return { error: 'Perfil de fotógrafo não encontrado. Contate o suporte.' };
+      return { error: 'Tipo de usuário desconhecido. Contate o suporte.' };
     }
-
-    return { success: true, redirect: '/dashboard' };
 
   } catch(e: any) {
     console.error('[ServerAction ERROR] login:', e);
