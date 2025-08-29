@@ -9,13 +9,13 @@ export default function LoginPage({
   searchParams: { message?: string; error?: string };
 }) {
   return (
-    <Suspense fallback={<div>Carregando...</div>}>
-      <AuthLayout
-        title="Acesse sua Conta"
-        description="Insira suas credenciais para acessar sua conta."
-      >
+    <AuthLayout
+      title="Acesse sua Conta"
+      description="Insira suas credenciais para acessar sua conta."
+    >
+      <Suspense fallback={<div>Carregando...</div>}>
         <LoginForm message={searchParams.message} error={searchParams.error} />
-      </AuthLayout>
-    </Suspense>
+      </Suspense>
+    </AuthLayout>
   );
 }
