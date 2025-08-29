@@ -67,6 +67,8 @@ export function LoginForm({ message, error }: { message?: string, error?: string
       setFormError(result.error);
     } else if (result?.redirect) {
       router.push(result.redirect);
+    } else {
+      setFormError("Ocorreu um erro inesperado. Tente novamente.");
     }
     
     setIsSubmitting(false);

@@ -3,7 +3,6 @@ import { Suspense } from 'react';
 import { LoginForm } from '@/components/auth/login-form';
 import AuthLayout from '@/components/layouts/auth-layout';
 
-// Wrapper para usar searchParams com Suspense
 function LoginPageContent({
   message,
   error,
